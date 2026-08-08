@@ -100,7 +100,26 @@ curl -X GET "https://devocionaldiario-eosin.vercel.app/api/daily-push" \
   -H "Authorization: Bearer SEU_CRON_SECRET"
 ```
 
+## Versões da Bíblia
+
+Duas regras decidem o que aparece no seletor: **licença de uso livre** e
+**ortografia atual**.
+
+Fica de fora o Almeida de 1911 que o getBible serve — texto de domínio
+público, mas em português pré-reforma ("Portuguez", "elle", "Christo"), que
+atrapalha justamente quem tem mais dificuldade de leitura.
+
+O filtro vale também para o catálogo remoto, não só para a lista semente:
+o app descobre versões novas em tempo de execução, e sem isso as edições
+antigas voltariam sozinhas. A regra está em `VERSAO_ARCAICA`, aplicada em
+`acrescentar()` — o único ponto por onde uma versão entra na lista.
+
+Se a versão escolhida falhar, o app cai automaticamente para a Bíblia Livre.
+Não há fonte reserva em português arcaico: quando todas as fontes falham, o
+app mostra um erro com "Tentar de novo", em vez de servir um texto de 1911
+sem avisar.
+
 ## APIs bíblicas
 
-- getBible — Almeida, Bíblia Livre
+- getBible — Bíblia Livre
 - Free Use Bible API (helloao)
