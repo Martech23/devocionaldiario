@@ -1,0 +1,26 @@
+{
+  "name": "Lâmpada · Devocional diário",
+  "short_name": "Lâmpada",
+  "description": "Devocional diário, caixa de promessas e Bíblia Sagrada em versões de uso livre.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#F7F5F1",
+  "theme_color": "#1A4A82",
+  "lang": "pt-BR",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

@@ -5,6 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Lâmpada · Devocional diário e Bíblia Sagrada</title>
 <meta name="description" content="Versículo do dia, caixa de promessas e a Bíblia Sagrada completa em versões de uso livre.">
+<meta name="theme-color" content="#1A4A82">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Lâmpada">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/icon-192.png">
+<link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600&display=swap" rel="stylesheet">
@@ -1125,6 +1132,65 @@ html[data-tema="escuro"] .aviso {
 
 .oculto { display: none !important; }
 
+/* --- Fase 3: planos, progresso, PWA --- */
+.barra-progresso-wrap { margin-bottom: 16px; }
+.barra-progresso-label {
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: 13px; color: var(--texto-2); margin-bottom: 6px; font-weight: 600;
+}
+.barra-progresso {
+  height: 8px; background: var(--linha); border-radius: 99px; overflow: hidden;
+}
+.barra-progresso > span {
+  display: block; height: 100%; width: 0%;
+  background: linear-gradient(90deg, var(--azul), var(--azul-cla));
+  border-radius: 99px; transition: width 0.45s ease;
+}
+.grid-planos {
+  display: grid; gap: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+}
+.card-plano {
+  border: 1px solid var(--linha); border-radius: var(--radius);
+  padding: 16px; background: var(--papel-alt);
+  transition: border-color var(--trans), box-shadow var(--trans);
+}
+.card-plano:hover { border-color: var(--azul); box-shadow: var(--sombra); }
+.card-plano h3 { font-size: 16px; margin-bottom: 6px; color: var(--texto); }
+.card-plano p { font-size: 13.5px; color: var(--texto-2); margin-bottom: 12px; line-height: 1.45; }
+.card-plano .meta-plano { font-size: 12px; color: var(--texto-3); margin-bottom: 12px; }
+.cap.lido {
+  background: var(--azul-suave) !important;
+  color: var(--azul) !important;
+  position: relative;
+}
+.cap.lido::after {
+  content: "✓"; position: absolute; top: 2px; right: 4px;
+  font-size: 10px; opacity: 0.7;
+}
+.livro.parcial { box-shadow: inset 3px 0 0 var(--azul-cla); }
+.livro.completo { box-shadow: inset 3px 0 0 #2e8b57; }
+.pwa-box {
+  display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
+  padding: 14px 0 4px;
+}
+.pwa-box p { flex: 1; min-width: 180px; font-size: 14px; color: var(--texto-2); margin: 0; }
+.plano-dia {
+  padding: 12px 0; border-bottom: 1px solid var(--linha);
+  display: flex; justify-content: space-between; align-items: center; gap: 10px;
+}
+.plano-dia:last-child { border-bottom: 0; }
+.plano-dia .ref-dia { font-weight: 600; color: var(--azul); font-size: 14.5px; }
+.plano-dia .feito { color: #2e8b57; font-size: 13px; font-weight: 600; }
+.btn-sm {
+  font-family: inherit; font-size: 13px; font-weight: 600;
+  background: var(--papel); color: var(--azul);
+  border: 1px solid var(--linha-forte); border-radius: var(--radius-sm);
+  padding: 7px 12px; cursor: pointer;
+}
+.btn-sm:hover { background: var(--azul-claro-bg); border-color: var(--azul); }
+.btn-sm.ativo { background: var(--azul); color: #fff; border-color: var(--azul); }
+
 /* Respeitar preferência de redução de movimento */
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -1160,8 +1226,10 @@ html[data-tema="escuro"] .aviso {
   <header>Menu</header>
   <a href="#sec-hoje" data-fecha>Devocional do dia</a>
   <a href="#sec-promessas" data-fecha>Caixa de promessas</a>
+  <a href="#sec-planos" data-fecha>Planos de leitura</a>
   <a href="#sec-biblia" data-fecha>Bíblia completa</a>
   <a href="#sec-favoritos" data-fecha>Favoritos e diário</a>
+  <a href="#sec-app" data-fecha>Instalar app</a>
   <p class="nota">Somente versões de uso livre: Almeida (1911, domínio público) e Bíblia Livre (CC BY 3.0 Brasil).</p>
 </aside>
 
@@ -1218,6 +1286,13 @@ html[data-tema="escuro"] .aviso {
   <section class="secao" id="sec-biblia">
     <p class="rotulo-secao">Bíblia Sagrada completa</p>
     <div class="cartao">
+      <div class="barra-progresso-wrap" id="wrap-progresso-biblia">
+        <div class="barra-progresso-label">
+          <span>Progresso de leitura</span>
+          <span id="txt-progresso-biblia">0%</span>
+        </div>
+        <div class="barra-progresso"><span id="barra-progresso-biblia"></span></div>
+      </div>
       <div id="nivel-livros">
         <div id="lista-livros"></div>
       </div>
@@ -1233,6 +1308,15 @@ html[data-tema="escuro"] .aviso {
     </div>
   </section>
 
+  <!-- ============ PLANOS DE LEITURA ============ -->
+  <section class="secao" id="sec-planos">
+    <p class="rotulo-secao">Planos de leitura</p>
+    <div class="cartao">
+      <div class="grid-planos" id="grid-planos"></div>
+      <div id="area-plano-ativo" class="oculto" style="margin-top:18px"></div>
+    </div>
+  </section>
+
   <!-- ============ FAVORITOS E DIÁRIO ============ -->
   <section class="secao" id="sec-favoritos">
     <p class="rotulo-secao">Favoritos e diário</p>
@@ -1242,6 +1326,19 @@ html[data-tema="escuro"] .aviso {
         <button class="tab-fav" data-tab="diario">Diário</button>
       </div>
       <div id="area-favoritos"></div>
+    </div>
+  </section>
+
+  <!-- ============ INSTALAR APP / PWA ============ -->
+  <section class="secao" id="sec-app">
+    <p class="rotulo-secao">Instalar app</p>
+    <div class="cartao">
+      <div class="pwa-box">
+        <p>Instale a Lâmpada na tela inicial e receba um lembrete diário para o devocional.</p>
+        <button class="btn" id="btn-instalar-pwa" type="button">Instalar app</button>
+        <button class="btn claro" id="btn-lembrete" type="button">Ativar lembrete diário</button>
+      </div>
+      <p id="status-pwa" style="margin-top:12px;font-size:13px;color:var(--texto-3)"></p>
     </div>
   </section>
 
@@ -1657,6 +1754,38 @@ async function tirarPromessa(){
   }
 }
 
+/* ---------- progresso de leitura ---------- */
+const CHAVE_LIDOS = 'lampada-capitulos-lidos';
+function carregarLidos(){
+  try { return JSON.parse(localStorage.getItem(CHAVE_LIDOS) || '{}'); }
+  catch { return {}; }
+}
+function salvarLidos(map){ localStorage.setItem(CHAVE_LIDOS, JSON.stringify(map)); }
+function chaveCap(nr, cap){ return nr + ':' + cap; }
+function marcouLido(nr, cap){
+  const map = carregarLidos();
+  map[chaveCap(nr, cap)] = true;
+  salvarLidos(map);
+  atualizarProgressoBiblia();
+}
+function estaLido(nr, cap){ return !!carregarLidos()[chaveCap(nr, cap)]; }
+function progressoLivro(livro){
+  let n = 0;
+  for(let i = 1; i <= livro.caps; i++) if(estaLido(livro.nr, i)) n++;
+  return n;
+}
+function atualizarProgressoBiblia(){
+  const total = LIVROS.reduce((s, l) => s + l.caps, 0);
+  let lidos = 0;
+  const map = carregarLidos();
+  Object.keys(map).forEach(k => { if(map[k]) lidos++; });
+  const pct = total ? Math.round((lidos / total) * 100) : 0;
+  const barra = $('barra-progresso-biblia');
+  const txt = $('txt-progresso-biblia');
+  if(barra) barra.style.width = pct + '%';
+  if(txt) txt.textContent = pct + '% · ' + lidos + '/' + total + ' caps.';
+}
+
 /* ---------- bíblia ---------- */
 function desenharLivros(){
   const alvo = $('lista-livros');
@@ -1669,14 +1798,16 @@ function desenharLivros(){
     grade.className = 'livros';
     LIVROS.filter(cond).forEach(l => {
       const b = document.createElement('button');
-      b.className = 'livro';
-      b.innerHTML = `${l.nome}<small>${l.caps} cap.</small>`;
+      const prog = progressoLivro(l);
+      b.className = 'livro' + (prog === l.caps ? ' completo' : (prog > 0 ? ' parcial' : ''));
+      b.innerHTML = `${l.nome}<small>${prog}/${l.caps} cap.</small>`;
       b.onclick = () => abrirCapitulos(l);
       grade.appendChild(b);
     });
     alvo.appendChild(h);
     alvo.appendChild(grade);
   });
+  atualizarProgressoBiblia();
 }
 
 function abrirCapitulos(livro){
@@ -1685,7 +1816,7 @@ function abrirCapitulos(livro){
   grade.innerHTML = '';
   for(let i = 1; i <= livro.caps; i++){
     const b = document.createElement('button');
-    b.className = 'cap';
+    b.className = 'cap' + (estaLido(livro.nr, i) ? ' lido' : '');
     b.textContent = i;
     b.onclick = () => abrirLeitura(livro.nr, i);
     grade.appendChild(b);
@@ -1703,6 +1834,7 @@ async function abrirLeitura(nr, cap, destacar){
     const d = await buscarCapitulo(nr, cap);
     alvo.innerHTML = '';
     alvo.appendChild(desenharCapitulo(d, nr, cap, destacar));
+    marcouLido(nr, cap);
   }catch(e){
     alvo.innerHTML = '';
     alvo.appendChild(blocoErro(e.message, () => abrirLeitura(nr, cap, destacar)));
@@ -2114,14 +2246,221 @@ function abrirMenu(estado){
   $('veu').classList.toggle('aberto', estado);
 }
 
+/* ---------- planos de leitura ---------- */
+const PLANOS = [
+  {
+    id: 'joao7',
+    nome: 'Evangelho de João',
+    desc: '7 dias conhecendo Jesus no Evangelho de João.',
+    dias: [
+      [43,1],[43,3],[43,6],[43,10],[43,14],[43,15],[43,20]
+    ]
+  },
+  {
+    id: 'salmos21',
+    nome: 'Salmos de confiança',
+    desc: '21 dias em salmos de paz, proteção e esperança.',
+    dias: [
+      [19,1],[19,8],[19,16],[19,19],[19,23],[19,27],[19,34],
+      [19,37],[19,42],[19,46],[19,51],[19,56],[19,62],[19,63],
+      [19,84],[19,90],[19,91],[19,103],[19,121],[19,139],[19,145]
+    ]
+  },
+  {
+    id: 'nt40',
+    nome: 'Novo Testamento em 40 dias',
+    desc: 'Um panorama do NT em 40 leituras selecionadas.',
+    dias: [
+      [40,5],[40,6],[41,1],[42,2],[42,15],[43,1],[43,3],[43,14],
+      [44,2],[44,9],[45,5],[45,8],[45,12],[46,13],[47,5],[48,5],
+      [49,1],[49,6],[50,2],[50,4],[51,3],[52,5],[54,2],[55,3],
+      [58,11],[58,12],[59,1],[60,1],[60,5],[61,1],[62,1],[62,4],
+      [65,1],[66,1],[66,21],[40,28],[42,24],[43,21],[44,1],[45,1]
+    ]
+  }
+];
+const CHAVE_PLANOS = 'lampada-planos-progresso';
+function carregarProgPlanos(){
+  try { return JSON.parse(localStorage.getItem(CHAVE_PLANOS) || '{}'); }
+  catch { return {}; }
+}
+function salvarProgPlanos(p){ localStorage.setItem(CHAVE_PLANOS, JSON.stringify(p)); }
+
+function montarPlanos(){
+  const grid = $('grid-planos');
+  if(!grid) return;
+  const prog = carregarProgPlanos();
+  grid.innerHTML = '';
+  PLANOS.forEach(plano => {
+    const feitos = (prog[plano.id] || []).length;
+    const card = document.createElement('div');
+    card.className = 'card-plano';
+    card.innerHTML =
+      `<h3>${plano.nome}</h3>
+       <p>${plano.desc}</p>
+       <div class="meta-plano">${feitos}/${plano.dias.length} dias · ${plano.dias.length} leituras</div>
+       <button class="btn" type="button">${feitos ? 'Continuar' : 'Começar'}</button>`;
+    card.querySelector('button').onclick = () => abrirPlano(plano.id);
+    grid.appendChild(card);
+  });
+}
+
+function abrirPlano(id){
+  const plano = PLANOS.find(p => p.id === id);
+  if(!plano) return;
+  const area = $('area-plano-ativo');
+  const prog = carregarProgPlanos();
+  const feitos = new Set(prog[id] || []);
+  area.classList.remove('oculto');
+  area.innerHTML = `<h3 style="margin-bottom:12px;font-size:16px">${plano.nome}</h3>`;
+  plano.dias.forEach((ref, i) => {
+    const [nr, cap] = ref;
+    const livro = livroPorNr(nr);
+    const dia = i + 1;
+    const ok = feitos.has(dia);
+    const row = document.createElement('div');
+    row.className = 'plano-dia';
+    row.innerHTML =
+      `<div>
+         <div class="ref-dia">Dia ${dia} · ${livro.nome} ${cap}</div>
+         ${ok ? '<span class="feito">Concluído</span>' : ''}
+       </div>
+       <div style="display:flex;gap:8px">
+         <button class="btn-sm" type="button">Ler</button>
+         <button class="btn-sm ${ok ? 'ativo' : ''}" type="button">${ok ? '✓ Feito' : 'Marcar'}</button>
+       </div>`;
+    const [btnLer, btnMarcar] = row.querySelectorAll('button');
+    btnLer.onclick = () => {
+      abrirLeitura(nr, cap);
+      $('sec-biblia').scrollIntoView({behavior:'smooth'});
+    };
+    btnMarcar.onclick = () => {
+      const p = carregarProgPlanos();
+      const lista = new Set(p[id] || []);
+      if(lista.has(dia)) lista.delete(dia); else lista.add(dia);
+      p[id] = [...lista].sort((a,b)=>a-b);
+      salvarProgPlanos(p);
+      abrirPlano(id);
+      montarPlanos();
+    };
+    area.appendChild(row);
+  });
+  area.scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+/* ---------- PWA + lembrete ---------- */
+let deferredInstall = null;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredInstall = e;
+  const btn = $('btn-instalar-pwa');
+  if(btn) btn.style.display = '';
+});
+
+function registrarSW(){
+  if(!('serviceWorker' in navigator)) return;
+  navigator.serviceWorker.register('/sw.js').catch(err => console.info('SW:', err));
+}
+
+function atualizarStatusPWA(){
+  const el = $('status-pwa');
+  if(!el) return;
+  const standalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone;
+  const notif = ('Notification' in window) ? Notification.permission : 'unsupported';
+  let t = [];
+  if(standalone) t.push('App instalado.');
+  if(notif === 'granted') t.push('Lembrete permitido.');
+  else if(notif === 'denied') t.push('Notificações bloqueadas no navegador.');
+  else if(notif === 'unsupported') t.push('Notificações não disponíveis neste navegador.');
+  el.textContent = t.join(' ') || 'Você pode instalar o app e ativar um lembrete diário.';
+}
+
+async function pedirLembrete(){
+  if(!('Notification' in window)){
+    avisar('Seu navegador não suporta notificações');
+    return;
+  }
+  let perm = Notification.permission;
+  if(perm === 'default') perm = await Notification.requestPermission();
+  if(perm !== 'granted'){
+    avisar('Permissão de notificação não concedida');
+    atualizarStatusPWA();
+    return;
+  }
+  localStorage.setItem('lampada-lembrete', '1');
+  // Notificação de confirmação imediata
+  try {
+    if(navigator.serviceWorker && navigator.serviceWorker.ready){
+      const reg = await navigator.serviceWorker.ready;
+      reg.showNotification('Lâmpada', {
+        body: 'Lembrete ativado. Abra o app cada manhã para o devocional.',
+        icon: '/icon-192.png',
+        badge: '/icon-192.png'
+      });
+    } else {
+      new Notification('Lâmpada', { body: 'Lembrete ativado. Volte amanhã para o devocional do dia.' });
+    }
+  } catch(_) {}
+  // Agendar lembrete local simples (enquanto o app estiver aberto / SW ativo)
+  agendarLembreteDiario();
+  avisar('Lembrete diário ativado');
+  atualizarStatusPWA();
+}
+
+function agendarLembreteDiario(){
+  if(localStorage.getItem('lampada-lembrete') !== '1') return;
+  if(!('Notification' in window) || Notification.permission !== 'granted') return;
+  const agora = new Date();
+  const alvo = new Date();
+  alvo.setHours(8, 0, 0, 0);
+  if(alvo <= agora) alvo.setDate(alvo.getDate() + 1);
+  const ms = alvo - agora;
+  setTimeout(async () => {
+    try {
+      if(navigator.serviceWorker){
+        const reg = await navigator.serviceWorker.ready;
+        reg.showNotification('Lâmpada · Devocional do dia', {
+          body: 'Seu encontro diário com a Palavra está pronto.',
+          icon: '/icon-192.png',
+          badge: '/icon-192.png',
+          tag: 'devocional-diario'
+        });
+      }
+    } catch(_) {}
+    agendarLembreteDiario();
+  }, Math.min(ms, 2147483647));
+}
+
+const btnInstalar = $('btn-instalar-pwa');
+if(btnInstalar){
+  btnInstalar.onclick = async () => {
+    if(deferredInstall){
+      deferredInstall.prompt();
+      const { outcome } = await deferredInstall.userChoice;
+      if(outcome === 'accepted') avisar('App instalado');
+      deferredInstall = null;
+    } else {
+      avisar('No celular: menu do navegador → Instalar app / Adicionar à tela inicial');
+    }
+    atualizarStatusPWA();
+  };
+}
+const btnLembrete = $('btn-lembrete');
+if(btnLembrete) btnLembrete.onclick = pedirLembrete;
+
 versaoAtual = VERSOES[0];
 montarVersoes();
 renderFavoritos();
 montarTemas();
 desenharLivros();
-versiculoDoDia(); // carrega na hora com as versões semente
+montarPlanos();
+versiculoDoDia();
+atualizarProgressoBiblia();
+registrarSW();
+atualizarStatusPWA();
+agendarLembreteDiario();
 descobrirTudo().then(() => {
-  montarVersoes(); // atualiza lista se novas versões forem encontradas
+  montarVersoes();
 });
 </script>
 </body>
