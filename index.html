@@ -2013,8 +2013,8 @@ html[data-tema="escuro"] .painel-config header { background: #152238; }
 <div class="veu" id="veu"></div>
 <aside class="gaveta" id="gaveta" aria-label="Menu">
   <header>Menu</header>
-  <a href="#sec-stats" data-fecha>Sua jornada</a>
   <a href="#sec-hoje" data-fecha>Devocional do dia</a>
+  <a href="#sec-stats" data-fecha>Sua jornada</a>
   <a href="#sec-oracoes" data-fecha>Minhas orações</a>
   <a href="#sec-promessas" data-fecha>Caixa de promessas</a>
   <a href="#sec-planos" data-fecha>Planos de leitura</a>
@@ -2132,6 +2132,19 @@ html[data-tema="escuro"] .painel-config header { background: #152238; }
     </div>
   </section>
 
+  <!-- ============ DEVOCIONAL DO DIA ============ -->
+  <section class="secao" id="sec-hoje">
+    <p class="rotulo-secao">Devocional do dia</p>
+    <div id="cartao-hoje">
+      <div class="cartao">
+        <div class="skeleton skeleton-titulo"></div>
+        <div class="skeleton skeleton-linha"></div>
+        <div class="skeleton skeleton-linha"></div>
+        <div class="skeleton skeleton-linha" style="width:80%"></div>
+      </div>
+    </div>
+  </section>
+
   <!-- ============ ESTATÍSTICAS / STREAK ============ -->
   <section class="secao" id="sec-stats">
     <p class="rotulo-secao">Sua jornada</p>
@@ -2144,19 +2157,6 @@ html[data-tema="escuro"] .painel-config header { background: #152238; }
       </div>
       <p id="stat-msg" style="margin-top:14px;font-size:13.5px;color:var(--texto-2);line-height:1.5"></p>
       <div class="linha-ouvir" id="linha-ouvir-stats" style="margin-top:16px;margin-bottom:0"></div>
-    </div>
-  </section>
-
-  <!-- ============ DEVOCIONAL DO DIA ============ -->
-  <section class="secao" id="sec-hoje">
-    <p class="rotulo-secao">Devocional do dia</p>
-    <div id="cartao-hoje">
-      <div class="cartao">
-        <div class="skeleton skeleton-titulo"></div>
-        <div class="skeleton skeleton-linha"></div>
-        <div class="skeleton skeleton-linha"></div>
-        <div class="skeleton skeleton-linha" style="width:80%"></div>
-      </div>
     </div>
   </section>
 
