@@ -1191,6 +1191,55 @@ html[data-tema="escuro"] .aviso {
 .btn-sm:hover { background: var(--azul-claro-bg); border-color: var(--azul); }
 .btn-sm.ativo { background: var(--azul); color: #fff; border-color: var(--azul); }
 
+.grid-stats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+@media (min-width: 520px) {
+  .grid-stats { grid-template-columns: repeat(4, 1fr); }
+}
+.stat-card {
+  background: var(--azul-suave);
+  border-radius: var(--radius-sm);
+  padding: 14px 12px;
+  text-align: center;
+}
+.stat-num {
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--azul);
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+.stat-label {
+  font-size: 12px;
+  color: var(--texto-3);
+  margin-top: 4px;
+  font-weight: 600;
+}
+.item-busca {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--linha);
+  cursor: pointer;
+  transition: background var(--trans);
+}
+.item-busca:last-child { border-bottom: 0; }
+.item-busca:hover { background: var(--azul-suave); margin: 0 -8px; padding-left: 8px; padding-right: 8px; border-radius: 6px; }
+.item-busca .ref-busca { font-size: 13.5px; font-weight: 600; color: var(--azul); margin-bottom: 4px; }
+.item-busca .txt-busca {
+  font-family: "Source Serif 4", serif;
+  font-size: 15px;
+  color: var(--texto);
+  line-height: 1.45;
+}
+.item-busca mark {
+  background: var(--destaque);
+  color: inherit;
+  padding: 0 2px;
+  border-radius: 2px;
+}
+
 /* Respeitar preferência de redução de movimento */
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -1224,6 +1273,7 @@ html[data-tema="escuro"] .aviso {
 <div class="veu" id="veu"></div>
 <aside class="gaveta" id="gaveta" aria-label="Menu">
   <header>Menu</header>
+  <a href="#sec-stats" data-fecha>Sua jornada</a>
   <a href="#sec-hoje" data-fecha>Devocional do dia</a>
   <a href="#sec-promessas" data-fecha>Caixa de promessas</a>
   <a href="#sec-planos" data-fecha>Planos de leitura</a>
@@ -1237,8 +1287,15 @@ html[data-tema="escuro"] .aviso {
 
   <div class="controles">
     <div class="linha-busca">
-      <input id="busca" type="search" placeholder="Digite uma passagem (ex.: João 3:16)" aria-label="Buscar passagem">
+      <input id="busca" type="search" placeholder="Passagem (João 3:16) ou palavra (amor, fé…)" aria-label="Buscar passagem ou palavra">
       <button id="btn-busca" aria-label="Buscar">🔍</button>
+    </div>
+    <div class="seletor-versao" style="margin-bottom:8px">
+      <select id="sel-escopo-busca" aria-label="Escopo da busca por palavra">
+        <option value="nt">Buscar palavra no Novo Testamento</option>
+        <option value="at">Buscar palavra no Antigo Testamento</option>
+        <option value="tudo">Buscar palavra em toda a Bíblia</option>
+      </select>
     </div>
     <div class="seletor-versao">
       <select id="sel-versao" aria-label="Versão da Bíblia"></select>
@@ -1254,6 +1311,29 @@ html[data-tema="escuro"] .aviso {
       <button data-esc="1.45">A++</button>
     </div>
   </div>
+
+  <!-- Resultados da busca por palavra -->
+  <section class="secao oculto" id="sec-busca">
+    <p class="rotulo-secao">Resultados da busca</p>
+    <div class="cartao">
+      <div id="status-busca" style="font-size:13.5px;color:var(--texto-3);margin-bottom:12px"></div>
+      <div id="lista-busca"></div>
+    </div>
+  </section>
+
+  <!-- ============ ESTATÍSTICAS / STREAK ============ -->
+  <section class="secao" id="sec-stats">
+    <p class="rotulo-secao">Sua jornada</p>
+    <div class="cartao">
+      <div class="grid-stats" id="grid-stats">
+        <div class="stat-card"><div class="stat-num" id="stat-streak">0</div><div class="stat-label">dias seguidos</div></div>
+        <div class="stat-card"><div class="stat-num" id="stat-caps">0</div><div class="stat-label">capítulos lidos</div></div>
+        <div class="stat-card"><div class="stat-num" id="stat-favs">0</div><div class="stat-label">favoritos</div></div>
+        <div class="stat-card"><div class="stat-num" id="stat-planos">0</div><div class="stat-label">dias de planos</div></div>
+      </div>
+      <p id="stat-msg" style="margin-top:14px;font-size:13.5px;color:var(--texto-2);line-height:1.5"></p>
+    </div>
+  </section>
 
   <!-- ============ DEVOCIONAL DO DIA ============ -->
   <section class="secao" id="sec-hoje">
@@ -1491,6 +1571,7 @@ function alternarFavorito(dados){
   salvarFavs(lista);
   avisar('Salvo nos favoritos');
   renderFavoritos();
+  atualizarStats();
   return true;
 }
 function atualizarNota(chave, nota){
@@ -1501,6 +1582,7 @@ function atualizarNota(chave, nota){
 function removerFav(chave){
   salvarFavs(carregarFavs().filter(f => f.chave !== chave));
   renderFavoritos();
+  atualizarStats();
   avisar('Removido');
 }
 
@@ -1697,6 +1779,7 @@ async function versiculoDoDia(){
     ps[2].textContent = ORACOES[dia % ORACOES.length];
     alvo.innerHTML = '';
     alvo.appendChild(cartaoVersiculo(texto, nr, cap, verso, versao, extra));
+    registrarAtividade();
   }catch(e){
     alvo.innerHTML = '';
     const w = document.createElement('div');
@@ -1767,6 +1850,7 @@ function marcouLido(nr, cap){
   map[chaveCap(nr, cap)] = true;
   salvarLidos(map);
   atualizarProgressoBiblia();
+  registrarAtividade();
 }
 function estaLido(nr, cap){ return !!carregarLidos()[chaveCap(nr, cap)]; }
 function progressoLivro(livro){
@@ -1895,19 +1979,173 @@ function mostrarNivel(nivel){
   );
 }
 
-/* ---------- busca por referência ---------- */
+/* ---------- atividade / streak / estatísticas ---------- */
+const CHAVE_ATIVIDADE = 'lampada-atividade-dias';
+function hojeISO(){
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+function carregarAtividade(){
+  try { return JSON.parse(localStorage.getItem(CHAVE_ATIVIDADE) || '[]'); }
+  catch { return []; }
+}
+function registrarAtividade(){
+  const dias = new Set(carregarAtividade());
+  dias.add(hojeISO());
+  const lista = [...dias].sort();
+  // manter no máximo 400 dias
+  const trim = lista.slice(-400);
+  localStorage.setItem(CHAVE_ATIVIDADE, JSON.stringify(trim));
+  atualizarStats();
+}
+function calcularStreak(){
+  const dias = new Set(carregarAtividade());
+  if(!dias.size) return 0;
+  const d = new Date();
+  // Se não houve atividade hoje, começa a contar de ontem (streak ainda válido até virar o dia sem uso)
+  let chave = hojeISO();
+  if(!dias.has(chave)){
+    d.setDate(d.getDate() - 1);
+    chave = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+    if(!dias.has(chave)) return 0;
+  }
+  let streak = 0;
+  while(true){
+    const iso = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+    if(!dias.has(iso)) break;
+    streak++;
+    d.setDate(d.getDate() - 1);
+  }
+  return streak;
+}
+function atualizarStats(){
+  const map = carregarLidos();
+  let caps = 0;
+  Object.keys(map).forEach(k => { if(map[k]) caps++; });
+  const favs = carregarFavs().length;
+  const prog = carregarProgPlanos();
+  let planos = 0;
+  Object.keys(prog).forEach(id => { planos += (prog[id] || []).length; });
+  const streak = calcularStreak();
+  const el = (id, v) => { const n = $(id); if(n) n.textContent = String(v); };
+  el('stat-streak', streak);
+  el('stat-caps', caps);
+  el('stat-favs', favs);
+  el('stat-planos', planos);
+  const msg = $('stat-msg');
+  if(msg){
+    if(streak === 0) msg.textContent = 'Abra o devocional ou leia um capítulo hoje para iniciar sua sequência.';
+    else if(streak === 1) msg.textContent = 'Bom começo! Volte amanhã para manter a sequência.';
+    else if(streak < 7) msg.textContent = streak + ' dias seguidos. A constância transforma o coração.';
+    else if(streak < 30) msg.textContent = streak + ' dias seguidos — uma bela disciplina espiritual.';
+    else msg.textContent = streak + ' dias seguidos. Sua fidelidade na Palavra é inspiradora.';
+  }
+}
+
+/* ---------- busca: referência ou palavra ---------- */
 function buscarReferencia(){
   const txt = $('busca').value.trim();
   if(!txt) return;
-  const m = txt.match(/^(.+?)\s*(\d+)(?:\s*[:.\s]\s*(\d+))?$/);
-  if(!m) return avisar('Formato: livro capítulo:versículo');
-  const alvo = norm(m[1]);
-  const livro = LIVROS.find(l => norm(l.nome) === alvo)
-             || LIVROS.find(l => norm(l.nome).startsWith(alvo))
-             || LIVROS.find(l => norm(l.nome).includes(alvo));
-  if(!livro) return avisar('Livro não encontrado: ' + m[1]);
-  const cap = Math.min(parseInt(m[2], 10), livro.caps);
-  abrirLeitura(livro.nr, cap, m[3] ? parseInt(m[3], 10) : undefined);
+  // Referência: "João 3:16", "Sl 23", "1 Coríntios 13"
+  const m = txt.match(/^(.+?)\s+(\d+)(?:\s*[:.\s]\s*(\d+))?$/);
+  if(m){
+    const alvo = norm(m[1]);
+    const livro = LIVROS.find(l => norm(l.nome) === alvo)
+               || LIVROS.find(l => norm(l.nome).startsWith(alvo))
+               || LIVROS.find(l => norm(l.nome).includes(alvo));
+    if(!livro) return avisar('Livro não encontrado: ' + m[1]);
+    const cap = Math.min(parseInt(m[2], 10), livro.caps);
+    $('sec-busca').classList.add('oculto');
+    abrirLeitura(livro.nr, cap, m[3] ? parseInt(m[3], 10) : undefined);
+    return;
+  }
+  // Caso contrário: busca por palavra
+  buscarPalavra(txt);
+}
+
+async function mapPool(items, limit, worker){
+  const ret = new Array(items.length);
+  let i = 0;
+  async function run(){
+    while(i < items.length){
+      const idx = i++;
+      ret[idx] = await worker(items[idx], idx);
+    }
+  }
+  const runners = Array.from({ length: Math.min(limit, items.length) }, () => run());
+  await Promise.all(runners);
+  return ret;
+}
+
+async function buscarPalavra(termo){
+  const q = norm(termo);
+  if(q.length < 2) return avisar('Digite pelo menos 2 letras para buscar');
+  if(!versaoAtual) versaoAtual = VERSOES[0];
+
+  const escopo = ($('sel-escopo-busca') && $('sel-escopo-busca').value) || 'nt';
+  let livros = LIVROS;
+  if(escopo === 'nt') livros = LIVROS.filter(l => l.nr >= 40);
+  else if(escopo === 'at') livros = LIVROS.filter(l => l.nr <= 39);
+
+  const jobs = [];
+  livros.forEach(l => {
+    for(let c = 1; c <= l.caps; c++) jobs.push({ nr: l.nr, cap: c, nome: l.nome });
+  });
+
+  const sec = $('sec-busca');
+  const lista = $('lista-busca');
+  const status = $('status-busca');
+  sec.classList.remove('oculto');
+  lista.innerHTML = '';
+  status.textContent = 'Buscando “' + termo + '” em ' + jobs.length + ' capítulos…';
+  sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  const resultados = [];
+  const MAX = 40;
+  let feitos = 0;
+  let cancelado = false;
+
+  await mapPool(jobs, 4, async (job) => {
+    if(cancelado || resultados.length >= MAX) return;
+    try{
+      const d = await buscarCapitulo(job.nr, job.cap);
+      d.itens.forEach(item => {
+        if(resultados.length >= MAX) return;
+        if(item.tipo !== 'verso') return;
+        if(norm(item.texto).includes(q)){
+          resultados.push({
+            nr: job.nr, cap: job.cap, verso: item.numero,
+            nome: job.nome, texto: item.texto
+          });
+        }
+      });
+    }catch(_){ /* ignora capítulo indisponível */ }
+    feitos++;
+    if(feitos % 8 === 0 || feitos === jobs.length){
+      status.textContent = 'Buscando… ' + feitos + '/' + jobs.length +
+        (resultados.length ? ' · ' + resultados.length + ' encontrados' : '');
+    }
+    if(resultados.length >= MAX) cancelado = true;
+  });
+
+  if(!resultados.length){
+    status.textContent = 'Nenhum versículo encontrado para “' + termo + '” neste escopo.';
+    return;
+  }
+
+  status.textContent = resultados.length + (resultados.length >= MAX ? '+' : '') +
+    ' resultado(s) para “' + termo + '”';
+  lista.innerHTML = '';
+  const re = new RegExp('(' + termo.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'ig');
+  resultados.forEach(r => {
+    const el = document.createElement('div');
+    el.className = 'item-busca';
+    const txt = r.texto.replace(re, '<mark>$1</mark>');
+    el.innerHTML = `<div class="ref-busca">${r.nome} ${r.cap}:${r.verso}</div><div class="txt-busca">${txt}</div>`;
+    el.onclick = () => abrirLeitura(r.nr, r.cap, r.verso);
+    lista.appendChild(el);
+  });
+  registrarAtividade();
 }
 
 /* ---------- versões e controles ---------- */
@@ -2342,6 +2580,8 @@ function abrirPlano(id){
       salvarProgPlanos(p);
       abrirPlano(id);
       montarPlanos();
+      atualizarStats();
+      registrarAtividade();
     };
     area.appendChild(row);
   });
@@ -2456,6 +2696,7 @@ desenharLivros();
 montarPlanos();
 versiculoDoDia();
 atualizarProgressoBiblia();
+atualizarStats();
 registrarSW();
 atualizarStatusPWA();
 agendarLembreteDiario();
