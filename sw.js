@@ -1,11 +1,17 @@
 /* Service Worker — Lâmpada PWA + Web Push */
-const CACHE = 'lampada-v5';
+const CACHE = 'lampada-v7';
 const PRECACHE = [
   '/',
   '/index.html',
   '/manifest.webmanifest',
+  '/favicon.svg',
+  '/favicon-32.png',
+  '/favicon-16.png',
+  '/apple-touch-icon.png',
   '/icon-192.png',
-  '/icon-512.png'
+  '/icon-512.png',
+  '/icon-maskable-192.png',
+  '/icon-maskable-512.png'
 ];
 
 self.addEventListener('install', (event) => {
