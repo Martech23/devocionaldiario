@@ -272,7 +272,7 @@ html[data-tema="escuro"] .gaveta header { background: #152238; }
   color: var(--azul);
 }
 .gaveta .nota {
-  margin-top: auto;
+  /* o espaço livre é absorvido por .gaveta-config, logo acima */
   padding: 18px 20px;
   font-size: 12px;
   color: var(--texto-3);
@@ -1438,6 +1438,98 @@ html[data-audio="1"] .acoes-verso { gap: 10px; }
   margin-bottom: 16px;
 }
 
+/* ---------------- item de configuração no menu lateral ---------------- */
+.gaveta-config {
+  margin-top: auto;          /* empurra para o rodapé da gaveta */
+  border-top: 1px solid var(--linha);
+}
+.item-config {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 16px 20px;
+  background: none;
+  border: 0;
+  font-family: inherit;
+  font-size: 15.5px;
+  font-weight: 600;
+  color: var(--texto);
+  cursor: pointer;
+  text-align: left;
+  transition: background var(--trans), color var(--trans);
+}
+.item-config:hover { background: var(--azul-suave); color: var(--azul); }
+.item-config .ico-config { font-size: 17px; line-height: 1; }
+.item-config .seta-config {
+  margin-left: auto;
+  color: var(--texto-3);
+  font-size: 20px;
+  line-height: 1;
+}
+
+/* ---------------- painel de configuração deslizante ---------------- */
+.painel-config {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 350px;
+  max-width: 92vw;
+  background: var(--papel);
+  z-index: 52;                /* acima da gaveta */
+  transform: translateX(-105%);
+  transition: transform var(--trans-spring);
+  box-shadow: 4px 0 32px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+}
+.painel-config.aberto { transform: translateX(0); }
+
+.painel-config header {
+  background: var(--azul);
+  color: #fff;
+  padding: 14px 18px;
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 0 0 auto;
+}
+html[data-tema="escuro"] .painel-config header { background: #152238; }
+
+.voltar-painel {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 0;
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background var(--trans);
+}
+.voltar-painel:hover { background: rgba(255, 255, 255, 0.26); }
+
+.painel-corpo {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 20px 18px calc(28px + env(safe-area-inset-bottom, 0px));
+}
+.painel-intro {
+  font-size: 14px;
+  color: var(--texto-2);
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+
 /* painel de configuração de voz */
 .voz-campo { margin-bottom: 16px; }
 .voz-campo label {
@@ -1556,9 +1648,77 @@ html[data-audio="1"] .acoes-verso { gap: 10px; }
   <a href="#sec-planos" data-fecha>Planos de leitura</a>
   <a href="#sec-biblia" data-fecha>Bíblia completa</a>
   <a href="#sec-favoritos" data-fecha>Favoritos e diário</a>
-  <a href="#sec-voz" data-fecha>Leitura em voz</a>
   <a href="#sec-app" data-fecha>Instalar app</a>
+  <div class="gaveta-config">
+    <button class="item-config" id="btn-abrir-voz" type="button">
+      <span class="ico-config" aria-hidden="true">🔊</span>
+      <span>Leitura em voz</span>
+      <span class="seta-config" aria-hidden="true">›</span>
+    </button>
+  </div>
   <p class="nota">Somente versões de uso livre: Almeida (1911, domínio público) e Bíblia Livre (CC BY 3.0 Brasil).</p>
+</aside>
+
+<!-- Painel de configuração da leitura em voz — abre pelo menu lateral -->
+<aside class="painel-config" id="painel-voz" aria-label="Configurações de leitura em voz" aria-hidden="true">
+  <header>
+    <button class="voltar-painel" id="btn-fechar-voz" type="button" aria-label="Voltar ao menu">‹</button>
+    <span>Leitura em voz</span>
+  </header>
+  <div class="painel-corpo">
+    <p class="painel-intro">
+      Todos os textos do app podem ser ouvidos: o devocional do dia, as promessas,
+      os versículos e a Bíblia inteira. Procure o botão <b>▶ Ouvir</b>.
+    </p>
+
+    <div class="voz-campo">
+      <label for="sel-voz">Voz</label>
+      <select id="sel-voz" aria-label="Escolher a voz da leitura"></select>
+    </div>
+
+    <div class="voz-campo">
+      <label>Velocidade da leitura</label>
+      <div class="voz-opcoes" id="opcoes-vel">
+        <button type="button" data-vel="0.7">Bem devagar</button>
+        <button type="button" data-vel="0.85">Devagar</button>
+        <button type="button" data-vel="1" class="ativo">Normal</button>
+        <button type="button" data-vel="1.15">Rápido</button>
+        <button type="button" data-vel="1.35">Bem rápido</button>
+      </div>
+    </div>
+
+    <div class="linha-ouvir" style="margin-top:20px;margin-bottom:22px">
+      <button class="btn-ouvir" id="btn-testar-voz" type="button">
+        <span class="ico" aria-hidden="true">▶</span> Ouvir um exemplo
+      </button>
+    </div>
+
+    <div class="voz-troca">
+      <div class="voz-troca-txt">
+        <b>Modo áudio</b>
+        <small>Botões maiores, o nome de cada seção é falado ao abrir e um toque longo em qualquer botão diz para que ele serve.</small>
+      </div>
+      <button class="chave" id="chave-modo-audio" type="button" role="switch" aria-checked="false" aria-label="Ativar modo áudio"></button>
+    </div>
+
+    <div class="voz-troca">
+      <div class="voz-troca-txt">
+        <b>Anunciar o número do versículo</b>
+        <small>Ao ouvir um capítulo, fala "versículo 5" antes de cada versículo.</small>
+      </div>
+      <button class="chave" id="chave-num-versiculo" type="button" role="switch" aria-checked="false" aria-label="Anunciar número do versículo"></button>
+    </div>
+
+    <div class="voz-troca">
+      <div class="voz-troca-txt">
+        <b>Continuar no próximo capítulo</b>
+        <small>Ao terminar de ouvir um capítulo, começa o seguinte sozinho.</small>
+      </div>
+      <button class="chave" id="chave-auto-cap" type="button" role="switch" aria-checked="false" aria-label="Continuar no próximo capítulo"></button>
+    </div>
+
+    <p id="aviso-voz" style="margin-top:16px;font-size:13px;color:var(--texto-3);line-height:1.5"></p>
+  </div>
 </aside>
 
 <main class="envolve">
@@ -1685,65 +1845,6 @@ html[data-audio="1"] .acoes-verso { gap: 10px; }
         <button class="tab-fav" data-tab="diario">Diário</button>
       </div>
       <div id="area-favoritos"></div>
-    </div>
-  </section>
-
-  <!-- ============ LEITURA EM VOZ / ACESSIBILIDADE ============ -->
-  <section class="secao" id="sec-voz">
-    <p class="rotulo-secao">Leitura em voz</p>
-    <div class="cartao">
-      <p style="font-size:14.5px;color:var(--texto-2);line-height:1.6;margin-bottom:18px">
-        Todos os textos do app podem ser ouvidos: o devocional do dia, as promessas,
-        os versículos e a Bíblia inteira. Procure o botão <b>▶ Ouvir</b>.
-      </p>
-
-      <div class="voz-campo">
-        <label for="sel-voz">Voz</label>
-        <select id="sel-voz" aria-label="Escolher a voz da leitura"></select>
-      </div>
-
-      <div class="voz-campo">
-        <label>Velocidade da leitura</label>
-        <div class="voz-opcoes" id="opcoes-vel">
-          <button type="button" data-vel="0.7">Bem devagar</button>
-          <button type="button" data-vel="0.85">Devagar</button>
-          <button type="button" data-vel="1" class="ativo">Normal</button>
-          <button type="button" data-vel="1.15">Rápido</button>
-          <button type="button" data-vel="1.35">Bem rápido</button>
-        </div>
-      </div>
-
-      <div class="linha-ouvir" style="margin-top:20px;margin-bottom:22px">
-        <button class="btn-ouvir" id="btn-testar-voz" type="button">
-          <span class="ico" aria-hidden="true">▶</span> Ouvir um exemplo
-        </button>
-      </div>
-
-      <div class="voz-troca">
-        <div class="voz-troca-txt">
-          <b>Modo áudio</b>
-          <small>Botões maiores, o nome de cada seção é falado ao abrir e um toque longo em qualquer botão diz para que ele serve.</small>
-        </div>
-        <button class="chave" id="chave-modo-audio" type="button" role="switch" aria-checked="false" aria-label="Ativar modo áudio"></button>
-      </div>
-
-      <div class="voz-troca">
-        <div class="voz-troca-txt">
-          <b>Anunciar o número do versículo</b>
-          <small>Ao ouvir um capítulo, fala "versículo 5" antes de cada versículo.</small>
-        </div>
-        <button class="chave" id="chave-num-versiculo" type="button" role="switch" aria-checked="false" aria-label="Anunciar número do versículo"></button>
-      </div>
-
-      <div class="voz-troca">
-        <div class="voz-troca-txt">
-          <b>Continuar no próximo capítulo</b>
-          <small>Ao terminar de ouvir um capítulo, começa o seguinte sozinho.</small>
-        </div>
-        <button class="chave" id="chave-auto-cap" type="button" role="switch" aria-checked="false" aria-label="Continuar no próximo capítulo"></button>
-      </div>
-
-      <p id="aviso-voz" style="margin-top:16px;font-size:13px;color:var(--texto-3);line-height:1.5"></p>
     </div>
   </section>
 
@@ -3337,7 +3438,7 @@ function alternarTema(){
 
 $('btn-tema').onclick = alternarTema;
 $('btn-menu').onclick = () => abrirMenu(true);
-$('veu').onclick = () => abrirMenu(false);
+$('veu').onclick = () => { abrirPainelVoz(false); abrirMenu(false); };
 document.querySelectorAll('[data-fecha]').forEach(a => a.onclick = () => abrirMenu(false));
 $('btn-busca').onclick = buscarReferencia;
 $('busca').onkeydown = e => { if(e.key === 'Enter') buscarReferencia(); };
@@ -3377,6 +3478,28 @@ function abrirMenu(estado){
   $('gaveta').classList.toggle('aberta', estado);
   $('veu').classList.toggle('aberto', estado);
 }
+
+/* painel de configuração da leitura em voz (abre por cima da gaveta) */
+function abrirPainelVoz(estado){
+  const p = $('painel-voz');
+  if(!p) return;
+  p.classList.toggle('aberto', estado);
+  p.setAttribute('aria-hidden', estado ? 'false' : 'true');
+  $('veu').classList.toggle('aberto', estado);
+  $('gaveta').classList.remove('aberta');
+  if(estado){
+    p.querySelector('.painel-corpo').scrollTop = 0;
+    if(Voz.prefs.modo) Voz.anunciar('Leitura em voz');
+  }
+}
+$('btn-abrir-voz').onclick  = () => abrirPainelVoz(true);
+$('btn-fechar-voz').onclick = () => abrirPainelVoz(false);
+
+document.addEventListener('keydown', e => {
+  if(e.key !== 'Escape') return;
+  if($('painel-voz').classList.contains('aberto')) abrirPainelVoz(false);
+  else abrirMenu(false);
+});
 
 /* =========================================================
    Controles da leitura em voz

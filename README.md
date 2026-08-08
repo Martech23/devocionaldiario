@@ -23,7 +23,7 @@ funciona offline depois que o app está instalado.
 - Barra de reprodução fixa: pausar, avançar/voltar trecho, parar e velocidade
 - O trecho lido fica destacado e a tela acompanha sozinha
 - Referências ditas por extenso: "1 João 3:16" vira "Primeira de João, capítulo 3, versículo 16"
-- Em **Leitura em voz** dá para escolher a voz e a velocidade, e ligar:
+- No menu lateral, em **Leitura em voz**, dá para escolher a voz e a velocidade, e ligar:
   - **Modo áudio** — botões maiores, seção anunciada ao abrir e toque longo
     em qualquer botão diz para que ele serve
   - **Anunciar o número do versículo**
