@@ -1240,6 +1240,283 @@ html[data-tema="escuro"] .aviso {
   border-radius: 2px;
 }
 
+/* ---------------- leitura em voz / acessibilidade ---------------- */
+
+/* Botão "Ouvir" — alvo de toque grande, pensado para quem não lê */
+.btn-ouvir {
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  background: var(--azul);
+  color: #fff;
+  border: 0;
+  border-radius: 99px;
+  padding: 11px 20px;
+  min-height: 44px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all var(--trans);
+  box-shadow: 0 2px 8px var(--azul-suave);
+}
+.btn-ouvir:hover { background: var(--azul-esc); transform: translateY(-1px); }
+.btn-ouvir:active { transform: translateY(0); }
+.btn-ouvir .ico { font-size: 15px; line-height: 1; }
+.btn-ouvir.claro {
+  background: var(--papel);
+  color: var(--azul);
+  border: 1.5px solid var(--azul);
+  box-shadow: none;
+}
+.btn-ouvir.claro:hover { background: var(--azul-claro-bg); }
+.btn-ouvir.tocando { background: var(--azul-esc); color: #fff; border-color: var(--azul-esc); }
+
+/* Botão redondo pequeno para listas (favoritos, busca, planos) */
+.ouvir-mini {
+  flex: 0 0 auto;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1.5px solid var(--azul);
+  background: var(--papel);
+  color: var(--azul);
+  font-size: 14px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--trans);
+}
+.ouvir-mini:hover { background: var(--azul); color: #fff; }
+.ouvir-mini.tocando { background: var(--azul); color: #fff; }
+.ferr-cartao button.tocando { background: var(--azul); color: #fff; }
+
+/* itens de lista ganham o botão de ouvir à esquerda */
+.item-fav, .item-busca { display: flex; gap: 12px; align-items: flex-start; }
+.fav-corpo, .busca-corpo { flex: 1 1 auto; min-width: 0; }
+
+/* Destaque do trecho que está sendo lido */
+.lendo-agora {
+  background: var(--destaque) !important;
+  border-radius: 4px;
+  box-shadow: 0 0 0 4px var(--destaque);
+  transition: background var(--trans), box-shadow var(--trans);
+}
+html[data-tema="escuro"] .lendo-agora { color: var(--texto); }
+.bloco-devo.lendo-agora,
+.item-fav.lendo-agora,
+.item-busca.lendo-agora {
+  box-shadow: inset 3px 0 0 var(--azul), 0 0 0 1px var(--destaque-borda);
+  background: var(--destaque) !important;
+}
+
+/* ---------------- barra de áudio fixa ---------------- */
+.barra-audio {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 55;
+  background: var(--papel);
+  border-top: 1px solid var(--linha);
+  box-shadow: 0 -4px 24px rgba(28, 24, 18, 0.12);
+  transform: translateY(115%);
+  transition: transform var(--trans-spring);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+.barra-audio.ver { transform: translateY(0); }
+html[data-tema="escuro"] .barra-audio { box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.45); }
+
+.audio-prog {
+  height: 4px;
+  background: var(--linha);
+  overflow: hidden;
+}
+.audio-prog span {
+  display: block;
+  height: 100%;
+  width: 0%;
+  background: var(--azul);
+  transition: width 0.3s linear;
+}
+
+.audio-int {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 10px 16px 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.audio-info { flex: 1 1 auto; min-width: 0; }
+.audio-titulo {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--texto);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.audio-sub {
+  font-size: 12.5px;
+  color: var(--texto-3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 1px;
+}
+.audio-btns { display: flex; align-items: center; gap: 4px; flex: 0 0 auto; }
+.audio-btns button {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 0;
+  background: transparent;
+  color: var(--texto-2);
+  font-size: 17px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--trans);
+}
+.audio-btns button:hover { background: var(--azul-suave); color: var(--azul); }
+.audio-btns button.principal {
+  width: 52px;
+  height: 52px;
+  background: var(--azul);
+  color: #fff;
+  font-size: 20px;
+}
+.audio-btns button.principal:hover { background: var(--azul-esc); color: #fff; }
+.audio-vel {
+  flex: 0 0 auto;
+  min-width: 46px;
+  height: 40px;
+  border-radius: 99px;
+  border: 1.5px solid var(--linha-forte);
+  background: var(--papel);
+  color: var(--texto-2);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all var(--trans);
+}
+.audio-vel:hover { border-color: var(--azul); color: var(--azul); }
+
+/* espaço para a barra não cobrir o conteúdo */
+body.com-audio { padding-bottom: 92px; }
+
+@media (max-width: 480px) {
+  .audio-int { gap: 8px; padding: 8px 12px 10px; }
+  .audio-btns button { width: 40px; height: 40px; font-size: 15px; }
+  .audio-btns button.principal { width: 48px; height: 48px; font-size: 18px; }
+  .audio-titulo { font-size: 13px; }
+  .audio-sub { font-size: 11.5px; }
+  .audio-vel { min-width: 42px; height: 36px; font-size: 12px; }
+}
+
+/* ---------------- modo áudio ---------------- */
+html[data-audio="1"] .btn-ouvir {
+  font-size: 16px;
+  padding: 15px 26px;
+  min-height: 54px;
+  width: 100%;
+  justify-content: center;
+}
+html[data-audio="1"] .ouvir-mini { width: 52px; height: 52px; font-size: 18px; }
+html[data-audio="1"] .rotulo-secao { font-size: 14px; }
+html[data-audio="1"] .acoes-verso { gap: 10px; }
+
+.linha-ouvir {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+/* painel de configuração de voz */
+.voz-campo { margin-bottom: 16px; }
+.voz-campo label {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--texto-2);
+  margin-bottom: 7px;
+}
+.voz-campo select {
+  width: 100%;
+  font-family: inherit;
+  font-size: 15px;
+  padding: 12px 14px;
+  min-height: 48px;
+  border: 1px solid var(--linha-forte);
+  border-radius: var(--radius-sm);
+  background: var(--papel);
+  color: var(--texto);
+  cursor: pointer;
+}
+.voz-opcoes { display: flex; flex-wrap: wrap; gap: 8px; }
+.voz-opcoes button {
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 10px 16px;
+  min-height: 44px;
+  border-radius: 99px;
+  border: 1.5px solid var(--linha-forte);
+  background: var(--papel);
+  color: var(--texto-2);
+  cursor: pointer;
+  transition: all var(--trans);
+}
+.voz-opcoes button:hover { border-color: var(--azul); color: var(--azul); }
+.voz-opcoes button.ativo {
+  background: var(--azul);
+  border-color: var(--azul);
+  color: #fff;
+}
+.voz-troca {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 14px 0;
+  border-top: 1px solid var(--linha);
+}
+.voz-troca:first-of-type { border-top: 0; }
+.voz-troca-txt { flex: 1 1 auto; }
+.voz-troca-txt b { display: block; font-size: 14.5px; color: var(--texto); }
+.voz-troca-txt small { font-size: 12.5px; color: var(--texto-3); line-height: 1.4; display: block; margin-top: 2px; }
+.chave {
+  flex: 0 0 auto;
+  width: 54px;
+  height: 32px;
+  border-radius: 99px;
+  border: 0;
+  background: var(--linha-forte);
+  position: relative;
+  cursor: pointer;
+  transition: background var(--trans);
+}
+.chave::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform var(--trans-spring);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.25);
+}
+.chave.ativo { background: var(--azul); }
+.chave.ativo::after { transform: translateX(22px); }
+
 /* Respeitar preferência de redução de movimento */
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -1279,6 +1556,7 @@ html[data-tema="escuro"] .aviso {
   <a href="#sec-planos" data-fecha>Planos de leitura</a>
   <a href="#sec-biblia" data-fecha>Bíblia completa</a>
   <a href="#sec-favoritos" data-fecha>Favoritos e diário</a>
+  <a href="#sec-voz" data-fecha>Leitura em voz</a>
   <a href="#sec-app" data-fecha>Instalar app</a>
   <p class="nota">Somente versões de uso livre: Almeida (1911, domínio público) e Bíblia Livre (CC BY 3.0 Brasil).</p>
 </aside>
@@ -1332,6 +1610,7 @@ html[data-tema="escuro"] .aviso {
         <div class="stat-card"><div class="stat-num" id="stat-planos">0</div><div class="stat-label">dias de planos</div></div>
       </div>
       <p id="stat-msg" style="margin-top:14px;font-size:13.5px;color:var(--texto-2);line-height:1.5"></p>
+      <div class="linha-ouvir" id="linha-ouvir-stats" style="margin-top:16px;margin-bottom:0"></div>
     </div>
   </section>
 
@@ -1409,6 +1688,65 @@ html[data-tema="escuro"] .aviso {
     </div>
   </section>
 
+  <!-- ============ LEITURA EM VOZ / ACESSIBILIDADE ============ -->
+  <section class="secao" id="sec-voz">
+    <p class="rotulo-secao">Leitura em voz</p>
+    <div class="cartao">
+      <p style="font-size:14.5px;color:var(--texto-2);line-height:1.6;margin-bottom:18px">
+        Todos os textos do app podem ser ouvidos: o devocional do dia, as promessas,
+        os versículos e a Bíblia inteira. Procure o botão <b>▶ Ouvir</b>.
+      </p>
+
+      <div class="voz-campo">
+        <label for="sel-voz">Voz</label>
+        <select id="sel-voz" aria-label="Escolher a voz da leitura"></select>
+      </div>
+
+      <div class="voz-campo">
+        <label>Velocidade da leitura</label>
+        <div class="voz-opcoes" id="opcoes-vel">
+          <button type="button" data-vel="0.7">Bem devagar</button>
+          <button type="button" data-vel="0.85">Devagar</button>
+          <button type="button" data-vel="1" class="ativo">Normal</button>
+          <button type="button" data-vel="1.15">Rápido</button>
+          <button type="button" data-vel="1.35">Bem rápido</button>
+        </div>
+      </div>
+
+      <div class="linha-ouvir" style="margin-top:20px;margin-bottom:22px">
+        <button class="btn-ouvir" id="btn-testar-voz" type="button">
+          <span class="ico" aria-hidden="true">▶</span> Ouvir um exemplo
+        </button>
+      </div>
+
+      <div class="voz-troca">
+        <div class="voz-troca-txt">
+          <b>Modo áudio</b>
+          <small>Botões maiores, o nome de cada seção é falado ao abrir e um toque longo em qualquer botão diz para que ele serve.</small>
+        </div>
+        <button class="chave" id="chave-modo-audio" type="button" role="switch" aria-checked="false" aria-label="Ativar modo áudio"></button>
+      </div>
+
+      <div class="voz-troca">
+        <div class="voz-troca-txt">
+          <b>Anunciar o número do versículo</b>
+          <small>Ao ouvir um capítulo, fala "versículo 5" antes de cada versículo.</small>
+        </div>
+        <button class="chave" id="chave-num-versiculo" type="button" role="switch" aria-checked="false" aria-label="Anunciar número do versículo"></button>
+      </div>
+
+      <div class="voz-troca">
+        <div class="voz-troca-txt">
+          <b>Continuar no próximo capítulo</b>
+          <small>Ao terminar de ouvir um capítulo, começa o seguinte sozinho.</small>
+        </div>
+        <button class="chave" id="chave-auto-cap" type="button" role="switch" aria-checked="false" aria-label="Continuar no próximo capítulo"></button>
+      </div>
+
+      <p id="aviso-voz" style="margin-top:16px;font-size:13px;color:var(--texto-3);line-height:1.5"></p>
+    </div>
+  </section>
+
   <!-- ============ INSTALAR APP / PWA ============ -->
   <section class="secao" id="sec-app">
     <p class="rotulo-secao">Instalar app</p>
@@ -1442,6 +1780,24 @@ html[data-tema="escuro"] .aviso {
 </div>
 
 <div class="aviso" id="aviso" role="status" aria-live="polite"></div>
+
+<!-- Barra de áudio — reprodutor da leitura em voz -->
+<div class="barra-audio" id="barra-audio" role="region" aria-label="Reprodutor de leitura em voz">
+  <div class="audio-prog"><span id="audio-prog-barra"></span></div>
+  <div class="audio-int">
+    <div class="audio-info">
+      <div class="audio-titulo" id="audio-titulo">Leitura em voz</div>
+      <div class="audio-sub" id="audio-sub"></div>
+    </div>
+    <div class="audio-btns">
+      <button id="audio-ant" type="button" aria-label="Voltar um trecho" title="Voltar um trecho">⏮</button>
+      <button id="audio-play" type="button" class="principal" aria-label="Pausar leitura" title="Pausar">⏸</button>
+      <button id="audio-prox" type="button" aria-label="Avançar um trecho" title="Avançar um trecho">⏭</button>
+      <button id="audio-parar" type="button" aria-label="Parar leitura" title="Parar">⏹</button>
+    </div>
+    <button class="audio-vel" id="audio-vel" type="button" aria-label="Mudar velocidade da leitura" title="Velocidade">1×</button>
+  </div>
+</div>
 
 <script>
 /* ===== fontes de texto: só versões de uso livre confirmado ===== */
@@ -1604,6 +1960,448 @@ function diaDoAno(d){
 }
 function livroPorNr(nr){ return LIVROS.find(l => l.nr === nr); }
 
+/* =========================================================
+   LEITURA EM VOZ — acessibilidade para quem não lê
+   ========================================================= */
+
+/* Nomes dos livros numerados ditos por extenso.
+   Sem isso o sintetizador lê "1 João" como "um João". */
+const NOMES_FALADOS = {
+  '1 Samuel': 'Primeiro Samuel', '2 Samuel': 'Segundo Samuel',
+  '1 Reis': 'Primeiro Reis', '2 Reis': 'Segundo Reis',
+  '1 Crônicas': 'Primeiro Crônicas', '2 Crônicas': 'Segundo Crônicas',
+  '1 Coríntios': 'Primeira aos Coríntios', '2 Coríntios': 'Segunda aos Coríntios',
+  '1 Tessalonicenses': 'Primeira aos Tessalonicenses',
+  '2 Tessalonicenses': 'Segunda aos Tessalonicenses',
+  '1 Timóteo': 'Primeira a Timóteo', '2 Timóteo': 'Segunda a Timóteo',
+  '1 Pedro': 'Primeira de Pedro', '2 Pedro': 'Segunda de Pedro',
+  '1 João': 'Primeira de João', '2 João': 'Segunda de João', '3 João': 'Terceira de João'
+};
+function nomeFalado(nome){ return NOMES_FALADOS[nome] || nome; }
+
+function refFalada(nr, cap, verso){
+  const l = livroPorNr(nr);
+  if(!l) return '';
+  let s = nomeFalado(l.nome) + ', capítulo ' + cap;
+  if(verso) s += ', versículo ' + verso;
+  return s;
+}
+
+const Voz = (function(){
+  const suporta = 'speechSynthesis' in window;
+  const CHAVE = 'lampada-voz-prefs';
+  const PADRAO = { voz: '', vel: 1, num: false, autoCap: false, modo: false };
+
+  const prefs = Object.assign({}, PADRAO, (() => {
+    try { return JSON.parse(localStorage.getItem(CHAVE) || '{}'); }
+    catch { return {}; }
+  })());
+
+  function salvar(){
+    try { localStorage.setItem(CHAVE, JSON.stringify(prefs)); } catch {}
+  }
+
+  let listaVozes = [];
+  let vozAtual = null;
+  let partes = [];        // blocos lógicos: {texto, rotulo, el}
+  let trechos = [];       // pedaços curtos: {texto, parte}
+  let idx = 0;
+  let parteAtual = -1;
+  let estado = 'parado';  // parado | tocando | pausado
+  let titulo = '';
+  let aoTerminar = null;
+  let ignorarFim = false;
+  let watchdog = null;
+  let elDestacado = null;
+  let botaoAtivo = null;
+
+  /* ---------- vozes disponíveis ---------- */
+  function recarregarVozes(){
+    if(!suporta) return;
+    const todas = speechSynthesis.getVoices() || [];
+    const pt = todas.filter(v => /^pt/i.test(v.lang));
+    listaVozes = pt.length ? pt : todas;
+    vozAtual = listaVozes.find(v => v.voiceURI === prefs.voz)
+            || listaVozes.find(v => v.name === prefs.voz)
+            || melhorVoz();
+    document.dispatchEvent(new CustomEvent('vozes-prontas'));
+  }
+
+  function melhorVoz(){
+    const br = listaVozes.filter(v => /pt[-_]?BR/i.test(v.lang));
+    const pool = br.length ? br : listaVozes;
+    // vozes neurais soam bem melhor para leitura longa
+    const preferidas = ['google', 'natural', 'neural', 'luciana', 'francisca', 'microsoft'];
+    for(const p of preferidas){
+      const v = pool.find(x => (x.name || '').toLowerCase().includes(p));
+      if(v) return v;
+    }
+    return pool[0] || null;
+  }
+
+  if(suporta){
+    recarregarVozes();
+    // No Chrome a lista chega de forma assíncrona
+    speechSynthesis.addEventListener('voiceschanged', recarregarVozes);
+  }
+
+  /* ---------- preparo do texto ---------- */
+  function limpar(txt){
+    return String(txt || '')
+      .replace(/[—–]/g, ', ')     // travessões viram pausa
+      .replace(/[*_`>#]/g, ' ')
+      .replace(/\s*\[\d+\]\s*/g, ' ')       // marcas de nota de rodapé
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
+  /* Pedaços curtos evitam o corte do Chrome em falas longas
+     e deixam pular/voltar mais preciso. */
+  const MAX = 180;
+  function dividir(txt){
+    const t = limpar(txt);
+    if(!t) return [];
+    if(t.length <= MAX) return [t];
+
+    const frases = t.match(/[^.!?;:]+[.!?;:]*\s*/g) || [t];
+    const saida = [];
+    let buf = '';
+    frases.forEach(f => {
+      if(buf && (buf + f).length > MAX){ saida.push(buf.trim()); buf = f; }
+      else buf += f;
+    });
+    if(buf.trim()) saida.push(buf.trim());
+
+    // frase única gigante: quebra por palavras
+    const final = [];
+    saida.forEach(s => {
+      if(s.length <= MAX * 1.6) return final.push(s);
+      let linha = '';
+      s.split(' ').forEach(p => {
+        if(linha && (linha + ' ' + p).length > MAX){ final.push(linha); linha = p; }
+        else linha = linha ? linha + ' ' + p : p;
+      });
+      if(linha) final.push(linha);
+    });
+    return final;
+  }
+
+  /* ---------- destaque visual ---------- */
+  function limparDestaque(){
+    if(elDestacado){ elDestacado.classList.remove('lendo-agora'); elDestacado = null; }
+  }
+  function destacar(el){
+    limparDestaque();
+    if(!el || !el.isConnected) return;
+    el.classList.add('lendo-agora');
+    elDestacado = el;
+    const r = el.getBoundingClientRect();
+    const folgaTopo = 80;
+    const folgaBase = window.innerHeight - 120;
+    if(r.top < folgaTopo || r.bottom > folgaBase){
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }
+
+  /* ---------- barra do reprodutor ---------- */
+  function marcarBotao(btn){
+    if(botaoAtivo && botaoAtivo !== btn) botaoAtivo.classList.remove('tocando');
+    botaoAtivo = btn || null;
+    if(botaoAtivo) botaoAtivo.classList.add('tocando');
+  }
+
+  function atualizarBarra(){
+    const barra = $('barra-audio');
+    if(!barra) return;
+    const ativo = estado !== 'parado';
+    barra.classList.toggle('ver', ativo);
+    document.body.classList.toggle('com-audio', ativo);
+
+    const t = $('audio-titulo');
+    const sub = $('audio-sub');
+    const play = $('audio-play');
+    const vel = $('audio-vel');
+
+    if(t) t.textContent = titulo || 'Leitura em voz';
+    if(sub){
+      const p = partes[parteAtual];
+      const rotulo = p && p.rotulo ? p.rotulo : '';
+      const total = partes.length;
+      sub.textContent = total > 1
+        ? (rotulo ? rotulo + ' · ' : '') + (parteAtual + 1) + ' de ' + total
+        : rotulo;
+    }
+    if(play){
+      const pausado = estado === 'pausado';
+      play.textContent = pausado ? '▶' : '⏸';
+      play.setAttribute('aria-label', pausado ? 'Continuar leitura' : 'Pausar leitura');
+      play.title = pausado ? 'Continuar' : 'Pausar';
+    }
+    if(vel) vel.textContent = String(prefs.vel).replace('.', ',') + '×';
+
+    const pb = $('audio-prog-barra');
+    if(pb){
+      const pct = trechos.length ? Math.min(100, (idx / trechos.length) * 100) : 0;
+      pb.style.width = pct.toFixed(1) + '%';
+    }
+  }
+
+  /* ---------- watchdog do Chrome no desktop ----------
+     O Chrome silencia a fala depois de ~15 s. Um pause/resume
+     periódico resolve. No Android isso reinicia a frase, então
+     só usamos no desktop — e os trechos curtos já cobrem o resto. */
+  const precisaWatchdog = /Chrome/.test(navigator.userAgent)
+    && !/Android|Mobile|Edg\//.test(navigator.userAgent);
+
+  function ligarWatchdog(){
+    if(!precisaWatchdog || watchdog) return;
+    watchdog = setInterval(() => {
+      if(estado !== 'tocando') return;
+      if(speechSynthesis.speaking && !speechSynthesis.paused){
+        speechSynthesis.pause();
+        speechSynthesis.resume();
+      }
+    }, 10000);
+  }
+  function desligarWatchdog(){
+    if(watchdog){ clearInterval(watchdog); watchdog = null; }
+  }
+
+  /* ---------- reprodução ---------- */
+  function falarAtual(){
+    if(idx >= trechos.length) return finalizar();
+    const tr = trechos[idx];
+    const u = new SpeechSynthesisUtterance(tr.texto);
+    u.lang = (vozAtual && vozAtual.lang) || 'pt-BR';
+    if(vozAtual) u.voice = vozAtual;
+    u.rate = prefs.vel;
+    u.pitch = 1;
+
+    u.onstart = () => {
+      if(tr.parte !== parteAtual){
+        parteAtual = tr.parte;
+        const p = partes[parteAtual];
+        destacar(p && p.el);
+      }
+      atualizarBarra();
+    };
+    u.onend = () => {
+      if(ignorarFim) return;
+      idx++;
+      atualizarBarra();
+      falarAtual();
+    };
+    u.onerror = (e) => {
+      if(ignorarFim) return;
+      const motivo = e && e.error;
+      if(motivo === 'interrupted' || motivo === 'canceled') return;
+      idx++;
+      falarAtual();
+    };
+
+    speechSynthesis.speak(u);
+  }
+
+  function finalizar(){
+    const cb = aoTerminar;
+    parar(true);
+    if(typeof cb === 'function') cb();
+  }
+
+  /* API pública ------------------------------------------------ */
+
+  /* lista: array de {texto, rotulo, el} — cada item é um bloco
+     lógico (um versículo, a reflexão, a oração…) */
+  function falar(lista, opcoes){
+    if(!suporta){
+      avisar('Este navegador não faz leitura em voz');
+      return false;
+    }
+    const op = opcoes || {};
+    ignorarFim = true;
+    speechSynthesis.cancel();
+    ignorarFim = false;
+
+    partes = (Array.isArray(lista) ? lista : [lista])
+      .map(p => (typeof p === 'string' ? { texto: p } : p))
+      .filter(p => p && limpar(p.texto));
+
+    if(!partes.length){ avisar('Nada para ouvir aqui'); return false; }
+
+    trechos = [];
+    partes.forEach((p, i) => {
+      dividir(p.texto).forEach(t => trechos.push({ texto: t, parte: i }));
+    });
+
+    idx = 0;
+    parteAtual = -1;
+    titulo = op.titulo || '';
+    aoTerminar = op.aoTerminar || null;
+    estado = 'tocando';
+    limparDestaque();
+    marcarBotao(op.botao);
+    ligarWatchdog();
+    atualizarBarra();
+    falarAtual();
+    return true;
+  }
+
+  function parar(silencioso){
+    ignorarFim = true;
+    if(suporta) speechSynthesis.cancel();
+    ignorarFim = false;
+    estado = 'parado';
+    aoTerminar = null;
+    trechos = [];
+    partes = [];
+    idx = 0;
+    parteAtual = -1;
+    desligarWatchdog();
+    limparDestaque();
+    marcarBotao(null);
+    atualizarBarra();
+    if(!silencioso) { /* parada manual: nada a anunciar */ }
+  }
+
+  function pausar(){
+    if(estado !== 'tocando') return;
+    speechSynthesis.pause();
+    estado = 'pausado';
+    atualizarBarra();
+  }
+
+  function retomar(){
+    if(estado !== 'pausado') return;
+    speechSynthesis.resume();
+    estado = 'tocando';
+    atualizarBarra();
+    // Alguns navegadores ignoram o resume; refala o trecho atual.
+    setTimeout(() => {
+      if(estado === 'tocando' && !speechSynthesis.speaking) falarAtual();
+    }, 350);
+  }
+
+  function alternarPausa(){
+    if(estado === 'tocando') pausar();
+    else if(estado === 'pausado') retomar();
+  }
+
+  /* pula para o começo da parte seguinte / anterior */
+  function irParaParte(destino){
+    if(estado === 'parado' || !partes.length) return;
+    const alvo = Math.max(0, Math.min(partes.length - 1, destino));
+    const pos = trechos.findIndex(t => t.parte === alvo);
+    if(pos < 0) return;
+    ignorarFim = true;
+    speechSynthesis.cancel();
+    ignorarFim = false;
+    idx = pos;
+    parteAtual = -1;
+    estado = 'tocando';
+    atualizarBarra();
+    falarAtual();
+  }
+  function proxima(){
+    const p = trechos[idx] ? trechos[idx].parte : parteAtual;
+    if(p >= partes.length - 1) return finalizar();
+    irParaParte(p + 1);
+  }
+  function anterior(){
+    const p = trechos[idx] ? trechos[idx].parte : parteAtual;
+    irParaParte(p - 1);
+  }
+
+  /* fala curta e avulsa (nome de seção, rótulo de botão) */
+  function anunciar(texto){
+    if(!suporta || !texto) return;
+    if(estado !== 'parado') return;   // não atropela uma leitura em curso
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(limpar(texto));
+    u.lang = (vozAtual && vozAtual.lang) || 'pt-BR';
+    if(vozAtual) u.voice = vozAtual;
+    u.rate = prefs.vel;
+    speechSynthesis.speak(u);
+  }
+
+  function definirVelocidade(v){
+    prefs.vel = Number(v) || 1;
+    salvar();
+    atualizarBarra();
+    // aplica já no trecho atual
+    if(estado === 'tocando'){
+      const p = trechos[idx] ? trechos[idx].parte : 0;
+      irParaParte(p);
+    }
+  }
+
+  function definirVoz(idOuNome){
+    prefs.voz = idOuNome || '';
+    salvar();
+    vozAtual = listaVozes.find(v => v.voiceURI === prefs.voz)
+            || listaVozes.find(v => v.name === prefs.voz)
+            || melhorVoz();
+  }
+
+  return {
+    suporta,
+    prefs,
+    salvar,
+    falar,
+    parar,
+    pausar,
+    retomar,
+    alternarPausa,
+    proxima,
+    anterior,
+    anunciar,
+    definirVelocidade,
+    definirVoz,
+    get vozes(){ return listaVozes; },
+    get vozAtual(){ return vozAtual; },
+    get estado(){ return estado; },
+    tocando: () => estado !== 'parado'
+  };
+})();
+
+/* ---------- botões de ouvir ---------- */
+
+/* montar() é chamado no clique, para que o texto lido seja
+   sempre o que está na tela naquele momento. */
+function criarBotaoOuvir(rotulo, montar, opcoes){
+  const op = opcoes || {};
+  const b = document.createElement('button');
+  b.type = 'button';
+  b.className = 'btn-ouvir' + (op.classe ? ' ' + op.classe : '');
+  b.setAttribute('aria-label', rotulo);
+  const ico = document.createElement('span');
+  ico.className = 'ico';
+  ico.setAttribute('aria-hidden', 'true');
+  ico.textContent = '▶';
+  b.appendChild(ico);
+  b.appendChild(document.createTextNode(rotulo));
+  b.onclick = () => {
+    if(b.classList.contains('tocando')) return Voz.parar();
+    Voz.falar(montar(), Object.assign({ botao: b }, op.voz || {}));
+  };
+  return b;
+}
+
+function criarOuvirMini(rotulo, montar, opcoes){
+  const op = opcoes || {};
+  const b = document.createElement('button');
+  b.type = 'button';
+  b.className = 'ouvir-mini';
+  b.textContent = '▶';
+  b.setAttribute('aria-label', rotulo);
+  b.title = rotulo;
+  b.onclick = (e) => {
+    e.stopPropagation();
+    if(b.classList.contains('tocando')) return Voz.parar();
+    Voz.falar(montar(), Object.assign({ botao: b }, op.voz || {}));
+  };
+  return b;
+}
+
 /* ---------- rede ---------- */
 function juntarPartes(partes){
   return (partes||[]).map(p => typeof p === 'string' ? p : (p && p.text ? p.text : ''))
@@ -1727,13 +2525,23 @@ function cartaoVersiculo(texto, nr, cap, verso, versao, extra, opcoes){
     if(navigator.share) navigator.share({text:t}).catch(()=>{});
     else if(navigator.clipboard) navigator.clipboard.writeText(t).then(()=>avisar('Versículo copiado')).catch(()=>avisar('Não foi possível copiar'));
   };
-  c.querySelector('.ouvir').onclick = () => {
-    if(!window.speechSynthesis) return avisar('Seu navegador não suporta leitura em voz');
-    speechSynthesis.cancel();
-    const f = new SpeechSynthesisUtterance(texto + '. ' + ref);
-    f.lang = 'pt-BR';
-    speechSynthesis.speak(f);
+  const op = opcoes || {};
+  /* O que será lido em voz: referência, versículo e — no devocional —
+     também a reflexão, a meditação e a oração. */
+  const montarPartes = () => [
+    { texto: refFalada(nr, cap, verso), rotulo: 'Referência', el: c.querySelector('.referencia') },
+    { texto, rotulo: 'Versículo', el: c.querySelector('.versiculo') }
+  ].concat(typeof op.partesExtra === 'function' ? op.partesExtra() : (op.partesExtra || []));
+  const opVoz = { titulo: op.titulo || ref };
+
+  const btnOuvirTopo = c.querySelector('.ouvir');
+  btnOuvirTopo.onclick = () => {
+    if(btnOuvirTopo.classList.contains('tocando')) return Voz.parar();
+    Voz.falar(montarPartes(), Object.assign({ botao: btnOuvirTopo }, opVoz));
   };
+
+  const btnOuvir = criarBotaoOuvir(op.rotuloBotao || 'Ouvir', montarPartes, { voz: opVoz });
+  c.querySelector('.acoes-verso').prepend(btnOuvir);
   c.querySelector('.btn-fav').onclick = function(){
     const ativo = alternarFavorito({nr, cap, verso, texto, versao, ref});
     this.classList.toggle('ativo', ativo);
@@ -1777,8 +2585,22 @@ async function versiculoDoDia(){
     ps[0].textContent = REFLEXOES[dia % REFLEXOES.length];
     ps[1].textContent = MEDITACOES[dia % MEDITACOES.length];
     ps[2].textContent = ORACOES[dia % ORACOES.length];
+
+    /* O devocional é lido inteiro: versículo, reflexão, meditação e oração,
+       cada bloco destacado na tela enquanto é falado. */
+    const blocos = extra.querySelectorAll('.bloco-devo');
+    const partesExtra = [
+      { texto: 'Reflexão. '   + ps[0].textContent, rotulo: 'Reflexão',    el: blocos[0] },
+      { texto: 'Para meditar. ' + ps[1].textContent, rotulo: 'Para meditar', el: blocos[1] },
+      { texto: 'Oração. '     + ps[2].textContent, rotulo: 'Oração',      el: blocos[2] }
+    ];
+
     alvo.innerHTML = '';
-    alvo.appendChild(cartaoVersiculo(texto, nr, cap, verso, versao, extra));
+    alvo.appendChild(cartaoVersiculo(texto, nr, cap, verso, versao, extra, {
+      partesExtra,
+      titulo: 'Devocional do dia',
+      rotuloBotao: 'Ouvir devocional completo'
+    }));
     registrarAtividade();
   }catch(e){
     alvo.innerHTML = '';
@@ -1813,6 +2635,7 @@ function selecionarTema(t, botao){
   botao.classList.add('ativo');
 }
 async function tirarPromessa(){
+  Voz.parar(true);   // tirou outra promessa: silencia a anterior
   const area = $('area-promessa');
   area.innerHTML = '<div class="carregando"><span class="giro"></span> Abrindo a caixa…</div>';
   const pool = temaAtual ? PROMESSAS[temaAtual] : TODAS;
@@ -1820,7 +2643,10 @@ async function tirarPromessa(){
   try{
     const {texto,versao} = await buscarVerso(nr,cap,verso);
     area.innerHTML = '';
-    const cartao = cartaoVersiculo(texto,nr,cap,verso,versao);
+    const cartao = cartaoVersiculo(texto,nr,cap,verso,versao,null,{
+      titulo: 'Promessa',
+      rotuloBotao: 'Ouvir a promessa'
+    });
     cartao.style.border = '0';
     cartao.style.padding = '0';
     cartao.style.boxShadow = 'none';
@@ -1909,7 +2735,8 @@ function abrirCapitulos(livro){
   $('sec-biblia').scrollIntoView({behavior:'smooth', block:'start'});
 }
 
-async function abrirLeitura(nr, cap, destacar){
+async function abrirLeitura(nr, cap, destacar, autoOuvir){
+  Voz.parar(true);   // trocou de capítulo: não continua lendo o anterior
   mostrarNivel('leitura');
   $('sec-biblia').scrollIntoView({behavior:'smooth', block:'start'});
   const alvo = $('area-leitura');
@@ -1919,9 +2746,14 @@ async function abrirLeitura(nr, cap, destacar){
     alvo.innerHTML = '';
     alvo.appendChild(desenharCapitulo(d, nr, cap, destacar));
     marcouLido(nr, cap);
+    if(autoOuvir){
+      const b = alvo.querySelector('.linha-ouvir .btn-ouvir');
+      if(b) b.click();
+    }
   }catch(e){
     alvo.innerHTML = '';
-    alvo.appendChild(blocoErro(e.message, () => abrirLeitura(nr, cap, destacar)));
+    Voz.parar();
+    alvo.appendChild(blocoErro(e.message, () => abrirLeitura(nr, cap, destacar, autoOuvir)));
   }
 }
 
@@ -1934,12 +2766,21 @@ function desenharCapitulo(dados, nr, cap, destacar){
   h.innerHTML = `<div class="referencia">${livro.nome} ${cap}<small>${versaoAtual.nome}</small></div>`;
   frag.appendChild(h);
 
+  /* partes da leitura em voz — um bloco por versículo, para
+     destacar e acompanhar na tela enquanto é lido */
+  const partesVoz = [{
+    texto: nomeFalado(livro.nome) + ', capítulo ' + cap,
+    rotulo: 'Início',
+    el: h
+  }];
+
   dados.itens.forEach(item => {
     if(item.tipo === 'titulo'){
       const t = document.createElement('p');
       t.className = 'titulo-sec';
       t.textContent = item.texto;
       frag.appendChild(t);
+      partesVoz.push({ texto: item.texto, rotulo: 'Título', el: t });
       return;
     }
     const p = document.createElement('span');
@@ -1949,7 +2790,27 @@ function desenharCapitulo(dados, nr, cap, destacar){
     p.appendChild(s);
     p.appendChild(document.createTextNode(item.texto));
     frag.appendChild(p);
+    partesVoz.push({
+      texto: (Voz.prefs.num ? 'Versículo ' + item.numero + '. ' : '') + item.texto,
+      rotulo: 'Versículo ' + item.numero,
+      el: p
+    });
   });
+
+  /* Ouvir o capítulo — e, se a pessoa quiser, seguir para o próximo sozinho */
+  const linhaOuvir = document.createElement('div');
+  linhaOuvir.className = 'linha-ouvir';
+  linhaOuvir.appendChild(criarBotaoOuvir('Ouvir o capítulo', () => partesVoz, {
+    voz: {
+      titulo: livro.nome + ' ' + cap,
+      aoTerminar: () => {
+        if(!Voz.prefs.autoCap) return;
+        if(cap < livro.caps) abrirLeitura(nr, cap + 1, null, true);
+        else if(nr < 66) abrirLeitura(nr + 1, 1, null, true);
+      }
+    }
+  }));
+  h.insertAdjacentElement('afterend', linhaOuvir);
 
   const passos = document.createElement('div');
   passos.className = 'passos';
@@ -2141,8 +3002,12 @@ async function buscarPalavra(termo){
     const el = document.createElement('div');
     el.className = 'item-busca';
     const txt = r.texto.replace(re, '<mark>$1</mark>');
-    el.innerHTML = `<div class="ref-busca">${r.nome} ${r.cap}:${r.verso}</div><div class="txt-busca">${txt}</div>`;
-    el.onclick = () => abrirLeitura(r.nr, r.cap, r.verso);
+    el.innerHTML = `<div class="busca-corpo"><div class="ref-busca">${r.nome} ${r.cap}:${r.verso}</div><div class="txt-busca">${txt}</div></div>`;
+    el.prepend(criarOuvirMini('Ouvir ' + r.nome + ' ' + r.cap + ':' + r.verso, () => [
+      { texto: refFalada(r.nr, r.cap, r.verso), rotulo: 'Referência' },
+      { texto: r.texto, rotulo: 'Versículo', el }
+    ], { voz: { titulo: r.nome + ' ' + r.cap + ':' + r.verso } }));
+    el.querySelector('.busca-corpo').onclick = () => abrirLeitura(r.nr, r.cap, r.verso);
     lista.appendChild(el);
   });
   registrarAtividade();
@@ -2380,17 +3245,34 @@ function renderFavoritos(){
       return;
     }
     area.innerHTML = '';
+
+    const linha = document.createElement('div');
+    linha.className = 'linha-ouvir';
+    linha.appendChild(criarBotaoOuvir('Ouvir todos os favoritos', () =>
+      carregarFavs().map((f, i) => ({
+        texto: refFalada(f.nr, f.cap, f.verso) + '. ' + f.texto,
+        rotulo: f.ref,
+        el: area.querySelectorAll('.item-fav')[i]
+      })), { classe: 'claro', voz: { titulo: 'Favoritos' } }));
+    area.appendChild(linha);
+
     sóFavs.forEach((f, i) => {
       const el = document.createElement('div');
       el.className = 'item-fav';
       el.style.animationDelay = (i * 0.04) + 's';
       el.innerHTML =
-        `<div class="ref-fav">${f.ref}</div>
-         <div class="txt-fav">${f.texto}</div>
-         <div class="meta-fav">
-           <span>${f.versao} · ${new Date(f.data).toLocaleDateString('pt-BR')}</span>
-           <button class="btn-remover" type="button">Remover</button>
+        `<div class="fav-corpo">
+           <div class="ref-fav">${f.ref}</div>
+           <div class="txt-fav">${f.texto}</div>
+           <div class="meta-fav">
+             <span>${f.versao} · ${new Date(f.data).toLocaleDateString('pt-BR')}</span>
+             <button class="btn-remover" type="button">Remover</button>
+           </div>
          </div>`;
+      el.prepend(criarOuvirMini('Ouvir ' + f.ref, () => [
+        { texto: refFalada(f.nr, f.cap, f.verso), rotulo: 'Referência' },
+        { texto: f.texto, rotulo: 'Versículo', el }
+      ], { voz: { titulo: f.ref } }));
       el.querySelector('.btn-remover').onclick = () => removerFav(f.chave);
       area.appendChild(el);
     });
@@ -2406,14 +3288,26 @@ function renderFavoritos(){
       el.className = 'item-fav';
       el.style.animationDelay = (i * 0.04) + 's';
       el.innerHTML =
-        `<div class="ref-fav">${f.ref}</div>
-         <div class="txt-fav">${f.texto.length > 120 ? f.texto.slice(0, 120) + '…' : f.texto}</div>
-         <textarea class="campo-nota" placeholder="Escreva uma reflexão ou oração…">${f.nota || ''}</textarea>
-         <div class="meta-fav" style="margin-top:8px">
-           <span>${new Date(f.data).toLocaleDateString('pt-BR')}</span>
-           <button class="btn-remover" type="button">Remover</button>
+        `<div class="fav-corpo">
+           <div class="ref-fav">${f.ref}</div>
+           <div class="txt-fav">${f.texto.length > 120 ? f.texto.slice(0, 120) + '…' : f.texto}</div>
+           <textarea class="campo-nota" placeholder="Escreva uma reflexão ou oração…">${f.nota || ''}</textarea>
+           <div class="meta-fav" style="margin-top:8px">
+             <span>${new Date(f.data).toLocaleDateString('pt-BR')}</span>
+             <button class="btn-remover" type="button">Remover</button>
+           </div>
          </div>`;
       const ta = el.querySelector('.campo-nota');
+      /* lê o versículo inteiro e, se houver, a nota escrita */
+      el.prepend(criarOuvirMini('Ouvir ' + f.ref + ' e a sua nota', () => {
+        const partes = [
+          { texto: refFalada(f.nr, f.cap, f.verso), rotulo: 'Referência' },
+          { texto: f.texto, rotulo: 'Versículo', el }
+        ];
+        const nota = (ta.value || '').trim();
+        if(nota) partes.push({ texto: 'Sua nota. ' + nota, rotulo: 'Sua nota', el: ta });
+        return partes;
+      }, { voz: { titulo: f.ref } }));
       ta.onchange = () => atualizarNota(f.chave, ta.value);
       ta.onblur = () => atualizarNota(f.chave, ta.value);
       el.querySelector('.btn-remover').onclick = () => removerFav(f.chave);
@@ -2483,6 +3377,192 @@ function abrirMenu(estado){
   $('gaveta').classList.toggle('aberta', estado);
   $('veu').classList.toggle('aberto', estado);
 }
+
+/* =========================================================
+   Controles da leitura em voz
+   ========================================================= */
+
+/* ---------- barra do reprodutor ---------- */
+const VELOCIDADES = [0.7, 0.85, 1, 1.15, 1.35];
+
+$('audio-play').onclick   = () => Voz.alternarPausa();
+$('audio-parar').onclick  = () => Voz.parar();
+$('audio-prox').onclick   = () => Voz.proxima();
+$('audio-ant').onclick    = () => Voz.anterior();
+$('audio-vel').onclick    = () => {
+  const i = VELOCIDADES.indexOf(Voz.prefs.vel);
+  const nova = VELOCIDADES[(i + 1) % VELOCIDADES.length];
+  Voz.definirVelocidade(nova);
+  marcarVelocidade(nova);
+};
+
+/* ---------- seção "Leitura em voz" ---------- */
+function marcarVelocidade(v){
+  document.querySelectorAll('#opcoes-vel button').forEach(b =>
+    b.classList.toggle('ativo', Number(b.dataset.vel) === Number(v))
+  );
+}
+
+function montarSelectVozes(){
+  const sel = $('sel-voz');
+  if(!sel) return;
+  const vozes = Voz.vozes;
+  sel.innerHTML = '';
+  if(!vozes.length){
+    const o = document.createElement('option');
+    o.textContent = 'Nenhuma voz encontrada no aparelho';
+    sel.appendChild(o);
+    sel.disabled = true;
+    return;
+  }
+  sel.disabled = false;
+  vozes.forEach(v => {
+    const o = document.createElement('option');
+    o.value = v.voiceURI;
+    o.textContent = v.name + ' (' + v.lang + ')';
+    if(Voz.vozAtual && v.voiceURI === Voz.vozAtual.voiceURI) o.selected = true;
+    sel.appendChild(o);
+  });
+}
+document.addEventListener('vozes-prontas', montarSelectVozes);
+montarSelectVozes();
+
+if($('sel-voz')) $('sel-voz').onchange = e => {
+  Voz.definirVoz(e.target.value);
+  Voz.anunciar('Esta é a voz escolhida para a leitura.');
+};
+
+document.querySelectorAll('#opcoes-vel button').forEach(b => {
+  b.onclick = () => {
+    Voz.definirVelocidade(Number(b.dataset.vel));
+    marcarVelocidade(Number(b.dataset.vel));
+  };
+});
+marcarVelocidade(Voz.prefs.vel);
+
+if($('btn-testar-voz')) $('btn-testar-voz').onclick = () => {
+  Voz.falar([
+    { texto: 'Lâmpada para os meus pés é a tua palavra, e luz para o meu caminho.', rotulo: 'Exemplo' },
+    { texto: refFalada(19, 119, 105), rotulo: 'Referência' }
+  ], { titulo: 'Exemplo de leitura' });
+};
+
+/* ---------- chaves de configuração ---------- */
+function ligarChave(id, campo, aoMudar){
+  const b = $(id);
+  if(!b) return;
+  const aplicar = () => {
+    const v = !!Voz.prefs[campo];
+    b.classList.toggle('ativo', v);
+    b.setAttribute('aria-checked', v ? 'true' : 'false');
+  };
+  aplicar();
+  b.onclick = () => {
+    Voz.prefs[campo] = !Voz.prefs[campo];
+    Voz.salvar();
+    aplicar();
+    if(aoMudar) aoMudar(Voz.prefs[campo]);
+  };
+}
+
+function aplicarModoAudio(ligado){
+  document.documentElement.setAttribute('data-audio', ligado ? '1' : '0');
+}
+
+ligarChave('chave-modo-audio', 'modo', ligado => {
+  aplicarModoAudio(ligado);
+  Voz.anunciar(ligado
+    ? 'Modo áudio ligado. Segure qualquer botão para ouvir o que ele faz.'
+    : 'Modo áudio desligado.');
+});
+ligarChave('chave-num-versiculo', 'num');
+ligarChave('chave-auto-cap', 'autoCap');
+aplicarModoAudio(Voz.prefs.modo);
+
+if(!Voz.suporta && $('aviso-voz')){
+  $('aviso-voz').textContent =
+    'Este navegador não faz leitura em voz. Tente pelo Chrome no Android ou pelo Safari no iPhone.';
+}
+
+/* ---------- ouvir o resumo da jornada ---------- */
+(function ouvirStats(){
+  const linha = $('linha-ouvir-stats');
+  if(!linha) return;
+  const plural = (n, s, p) => n + ' ' + (Number(n) === 1 ? s : p);
+  linha.appendChild(criarBotaoOuvir('Ouvir meu resumo', () => {
+    const n = id => ($(id) ? $(id).textContent : '0');
+    return [{
+      texto: 'Sua jornada. ' +
+             plural(n('stat-streak'), 'dia seguido', 'dias seguidos') + '. ' +
+             plural(n('stat-caps'), 'capítulo lido', 'capítulos lidos') + '. ' +
+             plural(n('stat-favs'), 'versículo favorito', 'versículos favoritos') + '. ' +
+             plural(n('stat-planos'), 'dia de plano concluído', 'dias de planos concluídos') + '. ' +
+             ($('stat-msg') ? $('stat-msg').textContent : ''),
+      rotulo: 'Resumo',
+      el: $('grid-stats')
+    }];
+  }, { classe: 'claro', voz: { titulo: 'Sua jornada' } }));
+})();
+
+/* ---------- modo áudio: anunciar a seção ao navegar ---------- */
+document.querySelectorAll('.gaveta a[data-fecha]').forEach(a => {
+  a.addEventListener('click', () => {
+    if(Voz.prefs.modo) Voz.anunciar(a.textContent.trim());
+  });
+});
+
+/* ---------- modo áudio: toque longo diz o que o botão faz ---------- */
+(function toqueLongo(){
+  let tempo = null, disparou = false, x0 = 0, y0 = 0;
+
+  /* o rótulo falado ignora ícones decorativos: "▶ Ouvir" vira "Ouvir" */
+  const rotuloDe = el => {
+    const aria = el.getAttribute('aria-label');
+    if(aria) return aria;
+    if(el.title) return el.title;
+    const copia = el.cloneNode(true);
+    copia.querySelectorAll('[aria-hidden="true"]').forEach(x => x.remove());
+    return (copia.textContent || '')
+      .replace(/[\u2000-\u33FF\u{1F000}-\u{1FAFF}]/gu, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+  };
+
+  const cancelar = () => { clearTimeout(tempo); tempo = null; };
+
+  document.addEventListener('pointerdown', e => {
+    if(!Voz.prefs.modo) return;
+    const alvo = e.target.closest('button, a[href], select');
+    if(!alvo) return;
+    x0 = e.clientX; y0 = e.clientY;
+    disparou = false;
+    cancelar();
+    tempo = setTimeout(() => {
+      disparou = true;
+      const r = rotuloDe(alvo);
+      if(r) Voz.anunciar(r);
+    }, 600);
+  });
+
+  document.addEventListener('pointermove', e => {
+    if(!tempo) return;
+    if(Math.abs(e.clientX - x0) > 12 || Math.abs(e.clientY - y0) > 12) cancelar();
+  });
+  ['pointerup', 'pointercancel'].forEach(ev =>
+    document.addEventListener(ev, cancelar)
+  );
+
+  // o toque longo só anuncia: não deixa o clique acontecer
+  document.addEventListener('click', e => {
+    if(!disparou) return;
+    disparou = false;
+    e.preventDefault();
+    e.stopPropagation();
+  }, true);
+})();
+
+/* a fala do navegador sobrevive à navegação: encerra ao sair */
+window.addEventListener('pagehide', () => Voz.parar(true));
 
 /* ---------- planos de leitura ---------- */
 const PLANOS = [
@@ -2564,10 +3644,13 @@ function abrirPlano(id){
          ${ok ? '<span class="feito">Concluído</span>' : ''}
        </div>
        <div style="display:flex;gap:8px">
-         <button class="btn-sm" type="button">Ler</button>
-         <button class="btn-sm ${ok ? 'ativo' : ''}" type="button">${ok ? '✓ Feito' : 'Marcar'}</button>
+         <button class="btn-sm dia-ouvir" type="button" aria-label="Ouvir ${livro.nome} ${cap}">▶ Ouvir</button>
+         <button class="btn-sm dia-ler" type="button">Ler</button>
+         <button class="btn-sm dia-marcar ${ok ? 'ativo' : ''}" type="button">${ok ? '✓ Feito' : 'Marcar'}</button>
        </div>`;
-    const [btnLer, btnMarcar] = row.querySelectorAll('button');
+    const btnLer = row.querySelector('.dia-ler');
+    const btnMarcar = row.querySelector('.dia-marcar');
+    row.querySelector('.dia-ouvir').onclick = () => abrirLeitura(nr, cap, null, true);
     btnLer.onclick = () => {
       abrirLeitura(nr, cap);
       $('sec-biblia').scrollIntoView({behavior:'smooth'});
