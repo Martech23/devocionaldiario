@@ -7,192 +7,554 @@
 <meta name="description" content="Versículo do dia, caixa de promessas e a Bíblia Sagrada completa em versões de uso livre.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600&display=swap" rel="stylesheet">
 <style>
-:root{
-  --azul:#1B4F8C;
-  --azul-esc:#143B6B;
-  --azul-cla:#2C6BB8;
-  --azul-claro-bg:#EAF1F9;
-  --fundo:#FAF9F7;
-  --papel:#FFFFFF;
-  --linha:#DCD8D2;
-  --linha-forte:#B9B4AC;
-  --texto:#232323;
-  --texto-2:#5F5B55;
-  --texto-3:#807B74;
-  --esc:1;
+:root {
+  --azul: #1A4A82;
+  --azul-esc: #123665;
+  --azul-cla: #2B6BB5;
+  --azul-claro-bg: #E8F0FA;
+  --azul-suave: rgba(26, 74, 130, 0.08);
+  --fundo: #F7F5F1;
+  --papel: #FFFFFF;
+  --papel-alt: #FCFBF9;
+  --linha: #E6E1D9;
+  --linha-forte: #C9C2B6;
+  --texto: #1F1E1C;
+  --texto-2: #5A564F;
+  --texto-3: #8A847A;
+  --sombra: 0 1px 2px rgba(28, 24, 18, 0.04), 0 4px 16px rgba(28, 24, 18, 0.06);
+  --sombra-hover: 0 2px 4px rgba(28, 24, 18, 0.05), 0 8px 24px rgba(28, 24, 18, 0.09);
+  --destaque: #FFF6D6;
+  --destaque-borda: #F0D78C;
+  --radius: 10px;
+  --radius-sm: 6px;
+  --trans: 0.22s ease;
+  --trans-spring: 0.45s cubic-bezier(0.22, 1.2, 0.36, 1);
+  --trans-soft: 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  --esc: 1;
 }
-*{box-sizing:border-box;margin:0;padding:0}
-body{
-  background:var(--fundo);color:var(--texto);
-  font-family:"Source Sans 3",-apple-system,system-ui,sans-serif;
-  font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased;
-}
-.envolve{max-width:900px;margin:0 auto;padding:0 14px}
-a{color:var(--azul);text-decoration:underline;text-underline-offset:2px}
 
-/* ---------------- barra superior ---------------- */
-header.barra{
-  background:var(--azul);color:#fff;position:sticky;top:0;z-index:40;
-  box-shadow:0 1px 4px rgba(0,0,0,.18);
+html[data-tema="escuro"] {
+  --azul: #5B9BE8;
+  --azul-esc: #3D7BC4;
+  --azul-cla: #7BB3F0;
+  --azul-claro-bg: #1A2A40;
+  --azul-suave: rgba(91, 155, 232, 0.12);
+  --fundo: #12151A;
+  --papel: #1C2129;
+  --papel-alt: #232932;
+  --linha: #2E3540;
+  --linha-forte: #3D4654;
+  --texto: #EDEAE4;
+  --texto-2: #A8A29A;
+  --texto-3: #7A756E;
+  --sombra: 0 1px 2px rgba(0, 0, 0, 0.25), 0 4px 16px rgba(0, 0, 0, 0.3);
+  --sombra-hover: 0 2px 4px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.35);
+  --destaque: #3A3420;
+  --destaque-borda: #6B5C2A;
 }
-.barra-int{display:flex;align-items:center;justify-content:space-between;height:56px;max-width:900px;margin:0 auto;padding:0 12px}
-.icone-btn{
-  background:none;border:0;color:#fff;cursor:pointer;padding:8px;border-radius:6px;
-  display:grid;place-items:center;line-height:0;
-}
-.icone-btn:hover{background:rgba(255,255,255,.14)}
-.icone-btn:focus-visible{outline:2px solid #fff;outline-offset:1px}
-.hamb{width:22px;height:2px;background:#fff;position:relative;display:block}
-.hamb::before,.hamb::after{content:"";position:absolute;left:0;width:22px;height:2px;background:#fff}
-.hamb::before{top:-7px}.hamb::after{top:7px}
-.logo{display:flex;align-items:center;gap:9px}
-.logo .chama{
-  width:22px;height:22px;border-radius:50% 50% 46% 46%/62% 62% 40% 40%;
-  background:radial-gradient(circle at 50% 70%,#FFF3CF,#FFD濃 0,#FFCB4A 45%,#E8A020 75%);
-  background:radial-gradient(circle at 50% 70%,#FFF3CF,#FFCB4A 45%,#E8A020 78%);
-  box-shadow:0 0 10px rgba(255,203,74,.6);flex:0 0 auto;
-}
-.logo span{font-size:21px;font-weight:700;letter-spacing:-.01em}
-.logo span i{font-style:normal;font-weight:400;opacity:.85}
-.conta{width:26px;height:26px;border-radius:50%;border:2px solid #fff;display:grid;place-items:center;font-size:13px;font-weight:700}
 
-/* ---------------- menu lateral ---------------- */
-.veu{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:50;opacity:0;pointer-events:none;transition:opacity .2s}
-.veu.aberto{opacity:1;pointer-events:auto}
-.gaveta{
-  position:fixed;top:0;left:0;bottom:0;width:280px;max-width:82vw;background:#fff;z-index:51;
-  transform:translateX(-100%);transition:transform .25s ease;box-shadow:2px 0 18px rgba(0,0,0,.25);
-  display:flex;flex-direction:column;
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { transition: color-scheme 0.35s ease; }
+body {
+  background: var(--fundo);
+  color: var(--texto);
+  font-family: "Source Sans 3", -apple-system, system-ui, sans-serif;
+  font-size: 16px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  transition: background 0.35s ease, color 0.35s ease;
 }
-.gaveta.aberta{transform:translateX(0)}
-.gaveta header{background:var(--azul);color:#fff;padding:16px 18px;font-size:18px;font-weight:700}
-.gaveta a{display:block;padding:14px 18px;border-bottom:1px solid var(--linha);color:var(--texto);
-  text-decoration:none;font-size:16px;font-weight:600}
-.gaveta a:hover{background:var(--azul-claro-bg);color:var(--azul)}
-.gaveta .nota{margin-top:auto;padding:16px 18px;font-size:12px;color:var(--texto-3);line-height:1.6}
+.envolve { max-width: 880px; margin: 0 auto; padding: 0 16px; }
+a { color: var(--azul); text-decoration: underline; text-underline-offset: 2px; }
 
-/* ---------------- busca e controles ---------------- */
-.controles{padding-top:14px}
-.linha-busca{display:flex;margin-bottom:8px}
-.linha-busca input{
-  flex:1;min-width:0;font-family:inherit;font-size:16px;padding:11px 13px;
-  border:1px solid var(--linha-forte);border-right:0;border-radius:3px 0 0 3px;background:#fff;color:var(--texto);
+header.barra {
+  background: var(--azul);
+  color: #fff;
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  box-shadow: 0 1px 8px rgba(0, 0, 0, 0.18);
 }
-.linha-busca input:focus{outline:2px solid var(--azul-cla);outline-offset:-1px}
-.linha-busca button{
-  background:var(--azul);border:1px solid var(--azul);color:#fff;cursor:pointer;
-  padding:0 20px;border-radius:0 3px 3px 0;font-size:17px;line-height:0;
+html[data-tema="escuro"] header.barra {
+  background: #152238;
+  box-shadow: 0 1px 8px rgba(0, 0, 0, 0.4);
 }
-.linha-busca button:hover{background:var(--azul-esc)}
-.seletor-versao{position:relative;margin-bottom:10px}
-.seletor-versao select{
-  width:100%;appearance:none;font-family:inherit;font-size:16px;padding:11px 38px 11px 13px;
-  border:1px solid var(--linha-forte);border-radius:3px;background:#fff;color:var(--texto);cursor:pointer;
+.barra-int {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 58px;
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 0 12px;
 }
-.seletor-versao::after{content:"⌄";position:absolute;right:14px;top:6px;font-size:19px;color:var(--texto-2);pointer-events:none}
-.linha-ferramentas{
-  display:flex;justify-content:space-between;align-items:center;
-  padding:6px 0 10px;border-bottom:3px solid var(--azul);margin-bottom:2px;
+.icone-btn {
+  background: none; border: 0; color: #fff; cursor: pointer;
+  padding: 8px; border-radius: var(--radius-sm);
+  display: grid; place-items: center; line-height: 0;
+  transition: background var(--trans);
 }
-.ferramenta{background:none;border:0;font-family:inherit;font-size:15px;color:var(--azul);cursor:pointer;font-weight:600;padding:4px 0}
-.ferramenta:hover{text-decoration:underline}
-.ferramenta:focus-visible{outline:2px solid var(--azul);outline-offset:2px}
-.tamanhos{display:none;gap:6px;padding:10px 0;border-bottom:1px solid var(--linha)}
-.tamanhos.aberto{display:flex;justify-content:flex-end}
-.tamanhos button{
-  font-family:inherit;background:#fff;border:1px solid var(--linha-forte);border-radius:3px;
-  padding:6px 14px;cursor:pointer;color:var(--texto);font-weight:600;
+.icone-btn:hover { background: rgba(255, 255, 255, 0.14); }
+.icone-btn:focus-visible { outline: 2px solid #fff; outline-offset: 1px; }
+.hamb {
+  width: 20px; height: 2px; background: #fff;
+  position: relative; display: block; border-radius: 1px;
 }
-.tamanhos button:hover{background:var(--azul-claro-bg);border-color:var(--azul)}
+.hamb::before, .hamb::after {
+  content: ""; position: absolute; left: 0;
+  width: 20px; height: 2px; background: #fff; border-radius: 1px;
+}
+.hamb::before { top: -6px; }
+.hamb::after { top: 6px; }
+.logo { display: flex; align-items: center; gap: 10px; }
+.logo .chama {
+  width: 22px; height: 22px;
+  border-radius: 50% 50% 46% 46% / 62% 62% 40% 40%;
+  background: radial-gradient(circle at 50% 70%, #FFF3CF, #FFCB4A 45%, #E8A020 78%);
+  box-shadow: 0 0 12px rgba(255, 203, 74, 0.55);
+  flex: 0 0 auto;
+  animation: chama-pulsar 3.2s ease-in-out infinite;
+  will-change: transform, box-shadow;
+}
+.logo span { font-size: 20px; font-weight: 700; letter-spacing: -0.02em; }
+.logo span i { font-style: normal; font-weight: 400; opacity: 0.82; }
+.acoes-direita { display: flex; align-items: center; gap: 2px; }
+.btn-tema {
+  background: none; border: 0; color: #fff; cursor: pointer;
+  padding: 8px; border-radius: var(--radius-sm);
+  display: grid; place-items: center; font-size: 18px; line-height: 1;
+  transition: background var(--trans);
+}
+.btn-tema:hover { background: rgba(255, 255, 255, 0.14); }
+.conta {
+  width: 28px; height: 28px; border-radius: 50%;
+  border: 1.5px solid rgba(255, 255, 255, 0.7);
+  display: grid; place-items: center; font-size: 12px; font-weight: 700;
+}
 
-/* ---------------- seções e cartões ---------------- */
-.secao{margin-top:22px;scroll-margin-top:70px}
-.rotulo-secao{
-  font-size:13px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;
-  color:var(--texto-2);padding-bottom:7px;margin-bottom:0;
+.veu {
+  position: fixed; inset: 0; background: rgba(0, 0, 0, 0.48);
+  z-index: 50; opacity: 0; pointer-events: none;
+  transition: opacity 0.32s var(--trans-soft);
+  backdrop-filter: blur(0px);
 }
-.cartao{background:var(--papel);border:1px solid var(--linha);border-radius:3px;padding:20px 18px 22px}
-.cartao + .cartao{margin-top:10px}
-.cab-cartao{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:14px}
-.referencia{font-size:18px;font-weight:600;color:var(--texto)}
-.referencia small{display:block;font-weight:400;font-size:13px;color:var(--texto-3);margin-top:1px}
-.ferr-cartao{display:flex;gap:4px;flex:0 0 auto}
-.ferr-cartao button{
-  background:none;border:0;cursor:pointer;color:var(--texto-2);font-size:16px;
-  padding:6px 8px;border-radius:4px;line-height:1;
+.veu.aberto { opacity: 1; pointer-events: auto; backdrop-filter: blur(3px); }
+.gaveta {
+  position: fixed; top: 0; left: 0; bottom: 0;
+  width: 290px; max-width: 84vw; background: var(--papel);
+  z-index: 51; transform: translateX(-105%);
+  transition: transform var(--trans-spring);
+  box-shadow: 4px 0 32px rgba(0, 0, 0, 0.2);
+  display: flex; flex-direction: column;
 }
-.ferr-cartao button:hover{background:var(--azul-claro-bg);color:var(--azul)}
-.ferr-cartao button:focus-visible{outline:2px solid var(--azul);outline-offset:1px}
-.versiculo{
-  font-family:"Source Serif 4",Georgia,serif;
-  font-size:calc(23px * var(--esc));line-height:1.45;color:var(--texto);margin-bottom:16px;
+.gaveta.aberta { transform: translateX(0); }
+.gaveta a {
+  opacity: 0; transform: translateX(-12px);
+  transition: opacity 0.3s ease, transform 0.3s ease, background var(--trans), color var(--trans);
 }
-.link-cap{font-size:15px}
-.meditacao{margin-top:18px;padding-top:16px;border-top:1px solid var(--linha)}
-.meditacao b{display:block;font-size:12px;letter-spacing:.09em;text-transform:uppercase;color:var(--texto-3);margin-bottom:5px}
-.meditacao p{font-family:"Source Serif 4",serif;font-size:calc(17px * var(--esc));color:var(--texto-2);line-height:1.5}
+.gaveta.aberta a { opacity: 1; transform: translateX(0); }
+.gaveta.aberta a:nth-child(2) { transition-delay: 0.04s; }
+.gaveta.aberta a:nth-child(3) { transition-delay: 0.08s; }
+.gaveta.aberta a:nth-child(4) { transition-delay: 0.12s; }
+.gaveta.aberta a:nth-child(5) { transition-delay: 0.16s; }
+.gaveta header {
+  background: var(--azul); color: #fff;
+  padding: 20px; font-size: 17px; font-weight: 700; letter-spacing: -0.01em;
+}
+html[data-tema="escuro"] .gaveta header { background: #152238; }
+.gaveta a {
+  display: block; padding: 15px 20px;
+  border-bottom: 1px solid var(--linha);
+  color: var(--texto); text-decoration: none;
+  font-size: 15.5px; font-weight: 600;
+}
+.gaveta a:hover { background: var(--azul-claro-bg); color: var(--azul); }
+.gaveta .nota {
+  margin-top: auto; padding: 18px 20px;
+  font-size: 12px; color: var(--texto-3); line-height: 1.65;
+  opacity: 0; transition: opacity 0.4s ease 0.2s;
+}
+.gaveta.aberta .nota { opacity: 1; }
 
-/* ---------------- promessas ---------------- */
-.temas{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:16px}
-.tema{
-  font-family:inherit;font-size:14px;background:#fff;color:var(--azul);
-  border:1px solid var(--linha-forte);border-radius:99px;padding:6px 14px;cursor:pointer;
+.controles { padding-top: 18px; animation: fadeUp 0.4s ease both; }
+.linha-busca {
+  display: flex; margin-bottom: 10px;
+  border-radius: var(--radius-sm); overflow: hidden; box-shadow: var(--sombra);
 }
-.tema:hover{background:var(--azul-claro-bg);border-color:var(--azul)}
-.tema.ativo{background:var(--azul);color:#fff;border-color:var(--azul);font-weight:600}
-.tema:focus-visible{outline:2px solid var(--azul);outline-offset:2px}
-.btn{
-  font-family:inherit;font-size:15px;font-weight:600;background:var(--azul);color:#fff;
-  border:1px solid var(--azul);border-radius:3px;padding:10px 22px;cursor:pointer;
+.linha-busca input {
+  flex: 1; min-width: 0; font-family: inherit; font-size: 15.5px;
+  padding: 13px 15px; border: 1px solid var(--linha-forte); border-right: 0;
+  border-radius: var(--radius-sm) 0 0 var(--radius-sm);
+  background: var(--papel); color: var(--texto);
+  transition: border-color var(--trans), background var(--trans);
 }
-.btn:hover{background:var(--azul-esc)}
-.btn:focus-visible{outline:2px solid var(--azul-cla);outline-offset:2px}
-.btn.claro{background:#fff;color:var(--azul)}
-.btn.claro:hover{background:var(--azul-claro-bg)}
-.vazio{text-align:center;padding:26px 12px}
-.vazio p{font-family:"Source Serif 4",serif;font-size:18px;color:var(--texto-2);margin-bottom:16px}
+.linha-busca input:focus {
+  outline: none; border-color: var(--azul-cla);
+  box-shadow: inset 0 0 0 1px var(--azul-cla);
+}
+.linha-busca input::placeholder { color: var(--texto-3); }
+.linha-busca button {
+  background: var(--azul); border: 1px solid var(--azul); color: #fff;
+  cursor: pointer; padding: 0 20px;
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  font-size: 16px; line-height: 0; transition: background var(--trans);
+}
+.linha-busca button:hover { background: var(--azul-esc); }
+.seletor-versao { position: relative; margin-bottom: 12px; }
+.seletor-versao select {
+  width: 100%; appearance: none; font-family: inherit; font-size: 15px;
+  padding: 12px 40px 12px 14px; border: 1px solid var(--linha-forte);
+  border-radius: var(--radius-sm); background: var(--papel); color: var(--texto);
+  cursor: pointer; box-shadow: var(--sombra);
+  transition: border-color var(--trans), background var(--trans);
+}
+.seletor-versao select:focus { outline: none; border-color: var(--azul-cla); }
+.seletor-versao::after {
+  content: "⌄"; position: absolute; right: 14px; top: 50%;
+  transform: translateY(-55%); font-size: 17px; color: var(--texto-2); pointer-events: none;
+}
+.linha-ferramentas {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 8px 0 12px; border-bottom: 2.5px solid var(--azul); margin-bottom: 4px;
+}
+.ferramenta {
+  background: none; border: 0; font-family: inherit; font-size: 14.5px;
+  color: var(--azul); cursor: pointer; font-weight: 600; padding: 5px 0;
+  transition: opacity var(--trans);
+}
+.ferramenta:hover { opacity: 0.75; text-decoration: underline; }
+.ferramenta:focus-visible { outline: 2px solid var(--azul); outline-offset: 2px; }
+.tamanhos {
+  display: none; gap: 8px; padding: 12px 0;
+  border-bottom: 1px solid var(--linha); animation: fadeUp 0.25s ease both;
+}
+.tamanhos.aberto { display: flex; justify-content: flex-end; }
+.tamanhos button {
+  font-family: inherit; background: var(--papel); border: 1px solid var(--linha-forte);
+  border-radius: var(--radius-sm); padding: 7px 15px; cursor: pointer;
+  color: var(--texto); font-weight: 600; font-size: 14px;
+  transition: all var(--trans); box-shadow: var(--sombra);
+}
+.tamanhos button:hover {
+  background: var(--azul-claro-bg); border-color: var(--azul); color: var(--azul);
+}
 
-/* ---------------- bíblia ---------------- */
-.grupo{font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--azul);margin:16px 0 9px}
-.livros{display:grid;grid-template-columns:repeat(auto-fill,minmax(146px,1fr));gap:1px;background:var(--linha);border:1px solid var(--linha)}
-.livro{
-  font-family:inherit;font-size:15px;text-align:left;background:#fff;color:var(--texto);
-  border:0;padding:11px 13px;cursor:pointer;
+.secao { margin-top: 28px; scroll-margin-top: 74px; animation: fadeUp 0.45s ease both; }
+.secao:nth-of-type(2) { animation-delay: 0.05s; }
+.secao:nth-of-type(3) { animation-delay: 0.1s; }
+.rotulo-secao {
+  font-size: 12px; font-weight: 700; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--texto-3); padding-bottom: 10px;
 }
-.livro:hover{background:var(--azul-claro-bg);color:var(--azul)}
-.livro:focus-visible{outline:2px solid var(--azul);outline-offset:-2px}
-.livro small{display:block;font-size:12px;color:var(--texto-3)}
-.capitulos{display:grid;grid-template-columns:repeat(auto-fill,minmax(50px,1fr));gap:1px;background:var(--linha);border:1px solid var(--linha)}
-.cap{font-family:inherit;font-size:16px;font-weight:600;background:#fff;color:var(--azul);border:0;padding:13px 0;cursor:pointer}
-.cap:hover{background:var(--azul);color:#fff}
-.cap:focus-visible{outline:2px solid var(--azul);outline-offset:-2px}
-.voltar{background:none;border:0;color:var(--azul);font-family:inherit;font-size:15px;font-weight:600;cursor:pointer;padding:6px 0;margin-bottom:6px}
-.voltar:hover{text-decoration:underline}
-.v{font-family:"Source Serif 4",Georgia,serif;font-size:calc(19px * var(--esc));line-height:1.6;display:block;margin-bottom:8px;color:var(--texto)}
-.v sup{font-family:"Source Sans 3",sans-serif;font-size:11px;font-weight:700;color:var(--azul);margin-right:5px;vertical-align:super}
-.v.destaque{background:#FFF3C4;padding:2px 4px;border-radius:2px}
-.titulo-sec{font-size:calc(15px * var(--esc));font-weight:700;color:var(--azul);margin:18px 0 8px}
-.passos{display:flex;justify-content:space-between;gap:10px;margin-top:22px;padding-top:16px;border-top:1px solid var(--linha)}
+.cartao {
+  background: var(--papel); border: 1px solid var(--linha);
+  border-radius: var(--radius); padding: 24px 22px 26px; box-shadow: var(--sombra);
+  transition: box-shadow var(--trans-soft), border-color var(--trans), background var(--trans), transform var(--trans-soft);
+}
+.cartao:hover { box-shadow: var(--sombra-hover); }
+.cartao + .cartao { margin-top: 12px; }
+.cab-cartao {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  gap: 14px; margin-bottom: 16px;
+}
+.referencia { font-size: 17px; font-weight: 600; color: var(--texto); letter-spacing: -0.01em; }
+.referencia small {
+  display: block; font-weight: 400; font-size: 12.5px;
+  color: var(--texto-3); margin-top: 3px;
+}
+.ferr-cartao { display: flex; gap: 2px; flex: 0 0 auto; }
+.ferr-cartao button {
+  background: none; border: 0; cursor: pointer; color: var(--texto-3);
+  font-size: 16px; padding: 7px 9px; border-radius: var(--radius-sm);
+  line-height: 1; transition: background var(--trans), color var(--trans);
+}
+.ferr-cartao button:hover { background: var(--azul-suave); color: var(--azul); }
+.ferr-cartao button:focus-visible { outline: 2px solid var(--azul); outline-offset: 1px; }
+.versiculo {
+  font-family: "Source Serif 4", Georgia, serif;
+  font-size: calc(22px * var(--esc)); line-height: 1.5;
+  color: var(--texto); margin-bottom: 18px; font-weight: 400;
+}
+.link-cap {
+  font-size: 14px; font-weight: 600; text-decoration: none;
+  display: inline-flex; align-items: center; gap: 4px;
+  color: var(--azul); transition: opacity var(--trans);
+}
+.link-cap:hover { opacity: 0.8; text-decoration: underline; }
+  .tema {
+  font-family: inherit;
+  font-size: 13.5px;
+  background: var(--papel);
+  color: var(--azul);
+  border: 1px solid var(--linha-forte);
+  border-radius: 99px;
+  padding: 7px 15px;
+  cursor: pointer;
+  transition: background var(--trans), border-color var(--trans), color var(--trans),
+              box-shadow var(--trans), transform 0.18s ease;
+  font-weight: 500;
+  opacity: 0;
+  transform: translateY(6px);
+  animation: fadeUp 0.4s ease forwards;
+}
+.temas .tema:nth-child(1)  { animation-delay: 0.02s; }
+.temas .tema:nth-child(2)  { animation-delay: 0.05s; }
+.temas .tema:nth-child(3)  { animation-delay: 0.08s; }
+.temas .tema:nth-child(4)  { animation-delay: 0.11s; }
+.temas .tema:nth-child(5)  { animation-delay: 0.14s; }
+.temas .tema:nth-child(6)  { animation-delay: 0.17s; }
+.temas .tema:nth-child(7)  { animation-delay: 0.20s; }
+.temas .tema:nth-child(8)  { animation-delay: 0.23s; }
+.temas .tema:nth-child(9)  { animation-delay: 0.26s; }
+.temas .tema:nth-child(10) { animation-delay: 0.29s; }
+.temas .tema:nth-child(11) { animation-delay: 0.32s; }
+.tema:hover {
+  background: var(--azul-claro-bg);
+  border-color: var(--azul);
+  transform: translateY(-1px);
+}
+.tema:active { transform: scale(0.96); }
+.tema.ativo {
+  background: var(--azul);
+  color: #fff;
+  border-color: var(--azul);
+  font-weight: 600;
+  box-shadow: 0 2px 10px rgba(26, 74, 130, 0.28);
+  transform: translateY(0);
+}
+html[data-tema="escuro"] .tema.ativo {
+  box-shadow: 0 2px 10px rgba(91, 155, 232, 0.28);
+}
+.tema:focus-visible { outline: 2px solid var(--azul); outline-offset: 2px; }
 
-/* ---------------- estados ---------------- */
-.carregando{display:flex;align-items:center;gap:10px;color:var(--texto-3);font-size:15px;padding:14px 0}
-.giro{width:16px;height:16px;border:2px solid var(--linha);border-top-color:var(--azul);border-radius:50%;animation:rodar .8s linear infinite}
-@keyframes rodar{to{rotate:360deg}}
-.erro{background:#FDF4F3;border:1px solid #E4BAB4;border-left:4px solid #B03A2E;border-radius:3px;padding:15px}
-.erro b{display:block;color:#8E2C1F;margin-bottom:5px;font-size:16px}
-.erro ul{margin:10px 0 0 18px;font-size:14px;color:var(--texto-2);line-height:1.65}
-.erro code{background:#EFEBE6;padding:1px 5px;border-radius:2px;font-size:13px}
-.rodape{border-top:1px solid var(--linha);margin-top:30px;padding:20px 0 34px;font-size:13px;color:var(--texto-3);line-height:1.7}
-.aviso{
-  position:fixed;left:50%;bottom:22px;translate:-50% 0;z-index:60;background:#2C2C2C;color:#fff;
-  font-size:14px;padding:11px 22px;border-radius:4px;box-shadow:0 6px 18px rgba(0,0,0,.35);
-  opacity:0;pointer-events:none;transition:opacity .25s,translate .25s;
+.btn {
+  font-family: inherit;
+  font-size: 14.5px;
+  font-weight: 600;
+  background: var(--azul);
+  color: #fff;
+  border: 1px solid var(--azul);
+  border-radius: var(--radius-sm);
+  padding: 11px 24px;
+  cursor: pointer;
+  transition: background var(--trans), border-color var(--trans),
+              box-shadow var(--trans), transform 0.18s ease;
+  box-shadow: 0 1px 3px rgba(26, 74, 130, 0.2);
+  position: relative;
+  overflow: hidden;
 }
-.aviso.ver{opacity:1;translate:-50% -6px}
-.oculto{display:none !important}
-@media (prefers-reduced-motion:reduce){*{animation:none !important;transition:none !important}}
+.btn::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at var(--x, 50%) var(--y, 50%), rgba(255,255,255,0.25) 0%, transparent 60%);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+}
+.btn:hover {
+  background: var(--azul-esc);
+  transform: translateY(-1.5px);
+  box-shadow: 0 4px 14px rgba(26, 74, 130, 0.28);
+}
+.btn:hover::after { opacity: 1; }
+.btn:active {
+  transform: translateY(0) scale(0.98);
+  box-shadow: 0 1px 4px rgba(26, 74, 130, 0.2);
+}
+.btn:focus-visible { outline: 2px solid var(--azul-cla); outline-offset: 2px; }
+.btn.claro {
+  background: var(--papel);
+  color: var(--azul);
+  border-color: var(--linha-forte);
+  box-shadow: var(--sombra);
+}
+.btn.claro:hover {
+  background: var(--azul-claro-bg);
+  border-color: var(--azul);
+  box-shadow: var(--sombra-hover);
+}
+.btn.claro::after { display: none; }
+
+.vazio { text-align: center; padding: 32px 16px; }
+.vazio p {
+  font-family: "Source Serif 4", serif;
+  font-size: 17px;
+  color: var(--texto-2);
+  margin-bottom: 20px;
+  line-height: 1.5;
+}
+
+.grupo {
+  font-size: 12px; font-weight: 700; letter-spacing: 0.09em;
+  text-transform: uppercase; color: var(--azul); margin: 18px 0 10px;
+}
+.livros {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 1px; background: var(--linha);
+  border: 1px solid var(--linha); border-radius: var(--radius-sm); overflow: hidden;
+}
+.livro {
+  font-family: inherit; font-size: 14.5px; text-align: left;
+  background: var(--papel); color: var(--texto); border: 0;
+  padding: 13px 14px; cursor: pointer;
+  transition: background var(--trans), color var(--trans), transform 0.18s ease;
+}
+.livro:hover {
+  background: var(--azul-claro-bg); color: var(--azul); transform: translateX(3px);
+}
+.livro:active { transform: translateX(1px) scale(0.99); }
+.livro:focus-visible { outline: 2px solid var(--azul); outline-offset: -2px; }
+.livro small {
+  display: block; font-size: 11.5px; color: var(--texto-3);
+  margin-top: 2px; transition: color var(--trans);
+}
+.livro:hover small { color: var(--azul-cla); }
+
+.capitulos {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(52px, 1fr));
+  gap: 1px; background: var(--linha);
+  border: 1px solid var(--linha); border-radius: var(--radius-sm); overflow: hidden;
+}
+.cap {
+  font-family: inherit; font-size: 15.5px; font-weight: 600;
+  background: var(--papel); color: var(--azul); border: 0;
+  padding: 14px 0; cursor: pointer;
+  transition: background var(--trans), color var(--trans), transform 0.15s ease;
+}
+.cap:hover {
+  background: var(--azul); color: #fff; transform: scale(1.06); z-index: 1;
+}
+.cap:active { transform: scale(0.96); }
+.cap:focus-visible { outline: 2px solid var(--azul); outline-offset: -2px; }
+
+.voltar {
+  background: none; border: 0; color: var(--azul);
+  font-family: inherit; font-size: 14.5px; font-weight: 600;
+  cursor: pointer; padding: 6px 0; margin-bottom: 8px; transition: opacity var(--trans);
+}
+.voltar:hover { opacity: 0.75; text-decoration: underline; }
+
+.v {
+  font-family: "Source Serif 4", Georgia, serif;
+  font-size: calc(18px * var(--esc)); line-height: 1.65;
+  display: block; margin-bottom: 10px; color: var(--texto);
+}
+.v sup {
+  font-family: "Source Sans 3", sans-serif; font-size: 11px; font-weight: 700;
+  color: var(--azul); margin-right: 6px; vertical-align: super;
+}
+.v.destaque {
+  background: var(--destaque); padding: 3px 6px; border-radius: 4px;
+  border-left: 3px solid var(--destaque-borda);
+  margin-left: -6px; padding-left: 9px;
+  animation: destaque-entrar 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.titulo-sec {
+  font-size: calc(14.5px * var(--esc)); font-weight: 700;
+  color: var(--azul); margin: 22px 0 10px; letter-spacing: -0.01em;
+}
+.passos {
+  display: flex; justify-content: space-between; gap: 12px;
+  margin-top: 26px; padding-top: 18px; border-top: 1px solid var(--linha);
+}
+
+.carregando {
+  display: flex; align-items: center; gap: 12px;
+  color: var(--texto-3); font-size: 14.5px; padding: 20px 0;
+}
+.giro {
+  width: 18px; height: 18px; border: 2px solid var(--linha);
+  border-top-color: var(--azul); border-radius: 50%;
+  animation: rodar 0.7s linear infinite;
+}
+.skeleton {
+  background: linear-gradient(90deg, var(--linha) 25%, var(--papel-alt) 50%, var(--linha) 75%);
+  background-size: 200% 100%; animation: shimmer 1.4s ease infinite; border-radius: 4px;
+}
+.skeleton-linha { height: 14px; margin-bottom: 12px; }
+.skeleton-linha:last-child { width: 65%; margin-bottom: 0; }
+.skeleton-titulo { height: 18px; width: 40%; margin-bottom: 18px; }
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+@keyframes rodar { to { transform: rotate(360deg); } }
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes chama-pulsar {
+  0%, 100% { transform: scale(1); box-shadow: 0 0 10px rgba(255, 203, 74, 0.45); }
+  50% { transform: scale(1.08); box-shadow: 0 0 18px rgba(255, 203, 74, 0.7), 0 0 28px rgba(255, 180, 40, 0.25); }
+}
+@keyframes destaque-entrar {
+  0% { background: transparent; border-left-color: transparent; transform: scaleX(0.96); opacity: 0.6; }
+  60% { background: var(--destaque); border-left-color: var(--destaque-borda); transform: scaleX(1.01); }
+  100% { background: var(--destaque); border-left-color: var(--destaque-borda); transform: scaleX(1); opacity: 1; }
+}
+@keyframes slideInNivel {
+  from { opacity: 0; transform: translateX(18px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+@keyframes popSuave {
+  0% { transform: scale(0.92); opacity: 0; }
+  70% { transform: scale(1.03); }
+  100% { transform: scale(1); opacity: 1; }
+}
+@keyframes toastIn {
+  from { opacity: 0; transform: translate(-50%, 12px); }
+  to { opacity: 1; transform: translate(-50%, -8px); }
+}
+
+.erro {
+  background: #FDF4F3; border: 1px solid #E4BAB4;
+  border-left: 4px solid #B03A2E; border-radius: var(--radius-sm); padding: 16px 18px;
+}
+html[data-tema="escuro"] .erro {
+  background: #2A1C1B; border-color: #5C3A36; border-left-color: #C45A4E;
+}
+.erro b { display: block; color: #8E2C1F; margin-bottom: 6px; font-size: 15px; }
+html[data-tema="escuro"] .erro b { color: #E88A7E; }
+.erro ul { margin: 10px 0 0 18px; font-size: 13.5px; color: var(--texto-2); line-height: 1.65; }
+.erro code { background: var(--linha); padding: 1px 5px; border-radius: 3px; font-size: 12.5px; }
+
+.rodape {
+  border-top: 1px solid var(--linha); margin-top: 40px;
+  padding: 24px 0 42px; font-size: 12.5px; color: var(--texto-3); line-height: 1.75;
+}
+.aviso {
+  position: fixed; left: 50%; bottom: 24px;
+  transform: translate(-50%, 12px); z-index: 60;
+  background: #2A2A28; color: #fff; font-size: 14px;
+  padding: 12px 24px; border-radius: 8px;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.3);
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.3s ease, transform 0.35s cubic-bezier(0.22, 1.2, 0.36, 1);
+}
+html[data-tema="escuro"] .aviso { background: #EDEAE4; color: #1C1B19; }
+.aviso.ver { opacity: 1; transform: translate(-50%, -8px); }
+
+#nivel-livros, #nivel-capitulos, #nivel-leitura {
+  animation: slideInNivel 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.oculto { display: none !important; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .logo .chama { animation: none; }
+}
 </style>
 </head>
 <body>
@@ -200,22 +562,28 @@ header.barra{
 <header class="barra">
   <div class="barra-int">
     <button class="icone-btn" id="btn-menu" aria-label="Abrir menu"><span class="hamb"></span></button>
-    <div class="logo"><span class="chama" aria-hidden="true"></span><span>Lâmpada<i>Bíblia</i></span></div>
-    <button class="icone-btn" aria-label="Conta"><span class="conta">✦</span></button>
+    <div class="logo">
+      <span class="chama" aria-hidden="true"></span>
+      <span>Lâmpada<i>Bíblia</i></span>
+    </div>
+    <div class="acoes-direita">
+      <button class="btn-tema" id="btn-tema" aria-label="Alternar tema" title="Alternar tema claro/escuro">◐</button>
+      <button class="icone-btn" aria-label="Conta"><span class="conta">✦</span></button>
+    </div>
   </div>
 </header>
 
 <div class="veu" id="veu"></div>
 <aside class="gaveta" id="gaveta" aria-label="Menu">
   <header>Menu</header>
-  <a href="#sec-hoje" data-fecha>Versículo do dia</a>
+  <a href="#sec-hoje" data-fecha>Devocional do dia</a>
   <a href="#sec-promessas" data-fecha>Caixa de promessas</a>
   <a href="#sec-biblia" data-fecha>Bíblia completa</a>
+  <a href="#sec-favoritos" data-fecha>Favoritos e diário</a>
   <p class="nota">Somente versões de uso livre: Almeida (1911, domínio público) e Bíblia Livre (CC BY 3.0 Brasil).</p>
 </aside>
 
 <main class="envolve">
-
   <div class="controles">
     <div class="linha-busca">
       <input id="busca" type="search" placeholder="Digite uma passagem (ex.: João 3:16)" aria-label="Buscar passagem">
@@ -236,13 +604,18 @@ header.barra{
     </div>
   </div>
 
-  <!-- ============ VERSÍCULO DO DIA ============ -->
   <section class="secao" id="sec-hoje">
-    <p class="rotulo-secao">Versículo do dia</p>
-    <div id="cartao-hoje"><div class="cartao"><div class="carregando"><span class="giro"></span> Carregando…</div></div></div>
+    <p class="rotulo-secao">Devocional do dia</p>
+    <div id="cartao-hoje">
+      <div class="cartao">
+        <div class="skeleton skeleton-titulo"></div>
+        <div class="skeleton skeleton-linha"></div>
+        <div class="skeleton skeleton-linha"></div>
+        <div class="skeleton skeleton-linha" style="width:80%"></div>
+      </div>
+    </div>
   </section>
 
-  <!-- ============ CAIXA DE PROMESSAS ============ -->
   <section class="secao" id="sec-promessas">
     <p class="rotulo-secao">Caixa de promessas</p>
     <div class="cartao">
@@ -256,13 +629,10 @@ header.barra{
     </div>
   </section>
 
-  <!-- ============ BÍBLIA ============ -->
   <section class="secao" id="sec-biblia">
     <p class="rotulo-secao">Bíblia Sagrada completa</p>
     <div class="cartao">
-      <div id="nivel-livros">
-        <div id="lista-livros"></div>
-      </div>
+      <div id="nivel-livros"><div id="lista-livros"></div></div>
       <div id="nivel-capitulos" class="oculto">
         <button class="voltar" data-volta="livros">‹ Todos os livros</button>
         <p class="grupo" id="titulo-livro"></p>
@@ -275,6 +645,17 @@ header.barra{
     </div>
   </section>
 
+  <section class="secao" id="sec-favoritos">
+    <p class="rotulo-secao">Favoritos e diário</p>
+    <div class="cartao">
+      <div class="tabs-fav">
+        <button class="tab-fav ativo" data-tab="favs">Favoritos</button>
+        <button class="tab-fav" data-tab="diario">Diário</button>
+      </div>
+      <div id="area-favoritos"></div>
+    </div>
+  </section>
+
   <p class="rodape">
     Textos de uso livre via <a href="https://api.getbible.net" target="_blank" rel="noopener">getBible</a>
     e <a href="https://bible.helloao.org" target="_blank" rel="noopener">Free Use Bible API</a>.
@@ -282,17 +663,25 @@ header.barra{
   </p>
 </main>
 
+<div class="modal-fundo" id="modal-img">
+  <div class="modal-caixa">
+    <h3>Imagem para compartilhar</h3>
+    <canvas id="canvas-verso" width="1080" height="1350"></canvas>
+    <div class="modal-acoes">
+      <button class="btn claro" id="btn-fechar-modal">Fechar</button>
+      <button class="btn" id="btn-baixar-img">Baixar imagem</button>
+    </div>
+  </div>
+</div>
+
 <div class="aviso" id="aviso" role="status" aria-live="polite"></div>
 
 <script>
-/* ===== fontes de texto: só versões de uso livre confirmado ===== */
-/* =====================================================================
-   FONTE ÚNICA: Free Use Bible API (bible.helloao.org)
-   Nenhuma versão fica fixa no código — a lista é montada em tempo de
-   execução a partir do catálogo da própria API.
-   ===================================================================== */
+  /* ===== fontes de texto: só versões de uso livre confirmado ===== */
 const VERSOES = [];
 const HELLOAO = 'https://bible.helloao.org/api';
+const BASE = 'https://api.getbible.net/v2';
+const RESERVA = 'https://bible-api.com';
 
 const LIVROS = [
   [1,'Gênesis',50,'GEN'],[2,'Êxodo',40,'EXO'],[3,'Levítico',27,'LEV'],[4,'Números',36,'NUM'],
@@ -343,38 +732,108 @@ const MEDITACOES = [
   'Guarde uma frase disso de cor para o resto do dia.'
 ];
 
+const REFLEXOES = [
+  'A Palavra não é só informação — é convite. Deus fala para nos aproximar, não para nos sobrecarregar. Receba este versículo como um olhar de amor sobre o seu dia.',
+  'Muitas vezes queremos a resposta antes de confiar. Este texto nos lembra que a segurança não está no controle, mas em quem nos segura.',
+  'Há promessas que só florescem quando paramos de correr. Hoje, permita-se ouvir sem pressa o que Deus já disse.',
+  'A fé não elimina as perguntas; ela nos dá companhia enquanto caminhamos com elas. Leve este versículo como companheiro, não como regra fria.',
+  'Deus não desperdiça palavras. Se este texto chegou até você hoje, há algo nele que o seu coração precisa ouvir — mesmo que ainda não saiba o quê.',
+  'A força de Deus não compete com a nossa fraqueza: ela a preenche. Onde você se sente pequeno, há espaço para a graça agir.',
+  'A Bíblia não foi escrita para heróis perfeitos, mas para pessoas reais. Este versículo fala com a sua humanidade, não contra ela.',
+  'Quando a ansiedade grita, a Palavra sussurra verdades mais profundas. Escolha ouvir a voz mais quieta e mais verdadeira.',
+  'Cada promessa de Deus carrega o peso da fidelidade dEle. Você não precisa merecer o que já foi dado em amor.',
+  'Há um ritmo de graça neste texto: receber, confiar, seguir. Não pule etapas. Comece simplesmente recebendo.',
+  'A direção de Deus raramente chega como mapa completo. Costuma ser a próxima luz no caminho. Este versículo pode ser essa luz hoje.',
+  'Consolo não é fuga da realidade — é a presença de Deus no meio dela. Deixe esta palavra tocar o lugar que dói.'
+];
+
+const ORACOES = [
+  'Senhor, abre o meu coração para receber o que queres dizer hoje. Ensina-me a confiar mais do que a controlar. Amém.',
+  'Pai, onde há medo, planta a Tua paz. Onde há dúvida, fortalece a minha fé. Guia os meus passos neste dia. Amém.',
+  'Deus de toda graça, obrigado por falar comigo. Ajuda-me a viver esta palavra com simplicidade e coragem. Amém.',
+  'Senhor Jesus, eu entrego a Ti o que pesa em mim. Que a Tua promessa seja mais real do que as minhas preocupações. Amém.',
+  'Espírito Santo, ilumina este texto no meu interior. Que ele se torne oração, atitude e esperança ao longo do dia. Amém.',
+  'Pai bondoso, agradeço pela Tua fidelidade. Ensina-me a descansar naquilo que Tu já garantiste. Amém.',
+  'Senhor, eu me coloco diante da Tua Palavra. Molda o meu coração e renova a minha mente. Amém.',
+  'Deus de consolo, toca as feridas que eu nem sempre sei nomear. Que a Tua presença seja suficiente hoje. Amém.',
+  'Pai, dá-me olhos para ver a Tua mão e ouvidos para ouvir a Tua voz no meio do barulho. Amém.',
+  'Senhor, que esta promessa não fique só na mente — que desça ao coração e se torne vida. Amém.',
+  'Jesus, Tu és a palavra viva. Ajuda-me a seguir-Te com confiança, um passo de cada vez. Amém.',
+  'Pai celestial, recebe a minha gratidão e as minhas perguntas. Em tudo, seja feita a Tua vontade. Amém.'
+];
+
+const CHAVE_FAVS = 'lampada-favoritos';
+function carregarFavs(){
+  try { return JSON.parse(localStorage.getItem(CHAVE_FAVS) || '[]'); }
+  catch { return []; }
+}
+function salvarFavs(lista){ localStorage.setItem(CHAVE_FAVS, JSON.stringify(lista)); }
+function chaveVerso(nr, cap, verso){ return nr + ':' + cap + ':' + verso; }
+function estaFavorito(nr, cap, verso){
+  return carregarFavs().some(f => f.chave === chaveVerso(nr, cap, verso));
+}
+function alternarFavorito(dados){
+  let lista = carregarFavs();
+  const k = chaveVerso(dados.nr, dados.cap, dados.verso);
+  const idx = lista.findIndex(f => f.chave === k);
+  if(idx >= 0){
+    lista.splice(idx, 1);
+    salvarFavs(lista);
+    avisar('Removido dos favoritos');
+    renderFavoritos();
+    return false;
+  }
+  lista.unshift({
+    chave: k, nr: dados.nr, cap: dados.cap, verso: dados.verso,
+    texto: dados.texto, versao: dados.versao, ref: dados.ref,
+    data: new Date().toISOString(), nota: ''
+  });
+  salvarFavs(lista);
+  avisar('Salvo nos favoritos');
+  renderFavoritos();
+  return true;
+}
+function atualizarNota(chave, nota){
+  const lista = carregarFavs();
+  const item = lista.find(f => f.chave === chave);
+  if(item){ item.nota = nota; salvarFavs(lista); }
+}
+function removerFav(chave){
+  salvarFavs(carregarFavs().filter(f => f.chave !== chave));
+  renderFavoritos();
+  avisar('Removido');
+}
+
 const $ = id => document.getElementById(id);
 const norm = s => (s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
 let versaoAtual = VERSOES[0];
 const cache = new Map();
 
 function avisar(msg){
-  const a = $('aviso'); a.textContent = msg; a.classList.add('ver');
-  clearTimeout(a._t); a._t = setTimeout(()=>a.classList.remove('ver'),2300);
+  const a = $('aviso');
+  a.textContent = msg;
+  a.classList.add('ver');
+  clearTimeout(a._t);
+  a._t = setTimeout(() => a.classList.remove('ver'), 2400);
 }
-function diaDoAno(d){ return Math.floor((d - new Date(d.getFullYear(),0,0))/86400000); }
+function diaDoAno(d){ return Math.floor((d - new Date(d.getFullYear(),0,0)) / 86400000); }
 function livroPorNr(nr){ return LIVROS.find(l => l.nr === nr); }
 
-/* ---------- rede ---------- */
-/* As duas APIs devolvem formatos diferentes; aqui tudo vira a mesma lista de itens:
-   {tipo:'titulo'|'verso', numero, texto} */
 function juntarPartes(partes){
   return (partes||[]).map(p => typeof p === 'string' ? p : (p && p.text ? p.text : ''))
                      .join(' ').replace(/\s+/g,' ').trim();
 }
+
 async function buscarCapitulo(nr, cap){
   const livro = livroPorNr(nr);
-  const chave = versaoAtual.fonte+'/'+versaoAtual.id+'/'+nr+'/'+cap;
+  const chave = versaoAtual.fonte + '/' + versaoAtual.id + '/' + nr + '/' + cap;
   if(cache.has(chave)) return cache.get(chave);
-
   const url = versaoAtual.fonte === 'helloao'
-    ? `${HELLOAO}/${versaoAtual.id}/${livro.sigla}/${cap}.json`
-    : `${BASE}/${versaoAtual.id}/${nr}/${cap}.json`;
-
+    ? `\( {HELLOAO}/ \){versaoAtual.id}/\( {livro.sigla}/ \){cap}.json`
+    : `\( {BASE}/ \){versaoAtual.id}/\( {nr}/ \){cap}.json`;
   const r = await fetch(url);
-  if(!r.ok) throw new Error('A fonte respondeu '+r.status+' para esse capítulo.');
+  if(!r.ok) throw new Error('A fonte respondeu ' + r.status + ' para esse capítulo.');
   const d = await r.json();
-
   let itens;
   if(versaoAtual.fonte === 'helloao'){
     if(!d || !d.chapter || !Array.isArray(d.chapter.content)) throw new Error('Resposta em formato inesperado.');
@@ -383,7 +842,7 @@ async function buscarCapitulo(nr, cap){
       .map(c => c.type === 'heading'
         ? {tipo:'titulo', texto:juntarPartes(c.content)}
         : {tipo:'verso', numero:c.number, texto:juntarPartes(c.content)});
-  }else{
+  } else {
     if(!d || !Array.isArray(d.verses)) throw new Error('Resposta em formato inesperado.');
     itens = d.verses.map(v => ({tipo:'verso', numero:v.verse, texto:(v.text||'').trim()}));
   }
@@ -391,14 +850,16 @@ async function buscarCapitulo(nr, cap){
   cache.set(chave, saida);
   return saida;
 }
+
 async function versoReserva(nr, cap, verso){
-  const url = `${RESERVA}/${encodeURIComponent(livroPorNr(nr).nome+' '+cap+':'+verso)}?translation=almeida`;
+  const url = `\( {RESERVA}/ \){encodeURIComponent(livroPorNr(nr).nome + ' ' + cap + ':' + verso)}?translation=almeida`;
   const r = await fetch(url);
-  if(!r.ok) throw new Error('reserva '+r.status);
+  if(!r.ok) throw new Error('reserva ' + r.status);
   const d = await r.json();
   if(!d.text) throw new Error('reserva vazia');
   return {texto:d.text.trim(), versao:'Almeida — fonte reserva'};
 }
+
 async function buscarVerso(nr, cap, verso){
   try{
     const d = await buscarCapitulo(nr, cap);
@@ -409,39 +870,48 @@ async function buscarVerso(nr, cap, verso){
     try{ return await versoReserva(nr, cap, verso); }catch(_){ throw e; }
   }
 }
+
 function blocoErro(msg, aoTentar){
   const d = document.createElement('div');
-  d.className='erro';
-  d.innerHTML = '<b>Não deu para carregar</b>'+msg+
-    '<ul><li>Se você está numa pré-visualização, o ambiente pode bloquear requisições externas. Baixe o arquivo e abra direto no navegador, ou publique num servidor.</li>'+
+  d.className = 'erro';
+  d.innerHTML = '<b>Não deu para carregar</b>' + msg +
+    '<ul><li>Se você está numa pré-visualização, o ambiente pode bloquear requisições externas. Baixe o arquivo e abra direto no navegador, ou publique num servidor.</li>' +
     '<li>Abra o console com F12 e veja se aparece erro de <code>CORS</code> ou de rede.</li></ul>';
   if(aoTentar){
-    const b=document.createElement('button');
-    b.className='btn claro'; b.style.marginTop='14px'; b.textContent='Tentar de novo';
-    b.onclick=aoTentar; d.appendChild(b);
+    const b = document.createElement('button');
+    b.className = 'btn claro';
+    b.style.marginTop = '14px';
+    b.textContent = 'Tentar de novo';
+    b.onclick = aoTentar;
+    d.appendChild(b);
   }
   return d;
 }
 
-/* ---------- cartão ---------- */
 function cartaoVersiculo(texto, nr, cap, verso, versao, extra){
-  const ref = `${livroPorNr(nr).nome} ${cap}:${verso}`;
+  const ref = `${livroPorNr(nr).nome} \( {cap}: \){verso}`;
   const c = document.createElement('div');
-  c.className='cartao';
+  c.className = 'cartao';
+  c.style.animation = 'fadeUp 0.35s ease both';
+  const favAtivo = estaFavorito(nr, cap, verso);
   c.innerHTML =
     `<div class="cab-cartao">
-       <div class="referencia">${ref}<small>${versao}</small></div>
+       <div class="referencia">\( {ref}<small> \){versao}</small></div>
        <div class="ferr-cartao">
          <button class="copiar" title="Copiar" aria-label="Copiar versículo">⧉</button>
          <button class="ouvir" title="Ouvir" aria-label="Ouvir versículo">🔊</button>
        </div>
      </div>
      <p class="versiculo"></p>
-     <a href="#sec-biblia" class="link-cap">Ler o capítulo completo</a>`;
+     <a href="#sec-biblia" class="link-cap">Ler o capítulo completo →</a>
+     <div class="acoes-verso">
+       <button class="btn-acao btn-fav \( {favAtivo ? 'ativo' : ''}" type="button"> \){favAtivo ? '★ Favorito' : '☆ Favoritar'}</button>
+       <button class="btn-acao btn-img" type="button">🖼 Gerar imagem</button>
+     </div>`;
   c.querySelector('.versiculo').textContent = texto;
   c.querySelector('.link-cap').onclick = e => { e.preventDefault(); abrirLeitura(nr, cap, verso); };
   c.querySelector('.copiar').onclick = () => {
-    const t = `"${texto}"\n${ref} — ${versao}`;
+    const t = `"\( {texto}"\n \){ref} — ${versao}`;
     if(navigator.share) navigator.share({text:t}).catch(()=>{});
     else if(navigator.clipboard) navigator.clipboard.writeText(t).then(()=>avisar('Versículo copiado')).catch(()=>avisar('Não foi possível copiar'));
   };
@@ -449,158 +919,202 @@ function cartaoVersiculo(texto, nr, cap, verso, versao, extra){
     if(!window.speechSynthesis) return avisar('Seu navegador não suporta leitura em voz');
     speechSynthesis.cancel();
     const f = new SpeechSynthesisUtterance(texto + '. ' + ref);
-    f.lang='pt-BR'; speechSynthesis.speak(f);
+    f.lang = 'pt-BR';
+    speechSynthesis.speak(f);
   };
+  c.querySelector('.btn-fav').onclick = function(){
+    const ativo = alternarFavorito({nr, cap, verso, texto, versao, ref});
+    this.classList.toggle('ativo', ativo);
+    this.textContent = ativo ? '★ Favorito' : '☆ Favoritar';
+  };
+  c.querySelector('.btn-img').onclick = () => abrirGeradorImagem(texto, ref, versao);
   if(extra) c.appendChild(extra);
   return c;
 }
 
-/* ---------- versículo do dia ---------- */
 async function versiculoDoDia(){
   const alvo = $('cartao-hoje');
-  alvo.innerHTML = '<div class="cartao"><div class="carregando"><span class="giro"></span> Carregando…</div></div>';
+  alvo.innerHTML = `<div class="cartao">
+    <div class="skeleton skeleton-titulo"></div>
+    <div class="skeleton skeleton-linha"></div>
+    <div class="skeleton skeleton-linha"></div>
+    <div class="skeleton skeleton-linha" style="width:75%"></div>
+  </div>`;
   const hoje = new Date();
-  const [nr,cap,verso] = TODAS[diaDoAno(hoje) % TODAS.length];
+  const dia = diaDoAno(hoje);
+  const [nr,cap,verso] = TODAS[dia % TODAS.length];
   try{
     const {texto,versao} = await buscarVerso(nr,cap,verso);
-    const med = document.createElement('div');
-    med.className='meditacao';
-    med.innerHTML = '<b>Para meditar</b><p></p>';
-    med.querySelector('p').textContent = MEDITACOES[diaDoAno(hoje) % MEDITACOES.length];
-    alvo.innerHTML='';
-    alvo.appendChild(cartaoVersiculo(texto,nr,cap,verso,versao,med));
+    const extra = document.createElement('div');
+    extra.innerHTML =
+      `<div class="bloco-devo"><span class="rotulo-bloco">Reflexão</span><p></p></div>
+       <div class="bloco-devo"><span class="rotulo-bloco">Para meditar</span><p></p></div>
+       <div class="bloco-devo oracao"><span class="rotulo-bloco">Oração</span><p></p></div>`;
+    const ps = extra.querySelectorAll('p');
+    ps[0].textContent = REFLEXOES[dia % REFLEXOES.length];
+    ps[1].textContent = MEDITACOES[dia % MEDITACOES.length];
+    ps[2].textContent = ORACOES[dia % ORACOES.length];
+    alvo.innerHTML = '';
+    alvo.appendChild(cartaoVersiculo(texto, nr, cap, verso, versao, extra));
   }catch(e){
-    alvo.innerHTML='';
-    const w = document.createElement('div'); w.className='cartao';
+    alvo.innerHTML = '';
+    const w = document.createElement('div');
+    w.className = 'cartao';
     w.appendChild(blocoErro(e.message, versiculoDoDia));
     alvo.appendChild(w);
   }
 }
 
-/* ---------- promessas ---------- */
 let temaAtual = null;
 function montarTemas(){
-  const box=$('temas'); box.innerHTML='';
-  const todos=document.createElement('button');
-  todos.className='tema ativo'; todos.textContent='Qualquer uma';
-  todos.onclick=()=>selecionarTema(null,todos);
+  const box = $('temas');
+  box.innerHTML = '';
+  const todos = document.createElement('button');
+  todos.className = 'tema ativo';
+  todos.textContent = 'Qualquer uma';
+  todos.onclick = () => selecionarTema(null, todos);
   box.appendChild(todos);
-  Object.keys(PROMESSAS).forEach(t=>{
-    const b=document.createElement('button');
-    b.className='tema'; b.textContent=t;
-    b.onclick=()=>selecionarTema(t,b);
+  Object.keys(PROMESSAS).forEach(t => {
+    const b = document.createElement('button');
+    b.className = 'tema';
+    b.textContent = t;
+    b.onclick = () => selecionarTema(t, b);
     box.appendChild(b);
   });
 }
-function selecionarTema(t,botao){
-  temaAtual=t;
-  document.querySelectorAll('.tema').forEach(x=>x.classList.remove('ativo'));
+function selecionarTema(t, botao){
+  temaAtual = t;
+  document.querySelectorAll('.tema').forEach(x => x.classList.remove('ativo'));
   botao.classList.add('ativo');
 }
 async function tirarPromessa(){
-  const area=$('area-promessa');
-  area.innerHTML='<div class="carregando"><span class="giro"></span> Abrindo a caixa…</div>';
+  const area = $('area-promessa');
+  area.innerHTML = '<div class="carregando"><span class="giro"></span> Abrindo a caixa…</div>';
   const pool = temaAtual ? PROMESSAS[temaAtual] : TODAS;
-  const [nr,cap,verso]=pool[Math.floor(Math.random()*pool.length)];
+  const [nr,cap,verso] = pool[Math.floor(Math.random() * pool.length)];
   try{
-    const {texto,versao}=await buscarVerso(nr,cap,verso);
-    area.innerHTML='';
+    const {texto,versao} = await buscarVerso(nr,cap,verso);
+    area.innerHTML = '';
     const cartao = cartaoVersiculo(texto,nr,cap,verso,versao);
-    cartao.style.border='0'; cartao.style.padding='0';
+    cartao.style.border = '0';
+    cartao.style.padding = '0';
+    cartao.style.boxShadow = 'none';
+    cartao.style.animation = 'popSuave 0.45s cubic-bezier(0.22, 1.2, 0.36, 1) both';
     area.appendChild(cartao);
-    const outra=document.createElement('div');
-    outra.style.marginTop='18px';
-    outra.innerHTML='<button class="btn claro">Tirar outra</button>';
-    outra.querySelector('button').onclick=tirarPromessa;
+    const outra = document.createElement('div');
+    outra.style.marginTop = '20px';
+    outra.innerHTML = '<button class="btn claro">Tirar outra</button>';
+    outra.querySelector('button').onclick = tirarPromessa;
     area.appendChild(outra);
   }catch(e){
-    area.innerHTML='';
-    area.appendChild(blocoErro(e.message,tirarPromessa));
+    area.innerHTML = '';
+    area.appendChild(blocoErro(e.message, tirarPromessa));
   }
 }
 
-/* ---------- bíblia ---------- */
 function desenharLivros(){
-  const alvo=$('lista-livros'); alvo.innerHTML='';
-  [['Antigo Testamento', l=>l.nr<=39],['Novo Testamento', l=>l.nr>39]].forEach(([titulo,cond])=>{
-    const h=document.createElement('p'); h.className='grupo'; h.textContent=titulo;
-    const grade=document.createElement('div'); grade.className='livros';
-    LIVROS.filter(cond).forEach(l=>{
-      const b=document.createElement('button');
-      b.className='livro';
-      b.innerHTML=`${l.nome}<small>${l.caps} cap.</small>`;
-      b.onclick=()=>abrirCapitulos(l);
+  const alvo = $('lista-livros');
+  alvo.innerHTML = '';
+  [['Antigo Testamento', l => l.nr <= 39], ['Novo Testamento', l => l.nr > 39]].forEach(([titulo,cond]) => {
+    const h = document.createElement('p');
+    h.className = 'grupo';
+    h.textContent = titulo;
+    const grade = document.createElement('div');
+    grade.className = 'livros';
+    LIVROS.filter(cond).forEach(l => {
+      const b = document.createElement('button');
+      b.className = 'livro';
+      b.innerHTML = `\( {l.nome}<small> \){l.caps} cap.</small>`;
+      b.onclick = () => abrirCapitulos(l);
       grade.appendChild(b);
     });
-    alvo.appendChild(h); alvo.appendChild(grade);
+    alvo.appendChild(h);
+    alvo.appendChild(grade);
   });
 }
+
 function abrirCapitulos(livro){
-  $('titulo-livro').textContent=livro.nome;
-  const grade=$('lista-capitulos'); grade.innerHTML='';
-  for(let i=1;i<=livro.caps;i++){
-    const b=document.createElement('button');
-    b.className='cap'; b.textContent=i;
-    b.onclick=()=>abrirLeitura(livro.nr,i);
+  $('titulo-livro').textContent = livro.nome;
+  const grade = $('lista-capitulos');
+  grade.innerHTML = '';
+  for(let i = 1; i <= livro.caps; i++){
+    const b = document.createElement('button');
+    b.className = 'cap';
+    b.textContent = i;
+    b.onclick = () => abrirLeitura(livro.nr, i);
     grade.appendChild(b);
   }
   mostrarNivel('capitulos');
-  $('sec-biblia').scrollIntoView({behavior:'smooth',block:'start'});
+  $('sec-biblia').scrollIntoView({behavior:'smooth', block:'start'});
 }
-async function abrirLeitura(nr,cap,destacar){
+
+async function abrirLeitura(nr, cap, destacar){
   mostrarNivel('leitura');
-  $('sec-biblia').scrollIntoView({behavior:'smooth',block:'start'});
-  const alvo=$('area-leitura');
-  alvo.innerHTML='<div class="carregando"><span class="giro"></span> Abrindo o capítulo…</div>';
+  $('sec-biblia').scrollIntoView({behavior:'smooth', block:'start'});
+  const alvo = $('area-leitura');
+  alvo.innerHTML = '<div class="carregando"><span class="giro"></span> Abrindo o capítulo…</div>';
   try{
-    const d=await buscarCapitulo(nr,cap);
-    alvo.innerHTML='';
-    alvo.appendChild(desenharCapitulo(d,nr,cap,destacar));
+    const d = await buscarCapitulo(nr, cap);
+    alvo.innerHTML = '';
+    alvo.appendChild(desenharCapitulo(d, nr, cap, destacar));
   }catch(e){
-    alvo.innerHTML='';
-    alvo.appendChild(blocoErro(e.message,()=>abrirLeitura(nr,cap,destacar)));
+    alvo.innerHTML = '';
+    alvo.appendChild(blocoErro(e.message, () => abrirLeitura(nr, cap, destacar)));
   }
 }
-function desenharCapitulo(dados,nr,cap,destacar){
-  const livro=livroPorNr(nr);
-  const frag=document.createElement('div');
-  const h=document.createElement('div');
-  h.className='cab-cartao';
-  h.innerHTML=`<div class="referencia">${livro.nome} ${cap}<small>${versaoAtual.nome}</small></div>`;
-  frag.appendChild(h);
 
-  dados.itens.forEach(item=>{
-    if(item.tipo==='titulo'){
-      const t=document.createElement('p'); t.className='titulo-sec'; t.textContent=item.texto;
+function desenharCapitulo(dados, nr, cap, destacar){
+  const livro = livroPorNr(nr);
+  const frag = document.createElement('div');
+  frag.style.animation = 'fadeUp 0.3s ease both';
+  const h = document.createElement('div');
+  h.className = 'cab-cartao';
+  h.innerHTML = `<div class="referencia">${livro.nome} \( {cap}<small> \){versaoAtual.nome}</small></div>`;
+  frag.appendChild(h);
+  dados.itens.forEach(item => {
+    if(item.tipo === 'titulo'){
+      const t = document.createElement('p');
+      t.className = 'titulo-sec';
+      t.textContent = item.texto;
       frag.appendChild(t);
       return;
     }
-    const p=document.createElement('span');
-    p.className='v'+(destacar===item.numero?' destaque':'');
-    const s=document.createElement('sup'); s.textContent=item.numero;
-    p.appendChild(s); p.appendChild(document.createTextNode(item.texto));
+    const p = document.createElement('span');
+    p.className = 'v' + (destacar === item.numero ? ' destaque' : '');
+    const s = document.createElement('sup');
+    s.textContent = item.numero;
+    p.appendChild(s);
+    p.appendChild(document.createTextNode(item.texto));
     frag.appendChild(p);
   });
-
-  const passos=document.createElement('div'); passos.className='passos';
-  if(cap>1 || nr>1){
-    const b=document.createElement('button'); b.className='btn claro'; b.textContent='‹ Anterior';
-    b.onclick=()=> cap>1 ? abrirLeitura(nr,cap-1) : abrirLeitura(nr-1,livroPorNr(nr-1).caps);
+  const passos = document.createElement('div');
+  passos.className = 'passos';
+  if(cap > 1 || nr > 1){
+    const b = document.createElement('button');
+    b.className = 'btn claro';
+    b.textContent = '‹ Anterior';
+    b.onclick = () => cap > 1 ? abrirLeitura(nr, cap - 1) : abrirLeitura(nr - 1, livroPorNr(nr - 1).caps);
     passos.appendChild(b);
-  }else passos.appendChild(document.createElement('span'));
-  if(cap<livro.caps || nr<66){
-    const b=document.createElement('button'); b.className='btn'; b.textContent='Próximo ›';
-    b.onclick=()=> cap<livro.caps ? abrirLeitura(nr,cap+1) : abrirLeitura(nr+1,1);
+  } else {
+    passos.appendChild(document.createElement('span'));
+  }
+  if(cap < livro.caps || nr < 66){
+    const b = document.createElement('button');
+    b.className = 'btn';
+    b.textContent = 'Próximo ›';
+    b.onclick = () => cap < livro.caps ? abrirLeitura(nr, cap + 1) : abrirLeitura(nr + 1, 1);
     passos.appendChild(b);
   }
   frag.appendChild(passos);
   return frag;
 }
+
 function mostrarNivel(nivel){
-  ['livros','capitulos','leitura'].forEach(n=>$('nivel-'+n).classList.toggle('oculto', n!==nivel));
+  ['livros','capitulos','leitura'].forEach(n =>
+    $('nivel-' + n).classList.toggle('oculto', n !== nivel)
+  );
 }
 
-/* ---------- busca por referência ---------- */
 function buscarReferencia(){
   const txt = $('busca').value.trim();
   if(!txt) return;
@@ -611,64 +1125,57 @@ function buscarReferencia(){
              || LIVROS.find(l => norm(l.nome).startsWith(alvo))
              || LIVROS.find(l => norm(l.nome).includes(alvo));
   if(!livro) return avisar('Livro não encontrado: ' + m[1]);
-  const cap = Math.min(parseInt(m[2],10), livro.caps);
-  abrirLeitura(livro.nr, cap, m[3] ? parseInt(m[3],10) : undefined);
+  const cap = Math.min(parseInt(m[2], 10), livro.caps);
+  abrirLeitura(livro.nr, cap, m[3] ? parseInt(m[3], 10) : undefined);
 }
 
-/* ---------- versões e controles ---------- */
-const chaveVersao = v => v.fonte+':'+v.id;
+const chaveVersao = v => v.fonte + ':' + v.id;
 function creditar(){
-  $('creditos').textContent = 'Exibindo: '+versaoAtual.nome+' ('+versaoAtual.licenca+').';
+  $('creditos').textContent = ' Exibindo: ' + versaoAtual.nome + ' (' + versaoAtual.licenca + ').';
 }
 function montarVersoes(){
-  const sel=$('sel-versao');
-  sel.innerHTML='';
+  const sel = $('sel-versao');
+  sel.innerHTML = '';
   const grupos = {
-    getbible:{rotulo:'getBible', el:document.createElement('optgroup')},
-    helloao :{rotulo:'Free Use Bible API', el:document.createElement('optgroup')}
+    getbible: {rotulo:'getBible', el:document.createElement('optgroup')},
+    helloao:  {rotulo:'Free Use Bible API', el:document.createElement('optgroup')}
   };
   Object.values(grupos).forEach(g => g.el.label = g.rotulo);
-
-  VERSOES.slice().sort((a,b)=>(a.nome||'').localeCompare(b.nome||'','pt-BR')).forEach(v=>{
-    const o=document.createElement('option');
-    o.value=chaveVersao(v); o.textContent=v.nome+' — '+v.licenca;
+  VERSOES.slice().sort((a,b) => (a.nome||'').localeCompare(b.nome||'','pt-BR')).forEach(v => {
+    const o = document.createElement('option');
+    o.value = chaveVersao(v);
+    o.textContent = v.nome + ' — ' + v.licenca;
     grupos[v.fonte].el.appendChild(o);
   });
-  Object.values(grupos).forEach(g=>{ if(g.el.children.length) sel.appendChild(g.el); });
-
-  sel.value=chaveVersao(versaoAtual);
-  creditar();
-  sel.onchange=()=>{
+  Object.values(grupos).forEach(g => { if(g.el.children.length) sel.appendChild(g.el); });
+  if(versaoAtual) sel.value = chaveVersao(versaoAtual);
+  if(versaoAtual) creditar();
+  sel.onchange = () => {
     versaoAtual = VERSOES.find(v => chaveVersao(v) === sel.value);
     creditar();
     cacheLimpo();
     mostrarNivel('livros');
     versiculoDoDia();
-    avisar('Versão: '+versaoAtual.nome);
+    avisar('Versão: ' + versaoAtual.nome);
   };
 }
-function cacheLimpo(){ /* o cache já é indexado por fonte+versão, nada a limpar */ }
+function cacheLimpo(){}
 
-/* =====================================================================
-   DESCOBERTA DE VERSÕES
-   Varre os catálogos das duas APIs e traz tudo que for português e
-   de licença livre. As três versões fixas acima garantem que o app
-   funcione mesmo que nenhuma descoberta responda.
-   ===================================================================== */
 const LICENCA_LIVRE = /dom[ií]nio p[úu]blico|public domain|creative commons|\bcc[ -]?by\b|\bgpl\b|\bgfdl\b|freely distributable|free use|uso livre/i;
 const LICENCA_RESTRITA = /non-?commercial|n[ãa]o comercial|all rights reserved|permission (to distribute )?granted/i;
 function ehLivre(txt){
-  const t=(txt||'').trim();
+  const t = (txt||'').trim();
   if(!t) return false;
   if(LICENCA_RESTRITA.test(t)) return false;
   return LICENCA_LIVRE.test(t);
 }
 function acrescentar(novas){
-  let add=0;
-  novas.forEach(v=>{
+  let add = 0;
+  novas.forEach(v => {
     if(!v.id) return;
-    if(VERSOES.some(x => x.fonte===v.fonte && x.id===v.id)) return;
-    VERSOES.push(v); add++;
+    if(VERSOES.some(x => x.fonte === v.fonte && x.id === v.id)) return;
+    VERSOES.push(v);
+    add++;
   });
   if(add) montarVersoes();
   return add;
@@ -676,65 +1183,231 @@ function acrescentar(novas){
 async function descobrirGetbible(){
   try{
     const r = await fetch(`${BASE}/translations.json`);
-    if(!r.ok) throw new Error('status '+r.status);
+    if(!r.ok) throw new Error('status ' + r.status);
     const d = await r.json();
     const pt = Object.values(d).filter(t =>
       (t.lang||'').toLowerCase().startsWith('pt') && ehLivre(t.distribution_license));
     return acrescentar(pt.map(t => ({
-      fonte:'getbible',
-      id:t.abbreviation,
-      nome:t.translation || t.description || t.abbreviation,
-      licenca:t.distribution_license
+      fonte: 'getbible',
+      id: t.abbreviation,
+      nome: t.translation || t.description || t.abbreviation,
+      licenca: t.distribution_license
     })));
   }catch(e){ console.info('getBible: catálogo não carregado —', e.message); return 0; }
 }
 async function descobrirHelloao(){
   try{
     const r = await fetch(`${HELLOAO}/available_translations.json`);
-    if(!r.ok) throw new Error('status '+r.status);
+    if(!r.ok) throw new Error('status ' + r.status);
     const d = await r.json();
-    const pt = (d.translations||[]).filter(t=>{
-      const lin = ((t.language||'')+' '+(t.languageName||'')+' '+(t.languageEnglishName||'')).toLowerCase();
+    const pt = (d.translations||[]).filter(t => {
+      const lin = ((t.language||'') + ' ' + (t.languageName||'') + ' ' + (t.languageEnglishName||'')).toLowerCase();
       return lin.trim().startsWith('por') || lin.includes('portug');
     });
     return acrescentar(pt.map(t => ({
-      fonte:'helloao',
-      id:t.id,
-      nome:t.name || t.englishName || t.id,
-      licenca:'Uso livre'
+      fonte: 'helloao',
+      id: t.id,
+      nome: t.name || t.englishName || t.id,
+      licenca: 'Uso livre'
     })));
   }catch(e){ console.info('helloao: catálogo não carregado —', e.message); return 0; }
 }
 async function descobrirTudo(){
   const [a,b] = await Promise.all([descobrirGetbible(), descobrirHelloao()]);
   const n = a + b;
-  console.info('Versões em português disponíveis:', VERSOES.length,
-               '(getBible +'+a+', helloao +'+b+')');
-  if(n) avisar(n===1 ? '1 versão adicionada' : n+' versões adicionadas');
+  console.info('Versões em português disponíveis:', VERSOES.length, '(getBible +' + a + ', helloao +' + b + ')');
+  if(n) avisar(n === 1 ? '1 versão adicionada' : n + ' versões adicionadas');
+  if(VERSOES.length && !versaoAtual){
+    versaoAtual = VERSOES[0];
+    montarVersoes();
+    versiculoDoDia();
+  }
 }
-function abrirMenu(estado){
-  $('gaveta').classList.toggle('aberta',estado);
-  $('veu').classList.toggle('aberto',estado);
-}
-$('btn-menu').onclick=()=>abrirMenu(true);
-$('veu').onclick=()=>abrirMenu(false);
-document.querySelectorAll('[data-fecha]').forEach(a=>a.onclick=()=>abrirMenu(false));
-$('btn-busca').onclick=buscarReferencia;
-$('busca').onkeydown=e=>{ if(e.key==='Enter') buscarReferencia(); };
-$('btn-livros').onclick=()=>{ mostrarNivel('livros'); $('sec-biblia').scrollIntoView({behavior:'smooth'}); };
-$('btn-fonte').onclick=()=>$('tamanhos').classList.toggle('aberto');
-document.querySelectorAll('#tamanhos button').forEach(b=>{
-  b.onclick=()=>document.documentElement.style.setProperty('--esc', b.dataset.esc);
-});
-document.querySelectorAll('.voltar').forEach(b=>b.onclick=()=>mostrarNivel(b.dataset.volta));
-$('btn-tirar').onclick=tirarPromessa;
 
-/* ---------- início ---------- */
+let imgAtual = { texto: '', ref: '', versao: '' };
+function abrirGeradorImagem(texto, ref, versao){
+  imgAtual = { texto, ref, versao };
+  $('modal-img').classList.add('aberto');
+  desenharImagem();
+}
+function fecharModalImg(){ $('modal-img').classList.remove('aberto'); }
+
+function desenharImagem(){
+  const canvas = $('canvas-verso');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const escuro = document.documentElement.getAttribute('data-tema') === 'escuro';
+  const grad = ctx.createLinearGradient(0, 0, 0, H);
+  if(escuro){ grad.addColorStop(0, '#152238'); grad.addColorStop(1, '#0F141C'); }
+  else { grad.addColorStop(0, '#1A4A82'); grad.addColorStop(1, '#123665'); }
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, W, H);
+  ctx.fillStyle = 'rgba(255,255,255,0.03)';
+  for(let i = 0; i < 40; i++){
+    ctx.beginPath();
+    ctx.arc(Math.random()*W, Math.random()*H, Math.random()*2, 0, Math.PI*2);
+    ctx.fill();
+  }
+  ctx.fillStyle = 'rgba(255,203,74,0.85)';
+  ctx.fillRect(0, 0, W, 8);
+  ctx.fillStyle = 'rgba(255,255,255,0.7)';
+  ctx.font = '500 36px "Source Sans 3", system-ui, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('Lâmpada', W/2, 110);
+  ctx.strokeStyle = 'rgba(255,203,74,0.5)';
+  ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(W*0.35, 140); ctx.lineTo(W*0.65, 140); ctx.stroke();
+  const margem = 100, maxW = W - margem*2;
+  ctx.fillStyle = '#FFFFFF';
+  ctx.font = '400 52px "Source Serif 4", Georgia, serif';
+  const palavras = imgAtual.texto.split(/\s+/);
+  const linhas = [];
+  let linha = '';
+  palavras.forEach(p => {
+    const teste = linha ? linha + ' ' + p : p;
+    if(ctx.measureText(teste).width > maxW){ if(linha) linhas.push(linha); linha = p; }
+    else linha = teste;
+  });
+  if(linha) linhas.push(linha);
+  const lineH = 72;
+  let y = (H - linhas.length*lineH)/2 - 20;
+  linhas.forEach(l => { ctx.fillText(l, W/2, y); y += lineH; });
+  ctx.fillStyle = 'rgba(255,203,74,0.95)';
+  ctx.font = '600 34px "Source Sans 3", system-ui, sans-serif';
+  ctx.fillText(imgAtual.ref, W/2, y + 50);
+  ctx.fillStyle = 'rgba(255,255,255,0.45)';
+  ctx.font = '400 26px "Source Sans 3", system-ui, sans-serif';
+  ctx.fillText(imgAtual.versao, W/2, y + 100);
+  ctx.fillStyle = 'rgba(255,255,255,0.3)';
+  ctx.font = '400 24px "Source Sans 3", system-ui, sans-serif';
+  ctx.fillText('Devocional diário', W/2, H - 70);
+}
+
+function baixarImagem(){
+  const canvas = $('canvas-verso');
+  const link = document.createElement('a');
+  link.download = 'lampada-' + (imgAtual.ref || 'versiculo').replace(/\s+/g, '-').toLowerCase() + '.png';
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+  avisar('Imagem baixada');
+}
+
+let tabFavAtual = 'favs';
+function renderFavoritos(){
+  const area = $('area-favoritos');
+  if(!area) return;
+  const lista = carregarFavs();
+  if(tabFavAtual === 'favs'){
+    if(!lista.length){
+      area.innerHTML = '<div class="vazio-fav">Nenhum favorito ainda.<br>Toque em ☆ Favoritar em qualquer versículo.</div>';
+      return;
+    }
+    area.innerHTML = '';
+    lista.forEach((f, i) => {
+      const el = document.createElement('div');
+      el.className = 'item-fav';
+      el.style.animationDelay = (i * 0.04) + 's';
+      el.innerHTML =
+        `<div class="ref-fav">${f.ref}</div>
+         <div class="txt-fav">${f.texto}</div>
+         <div class="meta-fav">
+           <span>${f.versao} · ${new Date(f.data).toLocaleDateString('pt-BR')}</span>
+           <button class="btn-remover" type="button">Remover</button>
+         </div>`;
+      el.querySelector('.btn-remover').onclick = () => removerFav(f.chave);
+      area.appendChild(el);
+    });
+  } else {
+    if(!lista.length){
+      area.innerHTML = '<div class="vazio-fav">Salve um versículo nos favoritos para escrever uma nota.</div>';
+      return;
+    }
+    area.innerHTML = '';
+    lista.forEach((f, i) => {
+      const el = document.createElement('div');
+      el.className = 'item-fav';
+      el.style.animationDelay = (i * 0.04) + 's';
+      el.innerHTML =
+        `<div class="ref-fav">${f.ref}</div>
+         <div class="txt-fav">${f.texto.length > 120 ? f.texto.slice(0,120)+'…' : f.texto}</div>
+         <textarea class="campo-nota" placeholder="Escreva uma reflexão ou oração…">${f.nota || ''}</textarea>
+         <div class="meta-fav" style="margin-top:8px">
+           <span>${new Date(f.data).toLocaleDateString('pt-BR')}</span>
+           <button class="btn-remover" type="button">Remover</button>
+         </div>`;
+      const ta = el.querySelector('.campo-nota');
+      ta.onchange = () => atualizarNota(f.chave, ta.value);
+      ta.onblur = () => atualizarNota(f.chave, ta.value);
+      el.querySelector('.btn-remover').onclick = () => removerFav(f.chave);
+      area.appendChild(el);
+    });
+  }
+}
+
+function aplicarTema(tema){
+  document.documentElement.setAttribute('data-tema', tema);
+  localStorage.setItem('lampada-tema', tema);
+  const btn = $('btn-tema');
+  if(btn) btn.textContent = tema === 'escuro' ? '☀' : '◐';
+}
+function alternarTema(){
+  const atual = document.documentElement.getAttribute('data-tema') || 'claro';
+  aplicarTema(atual === 'escuro' ? 'claro' : 'escuro');
+}
+
+(function initTema(){
+  const salvo = localStorage.getItem('lampada-tema');
+  const prefereEscuro = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  aplicarTema(salvo || (prefereEscuro ? 'escuro' : 'claro'));
+})();
+
+$('btn-tema').onclick = alternarTema;
+$('btn-menu').onclick = () => abrirMenu(true);
+$('veu').onclick = () => abrirMenu(false);
+document.querySelectorAll('[data-fecha]').forEach(a => a.onclick = () => abrirMenu(false));
+$('btn-busca').onclick = buscarReferencia;
+$('busca').onkeydown = e => { if(e.key === 'Enter') buscarReferencia(); };
+$('btn-livros').onclick = () => { mostrarNivel('livros'); $('sec-biblia').scrollIntoView({behavior:'smooth'}); };
+$('btn-fonte').onclick = () => $('tamanhos').classList.toggle('aberto');
+document.querySelectorAll('#tamanhos button').forEach(b => {
+  b.onclick = () => document.documentElement.style.setProperty('--esc', b.dataset.esc);
+});
+document.querySelectorAll('.voltar').forEach(b => b.onclick = () => mostrarNivel(b.dataset.volta));
+$('btn-tirar').onclick = tirarPromessa;
+$('btn-fechar-modal').onclick = fecharModalImg;
+$('btn-baixar-img').onclick = baixarImagem;
+$('modal-img').onclick = e => { if(e.target === $('modal-img')) fecharModalImg(); };
+document.querySelectorAll('.tab-fav').forEach(tab => {
+  tab.onclick = () => {
+    document.querySelectorAll('.tab-fav').forEach(t => t.classList.remove('ativo'));
+    tab.classList.add('ativo');
+    tabFavAtual = tab.dataset.tab;
+    renderFavoritos();
+  };
+});
+document.addEventListener('pointerdown', e => {
+  const btn = e.target.closest('.btn:not(.claro)');
+  if(!btn) return;
+  const rect = btn.getBoundingClientRect();
+  btn.style.setProperty('--x', ((e.clientX - rect.left) / rect.width * 100) + '%');
+  btn.style.setProperty('--y', ((e.clientY - rect.top) / rect.height * 100) + '%');
+});
+function abrirMenu(estado){
+  $('gaveta').classList.toggle('aberta', estado);
+  $('veu').classList.toggle('aberto', estado);
+}
+
 montarVersoes();
+renderFavoritos();
 montarTemas();
 desenharLivros();
-versiculoDoDia();
-descobrirTudo();
+descobrirTudo().then(() => {
+  if(VERSOES.length){
+    versaoAtual = VERSOES[0];
+    montarVersoes();
+    versiculoDoDia();
+  }
+});
 </script>
 </body>
 </html>
