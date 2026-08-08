@@ -2607,17 +2607,36 @@ function atualizarStatusPWA(){
   if(!el) return;
   const standalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone;
   const notif = ('Notification' in window) ? Notification.permission : 'unsupported';
+  const pushOn = localStorage.getItem('lampada-lembrete') === '1';
   let t = [];
   if(standalone) t.push('App instalado.');
-  if(notif === 'granted') t.push('Lembrete permitido.');
+  if(pushOn && notif === 'granted') t.push('Web Push ativo (lembrete ~8h).');
+  else if(notif === 'granted') t.push('Notificações permitidas — toque em “Ativar lembrete diário”.');
   else if(notif === 'denied') t.push('Notificações bloqueadas no navegador.');
   else if(notif === 'unsupported') t.push('Notificações não disponíveis neste navegador.');
-  el.textContent = t.join(' ') || 'Você pode instalar o app e ativar um lembrete diário.';
+  el.textContent = t.join(' ') || 'Instale o app e ative o Web Push para o lembrete diário.';
+}
+
+function urlBase64ToUint8Array(base64String){
+  const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
+  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+  const raw = atob(base64);
+  const arr = new Uint8Array(raw.length);
+  for(let i = 0; i < raw.length; i++) arr[i] = raw.charCodeAt(i);
+  return arr;
+}
+
+async function obterChaveVapid(){
+  const r = await fetch('/api/vapid-public');
+  if(!r.ok) throw new Error('Chave VAPID indisponível no servidor');
+  const d = await r.json();
+  if(!d.publicKey) throw new Error('Chave pública vazia');
+  return d.publicKey;
 }
 
 async function pedirLembrete(){
-  if(!('Notification' in window)){
-    avisar('Seu navegador não suporta notificações');
+  if(!('Notification' in window) || !('serviceWorker' in navigator) || !('PushManager' in window)){
+    avisar('Este navegador não suporta Web Push');
     return;
   }
   let perm = Notification.permission;
@@ -2627,48 +2646,62 @@ async function pedirLembrete(){
     atualizarStatusPWA();
     return;
   }
-  localStorage.setItem('lampada-lembrete', '1');
-  // Notificação de confirmação imediata
+
   try {
-    if(navigator.serviceWorker && navigator.serviceWorker.ready){
-      const reg = await navigator.serviceWorker.ready;
+    const reg = await navigator.serviceWorker.ready;
+    const publicKey = await obterChaveVapid();
+    let sub = await reg.pushManager.getSubscription();
+    if(!sub){
+      sub = await reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(publicKey)
+      });
+    }
+    const resp = await fetch('/api/subscribe', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ subscription: sub.toJSON() })
+    });
+    const data = await resp.json().catch(() => ({}));
+    if(!resp.ok){
+      throw new Error(data.error || data.hint || ('Erro ' + resp.status));
+    }
+    localStorage.setItem('lampada-lembrete', '1');
+    try {
       reg.showNotification('Lâmpada', {
-        body: 'Lembrete ativado. Abra o app cada manhã para o devocional.',
+        body: 'Web Push ativado. Você receberá o lembrete diário por volta das 8h.',
         icon: '/icon-192.png',
         badge: '/icon-192.png'
       });
-    } else {
-      new Notification('Lâmpada', { body: 'Lembrete ativado. Volte amanhã para o devocional do dia.' });
+    } catch(_) {}
+    avisar('Lembrete Web Push ativado');
+  } catch(e){
+    console.info(e);
+    avisar(e.message || 'Não foi possível ativar o Web Push');
+  }
+  atualizarStatusPWA();
+}
+
+async function desativarLembrete(){
+  try {
+    const reg = await navigator.serviceWorker.ready;
+    const sub = await reg.pushManager.getSubscription();
+    if(sub){
+      await fetch('/api/unsubscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ endpoint: sub.endpoint })
+      }).catch(() => {});
+      await sub.unsubscribe();
     }
   } catch(_) {}
-  // Agendar lembrete local simples (enquanto o app estiver aberto / SW ativo)
-  agendarLembreteDiario();
-  avisar('Lembrete diário ativado');
+  localStorage.removeItem('lampada-lembrete');
+  avisar('Lembrete desativado');
   atualizarStatusPWA();
 }
 
 function agendarLembreteDiario(){
-  if(localStorage.getItem('lampada-lembrete') !== '1') return;
-  if(!('Notification' in window) || Notification.permission !== 'granted') return;
-  const agora = new Date();
-  const alvo = new Date();
-  alvo.setHours(8, 0, 0, 0);
-  if(alvo <= agora) alvo.setDate(alvo.getDate() + 1);
-  const ms = alvo - agora;
-  setTimeout(async () => {
-    try {
-      if(navigator.serviceWorker){
-        const reg = await navigator.serviceWorker.ready;
-        reg.showNotification('Lâmpada · Devocional do dia', {
-          body: 'Seu encontro diário com a Palavra está pronto.',
-          icon: '/icon-192.png',
-          badge: '/icon-192.png',
-          tag: 'devocional-diario'
-        });
-      }
-    } catch(_) {}
-    agendarLembreteDiario();
-  }, Math.min(ms, 2147483647));
+  /* Mantido como fallback local se o app estiver aberto; o envio real é via /api/daily-push */
 }
 
 const btnInstalar = $('btn-instalar-pwa');

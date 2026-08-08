@@ -1,0 +1,9 @@
+{
+  "name": "devocionaldiario",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Lâmpada — devocional diário e Bíblia Sagrada",
+  "dependencies": {
+    "web-push": "^3.6.7"
+  }
+}
