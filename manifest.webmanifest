@@ -1,7 +1,7 @@
 {
-  "name": "Lâmpada · Devocional diário",
-  "short_name": "Lâmpada",
-  "description": "Devocional diário, caixa de promessas e Bíblia Sagrada em versões de uso livre.",
+  "name": "Bíblia Devocional",
+  "short_name": "Bíblia Devocional",
+  "description": "Devocional do dia, caixa de promessas e a Bíblia Sagrada completa, com leitura em voz.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

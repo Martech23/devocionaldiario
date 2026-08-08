@@ -30,7 +30,7 @@ module.exports = async function handler(req, res) {
   webpush.setVapidDetails(subject, publicKey, privateKey);
 
   const payload = JSON.stringify({
-    title: 'Lâmpada · Devocional do dia',
+    title: 'Bíblia Devocional · Devocional do dia',
     body: 'Seu encontro diário com a Palavra está pronto. Abra e medite.',
     url: '/',
     tag: 'devocional-diario'

@@ -1,5 +1,5 @@
-/* Service Worker — Lâmpada PWA + Web Push */
-const CACHE = 'lampada-v7';
+/* Service Worker — Bíblia Devocional PWA + Web Push */
+const CACHE = 'lampada-v8';
 const PRECACHE = [
   '/',
   '/index.html',
@@ -60,7 +60,7 @@ self.addEventListener('fetch', (event) => {
 
 self.addEventListener('push', (event) => {
   let data = {
-    title: 'Lâmpada · Devocional do dia',
+    title: 'Bíblia Devocional · Devocional do dia',
     body: 'Seu encontro diário com a Palavra está pronto.',
     url: '/',
     tag: 'devocional-diario'
