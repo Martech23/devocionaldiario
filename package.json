@@ -4,6 +4,7 @@
   "version": "1.0.0",
   "description": "Lâmpada — devocional diário e Bíblia Sagrada",
   "dependencies": {
+    "@vercel/analytics": "^2.0.1",
     "web-push": "^3.6.7"
   }
 }
