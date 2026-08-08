@@ -111,9 +111,10 @@ exigiria licença e chave de API, e mataria o funcionamento offline. Desenhado,
 o app segue estático, sem dependência externa e sem risco de direito autoral.
 
 O fundo é escolhido a partir da referência, então o mesmo versículo gera
-sempre a mesma imagem — e o botão **Trocar fundo** percorre os dez. O tamanho
-da fonte se ajusta sozinho ao comprimento do texto, e um véu suave atrás do
-bloco garante leitura em qualquer cena.
+sempre a mesma imagem — e o botão **Trocar fundo** percorre os dez, com o
+nome da cena logo ao lado. O tamanho da fonte se ajusta sozinho ao
+comprimento do texto, e um véu suave atrás do bloco garante leitura em
+qualquer cena.
 
 Onde o aparelho permite, **Compartilhar** envia o PNG direto para o WhatsApp
 ou o Instagram; onde não, cai para o download.
