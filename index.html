@@ -1986,7 +1986,7 @@ html[data-tema="escuro"] .painel-config header { background: #152238; }
       <span class="seta-config" aria-hidden="true">›</span>
     </button>
   </div>
-  <p class="nota">Somente versões de uso livre: Almeida (1911, domínio público) e Bíblia Livre (CC BY 3.0 Brasil).</p>
+  <p class="nota">Somente versões de uso livre em português atual: Bíblia Livre (CC BY 3.0 Brasil) e Nova Bíblia Viva (Open).</p>
 </aside>
 
 <!-- Painel de configuração da leitura em voz — abre pelo menu lateral -->
@@ -2307,18 +2307,16 @@ html[data-tema="escuro"] .painel-config header { background: #152238; }
 </div>
 
 <script>
-/* ===== fontes de texto: só versões de uso livre confirmado ===== */
+/* ===== fontes de texto: uso livre confirmado e ortografia atual ===== */
 /* Versões semente — funcionam mesmo se o catálogo remoto falhar */
 const VERSOES = [
-  { fonte: 'getbible', id: 'almeida', nome: 'Almeida Atualizada', licenca: 'GPL / domínio público' },
   { fonte: 'getbible', id: 'livre', nome: 'Bíblia Livre', licenca: 'CC BY 3.0 Brasil' },
-  { fonte: 'getbible', id: 'livretr', nome: 'Bíblia Livre (TR)', licenca: 'CC BY 3.0 Brasil' },
-  { fonte: 'helloao', id: 'por_blj', nome: 'Bíblia Livre (helloao)', licenca: 'Uso livre' },
+  { fonte: 'getbible', id: 'livretr', nome: 'Bíblia Livre (Texto Recebido)', licenca: 'CC BY 3.0 Brasil' },
+  { fonte: 'helloao', id: 'por_blj', nome: 'Bíblia Livre (fonte alternativa)', licenca: 'Uso livre' },
   { fonte: 'helloao', id: 'por_onbv', nome: 'Nova Bíblia Viva (Open)', licenca: 'Uso livre' }
 ];
 const HELLOAO = 'https://bible.helloao.org/api';
 const BASE = 'https://api.getbible.net/v2';
-const RESERVA = 'https://bible-api.com';
 
 const LIVROS = [
   [1,'Gênesis',50,'GEN'],[2,'Êxodo',40,'EXO'],[3,'Levítico',27,'LEV'],[4,'Números',36,'NUM'],
@@ -3384,8 +3382,8 @@ async function buscarCapitulo(nr, cap){
   try {
     return await tentar(versaoAtual);
   } catch(e1) {
-    // Fallback automático para Almeida (getBible) se a versão atual falhar
-    const fallback = VERSOES.find(v => v.id === 'almeida') || VERSOES[0];
+    // Fallback automático para a Bíblia Livre se a versão atual falhar
+    const fallback = VERSOES.find(v => v.id === 'livre') || VERSOES[0];
     if(fallback && fallback.id !== versaoAtual.id){
       try {
         const r = await tentar(fallback);
@@ -3397,24 +3395,11 @@ async function buscarCapitulo(nr, cap){
   }
 }
 
-async function versoReserva(nr, cap, verso){
-  const url = `${RESERVA}/${encodeURIComponent(livroPorNr(nr).nome + ' ' + cap + ':' + verso)}?translation=almeida`;
-  const r = await fetch(url);
-  if(!r.ok) throw new Error('reserva ' + r.status);
-  const d = await r.json();
-  if(!d.text) throw new Error('reserva vazia');
-  return {texto:d.text.trim(), versao:'Almeida — fonte reserva'};
-}
-
 async function buscarVerso(nr, cap, verso){
-  try{
-    const d = await buscarCapitulo(nr, cap);
-    const v = d.itens.find(x => x.tipo === 'verso' && x.numero === verso);
-    if(!v) throw new Error('Versículo não existe nesta versão.');
-    return {texto:v.texto, versao:versaoAtual.nome};
-  }catch(e){
-    try{ return await versoReserva(nr, cap, verso); }catch(_){ throw e; }
-  }
+  const d = await buscarCapitulo(nr, cap);
+  const v = d.itens.find(x => x.tipo === 'verso' && x.numero === verso);
+  if(!v) throw new Error('Versículo não existe nesta versão.');
+  return {texto:v.texto, versao:versaoAtual.nome};
 }
 
 function blocoErro(msg, aoTentar){
@@ -3997,11 +3982,21 @@ function ehLivre(txt){
   if(LICENCA_RESTRITA.test(t)) return false;
   return LICENCA_LIVRE.test(t);
 }
+/* Edições anteriores às reformas ortográficas ficam de fora: o texto de
+   1911 escreve "Portuguez", "elle", "Christo". O catálogo remoto oferece
+   várias delas, então o filtro precisa valer também para o que é
+   descoberto em tempo de execução, não só para a lista semente. */
+const VERSAO_ARCAICA = /almeida|1819|1911|corrigida|portuguez|\bacf\b|\barc\b|antiga/i;
+function ehArcaica(v){
+  return VERSAO_ARCAICA.test((v.id || '') + ' ' + (v.nome || ''));
+}
+
 function acrescentar(novas){
   let add = 0;
   novas.forEach(v => {
     if(!v.id) return;
     if(VERSOES.some(x => x.fonte === v.fonte && x.id === v.id)) return;
+    if(ehArcaica(v)) return;
     VERSOES.push(v);
     add++;
   });
