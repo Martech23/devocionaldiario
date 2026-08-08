@@ -3986,9 +3986,17 @@ function ehLivre(txt){
    1911 escreve "Portuguez", "elle", "Christo". O catálogo remoto oferece
    várias delas, então o filtro precisa valer também para o que é
    descoberto em tempo de execução, não só para a lista semente. */
-const VERSAO_ARCAICA = /almeida|1819|1911|corrigida|portuguez|\bacf\b|\barc\b|antiga/i;
+const VERSAO_ARCAICA = /almeida|1819|1911|corrigida|portuguez|\bacf\b|\barc\b/i;
+
+/* A Bíblia Livre é uma modernização do Almeida e circula com nomes como
+   "Bíblia Almeida - BLIVRE". Sem esta ressalva o filtro acima derrubaria
+   uma versão moderna e livre por causa de uma palavra no nome. */
+const VERSAO_MODERNA = /livre|blivre|viva|contempor[âa]nea|\bnvt\b|linguagem de hoje/i;
+
 function ehArcaica(v){
-  return VERSAO_ARCAICA.test((v.id || '') + ' ' + (v.nome || ''));
+  const t = (v.id || '') + ' ' + (v.nome || '');
+  if(VERSAO_MODERNA.test(t)) return false;
+  return VERSAO_ARCAICA.test(t);
 }
 
 function acrescentar(novas){
