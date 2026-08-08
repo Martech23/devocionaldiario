@@ -61,13 +61,18 @@ Vozes → Português (Brasil).
 ## Ditado por voz
 
 Quem não lê também não escreve. O microfone aparece na busca, na nota do
-versículo e no campo de oração, usando `SpeechRecognition` — sem servidor.
+versículo, no campo de oração e em cada nota do diário, usando
+`SpeechRecognition` — sem servidor.
+
+No diário, o ditado é anexado ao que já estava escrito e salvo na hora, sem
+precisar sair do campo.
 
 Na busca, números falados viram referência: "João três dezesseis" e
 "Gênesis capítulo um versículo três" chegam como `João 3:16` e `Gênesis 1:3`.
 
-Só funciona onde o navegador implementa a API — hoje, na prática, Chrome e
-Safari. Onde não houver, o app avisa em vez de falhar em silêncio.
+Onde o navegador não implementa a API, os microfones somem em vez de
+oferecer um botão que só sabe avisar que não funciona — os mesmos campos
+continuam editáveis por escrito.
 
 ## Web Push — configuração na Vercel
 

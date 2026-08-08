@@ -1438,6 +1438,22 @@ html[data-tema="escuro"] {
   50%      { box-shadow: 0 0 0 8px rgba(192, 57, 47, 0); }
 }
 
+/* linha de ditado sob um campo de texto */
+.linha-ditar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+}
+.btn-mic.btn-mic-sm { width: 38px; height: 38px; font-size: 15px; }
+.dica-ditar { font-size: 12px; color: var(--texto-3); line-height: 1.35; }
+
+/* Sem SpeechRecognition no navegador, some com tudo que depende dele —
+   melhor do que oferecer um botão que só sabe avisar que não funciona. */
+html[data-ditado="0"] .btn-mic,
+html[data-ditado="0"] .linha-ditar,
+html[data-ditado="0"] #btn-busca-voz { display: none; }
+
 /* ---------------- comparação de versões ---------------- */
 .comp-item {
   padding: 14px 0;
@@ -4230,6 +4246,10 @@ function renderFavoritos(){
            <div class="ref-fav"></div>
            <div class="txt-fav"></div>
            <textarea class="campo-nota" placeholder="Escreva uma reflexão ou oração…"></textarea>
+           <div class="linha-ditar">
+             <button class="btn-mic btn-mic-sm" type="button" aria-label="Ditar esta nota" title="Ditar">🎤</button>
+             <span class="dica-ditar">Toque para ditar em vez de escrever</span>
+           </div>
            <div class="meta-fav" style="margin-top:8px">
              <span></span>
              <button class="btn-remover" type="button">Remover</button>
@@ -4253,6 +4273,15 @@ function renderFavoritos(){
       };
       ta.onchange = gravar;
       ta.onblur = gravar;
+
+      /* ditado grava na hora: quem dita costuma não voltar ao campo */
+      el.querySelector('.btn-mic').onclick = function(){
+        Ditado.ouvir(this, dito => {
+          ta.value = (ta.value ? ta.value.trim() + ' ' : '') + dito;
+          gravar();
+          avisar('Nota atualizada');
+        });
+      };
 
       el.prepend(criarOuvirMini('Ouvir ' + n.ref + ' e a sua nota', () => {
         const partes = [{ texto: refFalada(n.nr, n.cap, n.verso), rotulo: 'Referência' }];
@@ -4470,6 +4499,9 @@ $('btn-busca-voz').onclick = function(){
 
 /* notas antigas presas a favoritos passam a viver no store próprio */
 migrarNotasDosFavoritos();
+
+/* esconde os microfones onde o navegador não entende ditado */
+document.documentElement.setAttribute('data-ditado', Ditado.suporta ? '1' : '0');
 
 /* =========================================================
    Controles da leitura em voz
