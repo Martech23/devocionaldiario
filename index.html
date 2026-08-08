@@ -10,6 +10,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600&display=swap" rel="stylesheet">
 <style>
 :root {
+  /* Paleta premium — luz */
   --azul: #1A4A82;
   --azul-esc: #123665;
   --azul-cla: #2B6BB5;
@@ -56,7 +57,11 @@ html[data-tema="escuro"] {
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
-html { transition: color-scheme 0.35s ease; }
+
+html {
+  /* Transição suave entre temas */
+  transition: color-scheme 0.35s ease;
+}
 body {
   background: var(--fundo);
   color: var(--texto);
@@ -66,9 +71,11 @@ body {
   -webkit-font-smoothing: antialiased;
   transition: background 0.35s ease, color 0.35s ease;
 }
+
 .envolve { max-width: 880px; margin: 0 auto; padding: 0 16px; }
 a { color: var(--azul); text-decoration: underline; text-underline-offset: 2px; }
 
+/* ---------------- barra superior ---------------- */
 header.barra {
   background: var(--azul);
   color: #fff;
@@ -81,6 +88,7 @@ html[data-tema="escuro"] header.barra {
   background: #152238;
   box-shadow: 0 1px 8px rgba(0, 0, 0, 0.4);
 }
+
 .barra-int {
   display: flex;
   align-items: center;
@@ -90,27 +98,50 @@ html[data-tema="escuro"] header.barra {
   margin: 0 auto;
   padding: 0 12px;
 }
+
 .icone-btn {
-  background: none; border: 0; color: #fff; cursor: pointer;
-  padding: 8px; border-radius: var(--radius-sm);
-  display: grid; place-items: center; line-height: 0;
+  background: none;
+  border: 0;
+  color: #fff;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: var(--radius-sm);
+  display: grid;
+  place-items: center;
+  line-height: 0;
   transition: background var(--trans);
 }
 .icone-btn:hover { background: rgba(255, 255, 255, 0.14); }
 .icone-btn:focus-visible { outline: 2px solid #fff; outline-offset: 1px; }
+
 .hamb {
-  width: 20px; height: 2px; background: #fff;
-  position: relative; display: block; border-radius: 1px;
+  width: 20px;
+  height: 2px;
+  background: #fff;
+  position: relative;
+  display: block;
+  border-radius: 1px;
 }
 .hamb::before, .hamb::after {
-  content: ""; position: absolute; left: 0;
-  width: 20px; height: 2px; background: #fff; border-radius: 1px;
+  content: "";
+  position: absolute;
+  left: 0;
+  width: 20px;
+  height: 2px;
+  background: #fff;
+  border-radius: 1px;
 }
 .hamb::before { top: -6px; }
 .hamb::after { top: 6px; }
-.logo { display: flex; align-items: center; gap: 10px; }
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
 .logo .chama {
-  width: 22px; height: 22px;
+  width: 22px;
+  height: 22px;
   border-radius: 50% 50% 46% 46% / 62% 62% 40% 40%;
   background: radial-gradient(circle at 50% 70%, #FFF3CF, #FFCB4A 45%, #E8A020 78%);
   box-shadow: 0 0 12px rgba(255, 203, 74, 0.55);
@@ -118,172 +149,555 @@ html[data-tema="escuro"] header.barra {
   animation: chama-pulsar 3.2s ease-in-out infinite;
   will-change: transform, box-shadow;
 }
-.logo span { font-size: 20px; font-weight: 700; letter-spacing: -0.02em; }
-.logo span i { font-style: normal; font-weight: 400; opacity: 0.82; }
-.acoes-direita { display: flex; align-items: center; gap: 2px; }
+.logo span {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.logo span i {
+  font-style: normal;
+  font-weight: 400;
+  opacity: 0.82;
+}
+
+.acoes-direita {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
 .btn-tema {
-  background: none; border: 0; color: #fff; cursor: pointer;
-  padding: 8px; border-radius: var(--radius-sm);
-  display: grid; place-items: center; font-size: 18px; line-height: 1;
+  background: none;
+  border: 0;
+  color: #fff;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: var(--radius-sm);
+  display: grid;
+  place-items: center;
+  font-size: 18px;
+  line-height: 1;
   transition: background var(--trans);
 }
 .btn-tema:hover { background: rgba(255, 255, 255, 0.14); }
+
 .conta {
-  width: 28px; height: 28px; border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
   border: 1.5px solid rgba(255, 255, 255, 0.7);
-  display: grid; place-items: center; font-size: 12px; font-weight: 700;
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  font-weight: 700;
 }
 
+/* ---------------- menu lateral ---------------- */
 .veu {
-  position: fixed; inset: 0; background: rgba(0, 0, 0, 0.48);
-  z-index: 50; opacity: 0; pointer-events: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.48);
+  z-index: 50;
+  opacity: 0;
+  pointer-events: none;
   transition: opacity 0.32s var(--trans-soft);
   backdrop-filter: blur(0px);
 }
-.veu.aberto { opacity: 1; pointer-events: auto; backdrop-filter: blur(3px); }
+.veu.aberto {
+  opacity: 1;
+  pointer-events: auto;
+  backdrop-filter: blur(3px);
+}
+
 .gaveta {
-  position: fixed; top: 0; left: 0; bottom: 0;
-  width: 290px; max-width: 84vw; background: var(--papel);
-  z-index: 51; transform: translateX(-105%);
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 290px;
+  max-width: 84vw;
+  background: var(--papel);
+  z-index: 51;
+  transform: translateX(-105%);
   transition: transform var(--trans-spring);
   box-shadow: 4px 0 32px rgba(0, 0, 0, 0.2);
-  display: flex; flex-direction: column;
+  display: flex;
+  flex-direction: column;
 }
 .gaveta.aberta { transform: translateX(0); }
+
 .gaveta a {
-  opacity: 0; transform: translateX(-12px);
+  opacity: 0;
+  transform: translateX(-12px);
   transition: opacity 0.3s ease, transform 0.3s ease, background var(--trans), color var(--trans);
 }
-.gaveta.aberta a { opacity: 1; transform: translateX(0); }
+.gaveta.aberta a {
+  opacity: 1;
+  transform: translateX(0);
+}
 .gaveta.aberta a:nth-child(2) { transition-delay: 0.04s; }
 .gaveta.aberta a:nth-child(3) { transition-delay: 0.08s; }
 .gaveta.aberta a:nth-child(4) { transition-delay: 0.12s; }
 .gaveta.aberta a:nth-child(5) { transition-delay: 0.16s; }
+
 .gaveta header {
-  background: var(--azul); color: #fff;
-  padding: 20px; font-size: 17px; font-weight: 700; letter-spacing: -0.01em;
+  background: var(--azul);
+  color: #fff;
+  padding: 20px 20px;
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
 }
 html[data-tema="escuro"] .gaveta header { background: #152238; }
+
 .gaveta a {
-  display: block; padding: 15px 20px;
+  display: block;
+  padding: 15px 20px;
   border-bottom: 1px solid var(--linha);
-  color: var(--texto); text-decoration: none;
-  font-size: 15.5px; font-weight: 600;
+  color: var(--texto);
+  text-decoration: none;
+  font-size: 15.5px;
+  font-weight: 600;
+  /* opacity/transform já definidos acima para o stagger */
 }
-.gaveta a:hover { background: var(--azul-claro-bg); color: var(--azul); }
+.gaveta a:hover {
+  background: var(--azul-claro-bg);
+  color: var(--azul);
+}
 .gaveta .nota {
-  margin-top: auto; padding: 18px 20px;
-  font-size: 12px; color: var(--texto-3); line-height: 1.65;
-  opacity: 0; transition: opacity 0.4s ease 0.2s;
+  margin-top: auto;
+  padding: 18px 20px;
+  font-size: 12px;
+  color: var(--texto-3);
+  line-height: 1.65;
+  opacity: 0;
+  transition: opacity 0.4s ease 0.2s;
 }
 .gaveta.aberta .nota { opacity: 1; }
 
-.controles { padding-top: 18px; animation: fadeUp 0.4s ease both; }
+/* ---------------- busca e controles ---------------- */
+.controles {
+  padding-top: 18px;
+  animation: fadeUp 0.4s ease both;
+}
+
 .linha-busca {
-  display: flex; margin-bottom: 10px;
-  border-radius: var(--radius-sm); overflow: hidden; box-shadow: var(--sombra);
+  display: flex;
+  margin-bottom: 10px;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  box-shadow: var(--sombra);
 }
 .linha-busca input {
-  flex: 1; min-width: 0; font-family: inherit; font-size: 15.5px;
-  padding: 13px 15px; border: 1px solid var(--linha-forte); border-right: 0;
+  flex: 1;
+  min-width: 0;
+  font-family: inherit;
+  font-size: 15.5px;
+  padding: 13px 15px;
+  border: 1px solid var(--linha-forte);
+  border-right: 0;
   border-radius: var(--radius-sm) 0 0 var(--radius-sm);
-  background: var(--papel); color: var(--texto);
+  background: var(--papel);
+  color: var(--texto);
   transition: border-color var(--trans), background var(--trans);
 }
 .linha-busca input:focus {
-  outline: none; border-color: var(--azul-cla);
+  outline: none;
+  border-color: var(--azul-cla);
   box-shadow: inset 0 0 0 1px var(--azul-cla);
 }
 .linha-busca input::placeholder { color: var(--texto-3); }
+
 .linha-busca button {
-  background: var(--azul); border: 1px solid var(--azul); color: #fff;
-  cursor: pointer; padding: 0 20px;
+  background: var(--azul);
+  border: 1px solid var(--azul);
+  color: #fff;
+  cursor: pointer;
+  padding: 0 20px;
   border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
-  font-size: 16px; line-height: 0; transition: background var(--trans);
+  font-size: 16px;
+  line-height: 0;
+  transition: background var(--trans);
 }
 .linha-busca button:hover { background: var(--azul-esc); }
-.seletor-versao { position: relative; margin-bottom: 12px; }
+
+.seletor-versao {
+  position: relative;
+  margin-bottom: 12px;
+}
 .seletor-versao select {
-  width: 100%; appearance: none; font-family: inherit; font-size: 15px;
-  padding: 12px 40px 12px 14px; border: 1px solid var(--linha-forte);
-  border-radius: var(--radius-sm); background: var(--papel); color: var(--texto);
-  cursor: pointer; box-shadow: var(--sombra);
+  width: 100%;
+  appearance: none;
+  font-family: inherit;
+  font-size: 15px;
+  padding: 12px 40px 12px 14px;
+  border: 1px solid var(--linha-forte);
+  border-radius: var(--radius-sm);
+  background: var(--papel);
+  color: var(--texto);
+  cursor: pointer;
+  box-shadow: var(--sombra);
   transition: border-color var(--trans), background var(--trans);
 }
-.seletor-versao select:focus { outline: none; border-color: var(--azul-cla); }
-.seletor-versao::after {
-  content: "⌄"; position: absolute; right: 14px; top: 50%;
-  transform: translateY(-55%); font-size: 17px; color: var(--texto-2); pointer-events: none;
+.seletor-versao select:focus {
+  outline: none;
+  border-color: var(--azul-cla);
 }
+.seletor-versao::after {
+  content: "⌄";
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-55%);
+  font-size: 17px;
+  color: var(--texto-2);
+  pointer-events: none;
+}
+
 .linha-ferramentas {
-  display: flex; justify-content: space-between; align-items: center;
-  padding: 8px 0 12px; border-bottom: 2.5px solid var(--azul); margin-bottom: 4px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0 12px;
+  border-bottom: 2.5px solid var(--azul);
+  margin-bottom: 4px;
 }
 .ferramenta {
-  background: none; border: 0; font-family: inherit; font-size: 14.5px;
-  color: var(--azul); cursor: pointer; font-weight: 600; padding: 5px 0;
+  background: none;
+  border: 0;
+  font-family: inherit;
+  font-size: 14.5px;
+  color: var(--azul);
+  cursor: pointer;
+  font-weight: 600;
+  padding: 5px 0;
   transition: opacity var(--trans);
 }
 .ferramenta:hover { opacity: 0.75; text-decoration: underline; }
 .ferramenta:focus-visible { outline: 2px solid var(--azul); outline-offset: 2px; }
+
 .tamanhos {
-  display: none; gap: 8px; padding: 12px 0;
-  border-bottom: 1px solid var(--linha); animation: fadeUp 0.25s ease both;
+  display: none;
+  gap: 8px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--linha);
+  animation: fadeUp 0.25s ease both;
 }
 .tamanhos.aberto { display: flex; justify-content: flex-end; }
 .tamanhos button {
-  font-family: inherit; background: var(--papel); border: 1px solid var(--linha-forte);
-  border-radius: var(--radius-sm); padding: 7px 15px; cursor: pointer;
-  color: var(--texto); font-weight: 600; font-size: 14px;
-  transition: all var(--trans); box-shadow: var(--sombra);
+  font-family: inherit;
+  background: var(--papel);
+  border: 1px solid var(--linha-forte);
+  border-radius: var(--radius-sm);
+  padding: 7px 15px;
+  cursor: pointer;
+  color: var(--texto);
+  font-weight: 600;
+  font-size: 14px;
+  transition: all var(--trans);
+  box-shadow: var(--sombra);
 }
 .tamanhos button:hover {
-  background: var(--azul-claro-bg); border-color: var(--azul); color: var(--azul);
+  background: var(--azul-claro-bg);
+  border-color: var(--azul);
+  color: var(--azul);
 }
 
-.secao { margin-top: 28px; scroll-margin-top: 74px; animation: fadeUp 0.45s ease both; }
+/* ---------------- seções e cartões ---------------- */
+.secao {
+  margin-top: 28px;
+  scroll-margin-top: 74px;
+  animation: fadeUp 0.45s ease both;
+}
 .secao:nth-of-type(2) { animation-delay: 0.05s; }
 .secao:nth-of-type(3) { animation-delay: 0.1s; }
+
 .rotulo-secao {
-  font-size: 12px; font-weight: 700; letter-spacing: 0.1em;
-  text-transform: uppercase; color: var(--texto-3); padding-bottom: 10px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--texto-3);
+  padding-bottom: 10px;
+  margin-bottom: 0;
 }
+
 .cartao {
-  background: var(--papel); border: 1px solid var(--linha);
-  border-radius: var(--radius); padding: 24px 22px 26px; box-shadow: var(--sombra);
+  background: var(--papel);
+  border: 1px solid var(--linha);
+  border-radius: var(--radius);
+  padding: 24px 22px 26px;
+  box-shadow: var(--sombra);
   transition: box-shadow var(--trans-soft), border-color var(--trans), background var(--trans), transform var(--trans-soft);
 }
-.cartao:hover { box-shadow: var(--sombra-hover); }
+.cartao:hover {
+  box-shadow: var(--sombra-hover);
+}
 .cartao + .cartao { margin-top: 12px; }
+
 .cab-cartao {
-  display: flex; align-items: flex-start; justify-content: space-between;
-  gap: 14px; margin-bottom: 16px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 16px;
 }
-.referencia { font-size: 17px; font-weight: 600; color: var(--texto); letter-spacing: -0.01em; }
+.referencia {
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--texto);
+  letter-spacing: -0.01em;
+}
 .referencia small {
-  display: block; font-weight: 400; font-size: 12.5px;
-  color: var(--texto-3); margin-top: 3px;
+  display: block;
+  font-weight: 400;
+  font-size: 12.5px;
+  color: var(--texto-3);
+  margin-top: 3px;
+  letter-spacing: 0;
 }
-.ferr-cartao { display: flex; gap: 2px; flex: 0 0 auto; }
+
+.ferr-cartao {
+  display: flex;
+  gap: 2px;
+  flex: 0 0 auto;
+}
 .ferr-cartao button {
-  background: none; border: 0; cursor: pointer; color: var(--texto-3);
-  font-size: 16px; padding: 7px 9px; border-radius: var(--radius-sm);
-  line-height: 1; transition: background var(--trans), color var(--trans);
+  background: none;
+  border: 0;
+  cursor: pointer;
+  color: var(--texto-3);
+  font-size: 16px;
+  padding: 7px 9px;
+  border-radius: var(--radius-sm);
+  line-height: 1;
+  transition: background var(--trans), color var(--trans);
 }
-.ferr-cartao button:hover { background: var(--azul-suave); color: var(--azul); }
-.ferr-cartao button:focus-visible { outline: 2px solid var(--azul); outline-offset: 1px; }
+.ferr-cartao button:hover {
+  background: var(--azul-suave);
+  color: var(--azul);
+}
+.ferr-cartao button:focus-visible {
+  outline: 2px solid var(--azul);
+  outline-offset: 1px;
+}
+
 .versiculo {
   font-family: "Source Serif 4", Georgia, serif;
-  font-size: calc(22px * var(--esc)); line-height: 1.5;
-  color: var(--texto); margin-bottom: 18px; font-weight: 400;
+  font-size: calc(22px * var(--esc));
+  line-height: 1.5;
+  color: var(--texto);
+  margin-bottom: 18px;
+  font-weight: 400;
 }
+
 .link-cap {
-  font-size: 14px; font-weight: 600; text-decoration: none;
-  display: inline-flex; align-items: center; gap: 4px;
-  color: var(--azul); transition: opacity var(--trans);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--azul);
+  transition: opacity var(--trans);
 }
 .link-cap:hover { opacity: 0.8; text-decoration: underline; }
-  .tema {
+
+/* --- Blocos do devocional completo --- */
+.bloco-devo {
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid var(--linha);
+}
+.bloco-devo .rotulo-bloco {
+  display: block;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--azul);
+  margin-bottom: 7px;
+  font-weight: 700;
+}
+.bloco-devo p {
+  font-family: "Source Serif 4", serif;
+  font-size: calc(15.5px * var(--esc));
+  color: var(--texto-2);
+  line-height: 1.6;
+  margin: 0;
+}
+.bloco-devo.oracao {
+  background: var(--azul-suave);
+  border-radius: var(--radius-sm);
+  border-left: 3px solid var(--azul);
+  border-top: none;
+  padding: 16px 18px;
+  margin-top: 16px;
+}
+.bloco-devo.oracao p { font-style: italic; }
+
+.acoes-verso {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid var(--linha);
+}
+.acoes-verso .btn-acao {
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  background: var(--papel);
+  color: var(--texto-2);
+  border: 1px solid var(--linha-forte);
+  border-radius: 99px;
+  padding: 7px 14px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: all var(--trans);
+}
+.acoes-verso .btn-acao:hover {
+  background: var(--azul-claro-bg);
+  border-color: var(--azul);
+  color: var(--azul);
+}
+.acoes-verso .btn-acao.ativo {
+  background: var(--azul-suave);
+  border-color: var(--azul);
+  color: var(--azul);
+}
+
+/* Modal de imagem */
+.modal-fundo {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  z-index: 70;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.28s ease;
+  backdrop-filter: blur(4px);
+}
+.modal-fundo.aberto { opacity: 1; pointer-events: auto; }
+.modal-caixa {
+  background: var(--papel);
+  border-radius: 14px;
+  padding: 20px;
+  max-width: 400px;
+  width: 100%;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.25);
+  transform: scale(0.94) translateY(12px);
+  transition: transform 0.32s cubic-bezier(0.22, 1.2, 0.36, 1);
+}
+.modal-fundo.aberto .modal-caixa { transform: scale(1) translateY(0); }
+.modal-caixa h3 { font-size: 16px; margin-bottom: 14px; font-weight: 700; }
+.modal-caixa canvas {
+  width: 100%;
+  border-radius: 8px;
+  display: block;
+  margin-bottom: 16px;
+  box-shadow: var(--sombra);
+}
+.modal-acoes { display: flex; gap: 10px; justify-content: flex-end; }
+
+/* Favoritos / diário */
+.item-fav {
+  padding: 14px 0;
+  border-bottom: 1px solid var(--linha);
+  animation: fadeUp 0.3s ease both;
+}
+.item-fav:last-child { border-bottom: 0; }
+.item-fav .ref-fav { font-size: 14px; font-weight: 600; color: var(--azul); margin-bottom: 4px; }
+.item-fav .txt-fav {
+  font-family: "Source Serif 4", serif;
+  font-size: 15px;
+  color: var(--texto);
+  line-height: 1.45;
+  margin-bottom: 6px;
+}
+.item-fav .meta-fav {
+  font-size: 12px;
+  color: var(--texto-3);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+.item-fav .nota-fav {
+  margin-top: 8px;
+  padding: 10px 12px;
+  background: var(--azul-suave);
+  border-radius: var(--radius-sm);
+  font-size: 13.5px;
+  color: var(--texto-2);
+  font-family: "Source Serif 4", serif;
+  line-height: 1.45;
+}
+.btn-remover {
+  background: none;
+  border: 0;
+  color: var(--texto-3);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+.btn-remover:hover { color: #B03A2E; background: #FDF4F3; }
+html[data-tema="escuro"] .btn-remover:hover { background: #2A1C1B; color: #E88A7E; }
+
+.campo-nota {
+  width: 100%;
+  font-family: inherit;
+  font-size: 14px;
+  padding: 10px 12px;
+  border: 1px solid var(--linha-forte);
+  border-radius: var(--radius-sm);
+  background: var(--papel);
+  color: var(--texto);
+  resize: vertical;
+  min-height: 68px;
+  margin-top: 10px;
+}
+.campo-nota:focus { outline: none; border-color: var(--azul-cla); }
+
+.tabs-fav {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 14px;
+  border-bottom: 1px solid var(--linha);
+}
+.tab-fav {
+  font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 600;
+  background: none;
+  border: 0;
+  color: var(--texto-3);
+  padding: 8px 14px;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  transition: color var(--trans), border-color var(--trans);
+}
+.tab-fav.ativo { color: var(--azul); border-bottom-color: var(--azul); }
+.tab-fav:hover { color: var(--azul); }
+.vazio-fav { text-align: center; padding: 28px 12px; color: var(--texto-3); font-size: 14.5px; }
+
+/* ---------------- promessas ---------------- */
+.temas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+.tema {
   font-family: inherit;
   font-size: 13.5px;
   background: var(--papel);
@@ -310,6 +724,7 @@ html[data-tema="escuro"] .gaveta header { background: #152238; }
 .temas .tema:nth-child(9)  { animation-delay: 0.26s; }
 .temas .tema:nth-child(10) { animation-delay: 0.29s; }
 .temas .tema:nth-child(11) { animation-delay: 0.32s; }
+
 .tema:hover {
   background: var(--azul-claro-bg);
   border-color: var(--azul);
@@ -327,7 +742,10 @@ html[data-tema="escuro"] .gaveta header { background: #152238; }
 html[data-tema="escuro"] .tema.ativo {
   box-shadow: 0 2px 10px rgba(91, 155, 232, 0.28);
 }
-.tema:focus-visible { outline: 2px solid var(--azul); outline-offset: 2px; }
+.tema:focus-visible {
+  outline: 2px solid var(--azul);
+  outline-offset: 2px;
+}
 
 .btn {
   font-family: inherit;
@@ -364,7 +782,10 @@ html[data-tema="escuro"] .tema.ativo {
   transform: translateY(0) scale(0.98);
   box-shadow: 0 1px 4px rgba(26, 74, 130, 0.2);
 }
-.btn:focus-visible { outline: 2px solid var(--azul-cla); outline-offset: 2px; }
+.btn:focus-visible {
+  outline: 2px solid var(--azul-cla);
+  outline-offset: 2px;
+}
 .btn.claro {
   background: var(--papel);
   color: var(--azul);
@@ -378,7 +799,10 @@ html[data-tema="escuro"] .tema.ativo {
 }
 .btn.claro::after { display: none; }
 
-.vazio { text-align: center; padding: 32px 16px; }
+.vazio {
+  text-align: center;
+  padding: 32px 16px;
+}
 .vazio p {
   font-family: "Source Serif 4", serif;
   font-size: 17px;
@@ -387,96 +811,172 @@ html[data-tema="escuro"] .tema.ativo {
   line-height: 1.5;
 }
 
+/* ---------------- bíblia ---------------- */
 .grupo {
-  font-size: 12px; font-weight: 700; letter-spacing: 0.09em;
-  text-transform: uppercase; color: var(--azul); margin: 18px 0 10px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--azul);
+  margin: 18px 0 10px;
 }
 .livros {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: 1px; background: var(--linha);
-  border: 1px solid var(--linha); border-radius: var(--radius-sm); overflow: hidden;
+  gap: 1px;
+  background: var(--linha);
+  border: 1px solid var(--linha);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
 }
 .livro {
-  font-family: inherit; font-size: 14.5px; text-align: left;
-  background: var(--papel); color: var(--texto); border: 0;
-  padding: 13px 14px; cursor: pointer;
+  font-family: inherit;
+  font-size: 14.5px;
+  text-align: left;
+  background: var(--papel);
+  color: var(--texto);
+  border: 0;
+  padding: 13px 14px;
+  cursor: pointer;
   transition: background var(--trans), color var(--trans), transform 0.18s ease;
 }
 .livro:hover {
-  background: var(--azul-claro-bg); color: var(--azul); transform: translateX(3px);
+  background: var(--azul-claro-bg);
+  color: var(--azul);
+  transform: translateX(3px);
 }
 .livro:active { transform: translateX(1px) scale(0.99); }
-.livro:focus-visible { outline: 2px solid var(--azul); outline-offset: -2px; }
+.livro:focus-visible {
+  outline: 2px solid var(--azul);
+  outline-offset: -2px;
+}
 .livro small {
-  display: block; font-size: 11.5px; color: var(--texto-3);
-  margin-top: 2px; transition: color var(--trans);
+  display: block;
+  font-size: 11.5px;
+  color: var(--texto-3);
+  margin-top: 2px;
+  transition: color var(--trans);
 }
 .livro:hover small { color: var(--azul-cla); }
 
 .capitulos {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(52px, 1fr));
-  gap: 1px; background: var(--linha);
-  border: 1px solid var(--linha); border-radius: var(--radius-sm); overflow: hidden;
+  gap: 1px;
+  background: var(--linha);
+  border: 1px solid var(--linha);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
 }
 .cap {
-  font-family: inherit; font-size: 15.5px; font-weight: 600;
-  background: var(--papel); color: var(--azul); border: 0;
-  padding: 14px 0; cursor: pointer;
+  font-family: inherit;
+  font-size: 15.5px;
+  font-weight: 600;
+  background: var(--papel);
+  color: var(--azul);
+  border: 0;
+  padding: 14px 0;
+  cursor: pointer;
   transition: background var(--trans), color var(--trans), transform 0.15s ease;
 }
 .cap:hover {
-  background: var(--azul); color: #fff; transform: scale(1.06); z-index: 1;
+  background: var(--azul);
+  color: #fff;
+  transform: scale(1.06);
+  z-index: 1;
 }
 .cap:active { transform: scale(0.96); }
-.cap:focus-visible { outline: 2px solid var(--azul); outline-offset: -2px; }
+.cap:focus-visible {
+  outline: 2px solid var(--azul);
+  outline-offset: -2px;
+}
 
 .voltar {
-  background: none; border: 0; color: var(--azul);
-  font-family: inherit; font-size: 14.5px; font-weight: 600;
-  cursor: pointer; padding: 6px 0; margin-bottom: 8px; transition: opacity var(--trans);
+  background: none;
+  border: 0;
+  color: var(--azul);
+  font-family: inherit;
+  font-size: 14.5px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 6px 0;
+  margin-bottom: 8px;
+  transition: opacity var(--trans);
 }
 .voltar:hover { opacity: 0.75; text-decoration: underline; }
 
 .v {
   font-family: "Source Serif 4", Georgia, serif;
-  font-size: calc(18px * var(--esc)); line-height: 1.65;
-  display: block; margin-bottom: 10px; color: var(--texto);
+  font-size: calc(18px * var(--esc));
+  line-height: 1.65;
+  display: block;
+  margin-bottom: 10px;
+  color: var(--texto);
 }
 .v sup {
-  font-family: "Source Sans 3", sans-serif; font-size: 11px; font-weight: 700;
-  color: var(--azul); margin-right: 6px; vertical-align: super;
+  font-family: "Source Sans 3", sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--azul);
+  margin-right: 6px;
+  vertical-align: super;
 }
 .v.destaque {
-  background: var(--destaque); padding: 3px 6px; border-radius: 4px;
+  background: var(--destaque);
+  padding: 3px 6px;
+  border-radius: 4px;
   border-left: 3px solid var(--destaque-borda);
-  margin-left: -6px; padding-left: 9px;
+  margin-left: -6px;
+  padding-left: 9px;
   animation: destaque-entrar 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
+
 .titulo-sec {
-  font-size: calc(14.5px * var(--esc)); font-weight: 700;
-  color: var(--azul); margin: 22px 0 10px; letter-spacing: -0.01em;
-}
-.passos {
-  display: flex; justify-content: space-between; gap: 12px;
-  margin-top: 26px; padding-top: 18px; border-top: 1px solid var(--linha);
+  font-size: calc(14.5px * var(--esc));
+  font-weight: 700;
+  color: var(--azul);
+  margin: 22px 0 10px;
+  letter-spacing: -0.01em;
 }
 
+.passos {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 26px;
+  padding-top: 18px;
+  border-top: 1px solid var(--linha);
+}
+
+/* ---------------- estados ---------------- */
 .carregando {
-  display: flex; align-items: center; gap: 12px;
-  color: var(--texto-3); font-size: 14.5px; padding: 20px 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--texto-3);
+  font-size: 14.5px;
+  padding: 20px 0;
 }
 .giro {
-  width: 18px; height: 18px; border: 2px solid var(--linha);
-  border-top-color: var(--azul); border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--linha);
+  border-top-color: var(--azul);
+  border-radius: 50%;
   animation: rodar 0.7s linear infinite;
 }
+
+/* Skeleton loading */
 .skeleton {
   background: linear-gradient(90deg, var(--linha) 25%, var(--papel-alt) 50%, var(--linha) 75%);
-  background-size: 200% 100%; animation: shimmer 1.4s ease infinite; border-radius: 4px;
+  background-size: 200% 100%;
+  animation: shimmer 1.4s ease infinite;
+  border-radius: 4px;
 }
-.skeleton-linha { height: 14px; margin-bottom: 12px; }
+.skeleton-linha {
+  height: 14px;
+  margin-bottom: 12px;
+}
 .skeleton-linha:last-child { width: 65%; margin-bottom: 0; }
 .skeleton-titulo { height: 18px; width: 40%; margin-bottom: 18px; }
 
@@ -484,24 +984,55 @@ html[data-tema="escuro"] .tema.ativo {
   0% { background-position: 200% 0; }
   100% { background-position: -200% 0; }
 }
-@keyframes rodar { to { transform: rotate(360deg); } }
+@keyframes rodar {
+  to { transform: rotate(360deg); }
+}
 @keyframes fadeUp {
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
 }
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
 @keyframes chama-pulsar {
-  0%, 100% { transform: scale(1); box-shadow: 0 0 10px rgba(255, 203, 74, 0.45); }
-  50% { transform: scale(1.08); box-shadow: 0 0 18px rgba(255, 203, 74, 0.7), 0 0 28px rgba(255, 180, 40, 0.25); }
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 10px rgba(255, 203, 74, 0.45);
+  }
+  50% {
+    transform: scale(1.08);
+    box-shadow: 0 0 18px rgba(255, 203, 74, 0.7), 0 0 28px rgba(255, 180, 40, 0.25);
+  }
 }
 @keyframes destaque-entrar {
-  0% { background: transparent; border-left-color: transparent; transform: scaleX(0.96); opacity: 0.6; }
-  60% { background: var(--destaque); border-left-color: var(--destaque-borda); transform: scaleX(1.01); }
-  100% { background: var(--destaque); border-left-color: var(--destaque-borda); transform: scaleX(1); opacity: 1; }
+  0% {
+    background: transparent;
+    border-left-color: transparent;
+    transform: scaleX(0.96);
+    opacity: 0.6;
+  }
+  60% {
+    background: var(--destaque);
+    border-left-color: var(--destaque-borda);
+    transform: scaleX(1.01);
+  }
+  100% {
+    background: var(--destaque);
+    border-left-color: var(--destaque-borda);
+    transform: scaleX(1);
+    opacity: 1;
+  }
 }
 @keyframes slideInNivel {
-  from { opacity: 0; transform: translateX(18px); }
-  to { opacity: 1; transform: translateX(0); }
+  from {
+    opacity: 0;
+    transform: translateX(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 @keyframes popSuave {
   0% { transform: scale(0.92); opacity: 0; }
@@ -509,45 +1040,96 @@ html[data-tema="escuro"] .tema.ativo {
   100% { transform: scale(1); opacity: 1; }
 }
 @keyframes toastIn {
-  from { opacity: 0; transform: translate(-50%, 12px); }
-  to { opacity: 1; transform: translate(-50%, -8px); }
+  from {
+    opacity: 0;
+    transform: translate(-50%, 12px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -8px);
+  }
 }
 
 .erro {
-  background: #FDF4F3; border: 1px solid #E4BAB4;
-  border-left: 4px solid #B03A2E; border-radius: var(--radius-sm); padding: 16px 18px;
+  background: #FDF4F3;
+  border: 1px solid #E4BAB4;
+  border-left: 4px solid #B03A2E;
+  border-radius: var(--radius-sm);
+  padding: 16px 18px;
 }
 html[data-tema="escuro"] .erro {
-  background: #2A1C1B; border-color: #5C3A36; border-left-color: #C45A4E;
+  background: #2A1C1B;
+  border-color: #5C3A36;
+  border-left-color: #C45A4E;
 }
-.erro b { display: block; color: #8E2C1F; margin-bottom: 6px; font-size: 15px; }
+.erro b {
+  display: block;
+  color: #8E2C1F;
+  margin-bottom: 6px;
+  font-size: 15px;
+}
 html[data-tema="escuro"] .erro b { color: #E88A7E; }
-.erro ul { margin: 10px 0 0 18px; font-size: 13.5px; color: var(--texto-2); line-height: 1.65; }
-.erro code { background: var(--linha); padding: 1px 5px; border-radius: 3px; font-size: 12.5px; }
+.erro ul {
+  margin: 10px 0 0 18px;
+  font-size: 13.5px;
+  color: var(--texto-2);
+  line-height: 1.65;
+}
+.erro code {
+  background: var(--linha);
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-size: 12.5px;
+}
 
 .rodape {
-  border-top: 1px solid var(--linha); margin-top: 40px;
-  padding: 24px 0 42px; font-size: 12.5px; color: var(--texto-3); line-height: 1.75;
+  border-top: 1px solid var(--linha);
+  margin-top: 40px;
+  padding: 24px 0 42px;
+  font-size: 12.5px;
+  color: var(--texto-3);
+  line-height: 1.75;
 }
+
 .aviso {
-  position: fixed; left: 50%; bottom: 24px;
-  transform: translate(-50%, 12px); z-index: 60;
-  background: #2A2A28; color: #fff; font-size: 14px;
-  padding: 12px 24px; border-radius: 8px;
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  transform: translate(-50%, 12px);
+  z-index: 60;
+  background: #2A2A28;
+  color: #fff;
+  font-size: 14px;
+  padding: 12px 24px;
+  border-radius: 8px;
   box-shadow: 0 8px 28px rgba(0, 0, 0, 0.3);
-  opacity: 0; pointer-events: none;
+  opacity: 0;
+  pointer-events: none;
   transition: opacity 0.3s ease, transform 0.35s cubic-bezier(0.22, 1.2, 0.36, 1);
 }
-html[data-tema="escuro"] .aviso { background: #EDEAE4; color: #1C1B19; }
-.aviso.ver { opacity: 1; transform: translate(-50%, -8px); }
+html[data-tema="escuro"] .aviso {
+  background: #EDEAE4;
+  color: #1C1B19;
+}
+.aviso.ver {
+  opacity: 1;
+  transform: translate(-50%, -8px);
+}
 
-#nivel-livros, #nivel-capitulos, #nivel-leitura {
+/* Transição entre níveis da Bíblia */
+#nivel-livros,
+#nivel-capitulos,
+#nivel-leitura {
   animation: slideInNivel 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
+
 .oculto { display: none !important; }
 
+/* Respeitar preferência de redução de movimento */
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
+  *,
+  *::before,
+  *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
@@ -584,6 +1166,7 @@ html[data-tema="escuro"] .aviso { background: #EDEAE4; color: #1C1B19; }
 </aside>
 
 <main class="envolve">
+
   <div class="controles">
     <div class="linha-busca">
       <input id="busca" type="search" placeholder="Digite uma passagem (ex.: João 3:16)" aria-label="Buscar passagem">
@@ -604,6 +1187,7 @@ html[data-tema="escuro"] .aviso { background: #EDEAE4; color: #1C1B19; }
     </div>
   </div>
 
+  <!-- ============ DEVOCIONAL DO DIA ============ -->
   <section class="secao" id="sec-hoje">
     <p class="rotulo-secao">Devocional do dia</p>
     <div id="cartao-hoje">
@@ -616,6 +1200,7 @@ html[data-tema="escuro"] .aviso { background: #EDEAE4; color: #1C1B19; }
     </div>
   </section>
 
+  <!-- ============ CAIXA DE PROMESSAS ============ -->
   <section class="secao" id="sec-promessas">
     <p class="rotulo-secao">Caixa de promessas</p>
     <div class="cartao">
@@ -629,10 +1214,13 @@ html[data-tema="escuro"] .aviso { background: #EDEAE4; color: #1C1B19; }
     </div>
   </section>
 
+  <!-- ============ BÍBLIA ============ -->
   <section class="secao" id="sec-biblia">
     <p class="rotulo-secao">Bíblia Sagrada completa</p>
     <div class="cartao">
-      <div id="nivel-livros"><div id="lista-livros"></div></div>
+      <div id="nivel-livros">
+        <div id="lista-livros"></div>
+      </div>
       <div id="nivel-capitulos" class="oculto">
         <button class="voltar" data-volta="livros">‹ Todos os livros</button>
         <p class="grupo" id="titulo-livro"></p>
@@ -645,6 +1233,7 @@ html[data-tema="escuro"] .aviso { background: #EDEAE4; color: #1C1B19; }
     </div>
   </section>
 
+  <!-- ============ FAVORITOS E DIÁRIO ============ -->
   <section class="secao" id="sec-favoritos">
     <p class="rotulo-secao">Favoritos e diário</p>
     <div class="cartao">
@@ -663,6 +1252,7 @@ html[data-tema="escuro"] .aviso { background: #EDEAE4; color: #1C1B19; }
   </p>
 </main>
 
+<!-- Modal gerador de imagem -->
 <div class="modal-fundo" id="modal-img">
   <div class="modal-caixa">
     <h3>Imagem para compartilhar</h3>
@@ -677,8 +1267,15 @@ html[data-tema="escuro"] .aviso { background: #EDEAE4; color: #1C1B19; }
 <div class="aviso" id="aviso" role="status" aria-live="polite"></div>
 
 <script>
-  /* ===== fontes de texto: só versões de uso livre confirmado ===== */
-const VERSOES = [];
+/* ===== fontes de texto: só versões de uso livre confirmado ===== */
+/* Versões semente — funcionam mesmo se o catálogo remoto falhar */
+const VERSOES = [
+  { fonte: 'getbible', id: 'almeida', nome: 'Almeida Atualizada', licenca: 'GPL / domínio público' },
+  { fonte: 'getbible', id: 'livre', nome: 'Bíblia Livre', licenca: 'CC BY 3.0 Brasil' },
+  { fonte: 'getbible', id: 'livretr', nome: 'Bíblia Livre (TR)', licenca: 'CC BY 3.0 Brasil' },
+  { fonte: 'helloao', id: 'por_blj', nome: 'Bíblia Livre (helloao)', licenca: 'Uso livre' },
+  { fonte: 'helloao', id: 'por_onbv', nome: 'Nova Bíblia Viva (Open)', licenca: 'Uso livre' }
+];
 const HELLOAO = 'https://bible.helloao.org/api';
 const BASE = 'https://api.getbible.net/v2';
 const RESERVA = 'https://bible-api.com';
@@ -762,12 +1359,15 @@ const ORACOES = [
   'Pai celestial, recebe a minha gratidão e as minhas perguntas. Em tudo, seja feita a Tua vontade. Amém.'
 ];
 
+/* ---------- favoritos (localStorage) ---------- */
 const CHAVE_FAVS = 'lampada-favoritos';
 function carregarFavs(){
   try { return JSON.parse(localStorage.getItem(CHAVE_FAVS) || '[]'); }
   catch { return []; }
 }
-function salvarFavs(lista){ localStorage.setItem(CHAVE_FAVS, JSON.stringify(lista)); }
+function salvarFavs(lista){
+  localStorage.setItem(CHAVE_FAVS, JSON.stringify(lista));
+}
 function chaveVerso(nr, cap, verso){ return nr + ':' + cap + ':' + verso; }
 function estaFavorito(nr, cap, verso){
   return carregarFavs().some(f => f.chave === chaveVerso(nr, cap, verso));
@@ -784,9 +1384,12 @@ function alternarFavorito(dados){
     return false;
   }
   lista.unshift({
-    chave: k, nr: dados.nr, cap: dados.cap, verso: dados.verso,
-    texto: dados.texto, versao: dados.versao, ref: dados.ref,
-    data: new Date().toISOString(), nota: ''
+    chave: k,
+    nr: dados.nr, cap: dados.cap, verso: dados.verso,
+    texto: dados.texto, versao: dados.versao,
+    ref: dados.ref,
+    data: new Date().toISOString(),
+    nota: ''
   });
   salvarFavs(lista);
   avisar('Salvo nos favoritos');
@@ -816,43 +1419,72 @@ function avisar(msg){
   clearTimeout(a._t);
   a._t = setTimeout(() => a.classList.remove('ver'), 2400);
 }
-function diaDoAno(d){ return Math.floor((d - new Date(d.getFullYear(),0,0)) / 86400000); }
+
+function diaDoAno(d){
+  return Math.floor((d - new Date(d.getFullYear(),0,0)) / 86400000);
+}
 function livroPorNr(nr){ return LIVROS.find(l => l.nr === nr); }
 
+/* ---------- rede ---------- */
 function juntarPartes(partes){
   return (partes||[]).map(p => typeof p === 'string' ? p : (p && p.text ? p.text : ''))
                      .join(' ').replace(/\s+/g,' ').trim();
 }
 
 async function buscarCapitulo(nr, cap){
-  const livro = livroPorNr(nr);
-  const chave = versaoAtual.fonte + '/' + versaoAtual.id + '/' + nr + '/' + cap;
-  if(cache.has(chave)) return cache.get(chave);
-  const url = versaoAtual.fonte === 'helloao'
-    ? `\( {HELLOAO}/ \){versaoAtual.id}/\( {livro.sigla}/ \){cap}.json`
-    : `\( {BASE}/ \){versaoAtual.id}/\( {nr}/ \){cap}.json`;
-  const r = await fetch(url);
-  if(!r.ok) throw new Error('A fonte respondeu ' + r.status + ' para esse capítulo.');
-  const d = await r.json();
-  let itens;
-  if(versaoAtual.fonte === 'helloao'){
-    if(!d || !d.chapter || !Array.isArray(d.chapter.content)) throw new Error('Resposta em formato inesperado.');
-    itens = d.chapter.content
-      .filter(c => c.type === 'verse' || c.type === 'heading')
-      .map(c => c.type === 'heading'
-        ? {tipo:'titulo', texto:juntarPartes(c.content)}
-        : {tipo:'verso', numero:c.number, texto:juntarPartes(c.content)});
-  } else {
-    if(!d || !Array.isArray(d.verses)) throw new Error('Resposta em formato inesperado.');
-    itens = d.verses.map(v => ({tipo:'verso', numero:v.verse, texto:(v.text||'').trim()}));
+  if(!versaoAtual || !versaoAtual.id){
+    versaoAtual = VERSOES[0];
   }
-  const saida = {itens};
-  cache.set(chave, saida);
-  return saida;
+  const livro = livroPorNr(nr);
+  if(!livro) throw new Error('Livro inválido.');
+
+  const tentar = async (v) => {
+    const chave = v.fonte + '/' + v.id + '/' + nr + '/' + cap;
+    if(cache.has(chave)) return cache.get(chave);
+
+    const url = v.fonte === 'helloao'
+      ? `${HELLOAO}/${v.id}/${livro.sigla}/${cap}.json`
+      : `${BASE}/${v.id}/${nr}/${cap}.json`;
+
+    const r = await fetch(url);
+    if(!r.ok) throw new Error('A fonte respondeu ' + r.status + ' para esse capítulo.');
+    const d = await r.json();
+
+    let itens;
+    if(v.fonte === 'helloao'){
+      if(!d || !d.chapter || !Array.isArray(d.chapter.content)) throw new Error('Resposta em formato inesperado.');
+      itens = d.chapter.content
+        .filter(c => c.type === 'verse' || c.type === 'heading')
+        .map(c => c.type === 'heading'
+          ? {tipo:'titulo', texto:juntarPartes(c.content)}
+          : {tipo:'verso', numero:c.number, texto:juntarPartes(c.content)});
+    } else {
+      if(!d || !Array.isArray(d.verses)) throw new Error('Resposta em formato inesperado.');
+      itens = d.verses.map(x => ({tipo:'verso', numero:x.verse, texto:(x.text||'').trim()}));
+    }
+    const saida = {itens};
+    cache.set(chave, saida);
+    return saida;
+  };
+
+  try {
+    return await tentar(versaoAtual);
+  } catch(e1) {
+    // Fallback automático para Almeida (getBible) se a versão atual falhar
+    const fallback = VERSOES.find(v => v.id === 'almeida') || VERSOES[0];
+    if(fallback && fallback.id !== versaoAtual.id){
+      try {
+        const r = await tentar(fallback);
+        console.info('Fallback para', fallback.nome, 'após falha em', versaoAtual.nome);
+        return r;
+      } catch(_) {}
+    }
+    throw e1;
+  }
 }
 
 async function versoReserva(nr, cap, verso){
-  const url = `\( {RESERVA}/ \){encodeURIComponent(livroPorNr(nr).nome + ' ' + cap + ':' + verso)}?translation=almeida`;
+  const url = `${RESERVA}/${encodeURIComponent(livroPorNr(nr).nome + ' ' + cap + ':' + verso)}?translation=almeida`;
   const r = await fetch(url);
   if(!r.ok) throw new Error('reserva ' + r.status);
   const d = await r.json();
@@ -888,15 +1520,16 @@ function blocoErro(msg, aoTentar){
   return d;
 }
 
-function cartaoVersiculo(texto, nr, cap, verso, versao, extra){
-  const ref = `${livroPorNr(nr).nome} \( {cap}: \){verso}`;
+/* ---------- cartão ---------- */
+function cartaoVersiculo(texto, nr, cap, verso, versao, extra, opcoes){
+  const ref = `${livroPorNr(nr).nome} ${cap}:${verso}`;
   const c = document.createElement('div');
   c.className = 'cartao';
   c.style.animation = 'fadeUp 0.35s ease both';
   const favAtivo = estaFavorito(nr, cap, verso);
   c.innerHTML =
     `<div class="cab-cartao">
-       <div class="referencia">\( {ref}<small> \){versao}</small></div>
+       <div class="referencia">${ref}<small>${versao}</small></div>
        <div class="ferr-cartao">
          <button class="copiar" title="Copiar" aria-label="Copiar versículo">⧉</button>
          <button class="ouvir" title="Ouvir" aria-label="Ouvir versículo">🔊</button>
@@ -905,13 +1538,13 @@ function cartaoVersiculo(texto, nr, cap, verso, versao, extra){
      <p class="versiculo"></p>
      <a href="#sec-biblia" class="link-cap">Ler o capítulo completo →</a>
      <div class="acoes-verso">
-       <button class="btn-acao btn-fav \( {favAtivo ? 'ativo' : ''}" type="button"> \){favAtivo ? '★ Favorito' : '☆ Favoritar'}</button>
+       <button class="btn-acao btn-fav ${favAtivo ? 'ativo' : ''}" type="button">${favAtivo ? '★ Favorito' : '☆ Favoritar'}</button>
        <button class="btn-acao btn-img" type="button">🖼 Gerar imagem</button>
      </div>`;
   c.querySelector('.versiculo').textContent = texto;
   c.querySelector('.link-cap').onclick = e => { e.preventDefault(); abrirLeitura(nr, cap, verso); };
   c.querySelector('.copiar').onclick = () => {
-    const t = `"\( {texto}"\n \){ref} — ${versao}`;
+    const t = `"${texto}"\n${ref} — ${versao}`;
     if(navigator.share) navigator.share({text:t}).catch(()=>{});
     else if(navigator.clipboard) navigator.clipboard.writeText(t).then(()=>avisar('Versículo copiado')).catch(()=>avisar('Não foi possível copiar'));
   };
@@ -932,6 +1565,7 @@ function cartaoVersiculo(texto, nr, cap, verso, versao, extra){
   return c;
 }
 
+/* ---------- devocional do dia ---------- */
 async function versiculoDoDia(){
   const alvo = $('cartao-hoje');
   alvo.innerHTML = `<div class="cartao">
@@ -940,6 +1574,7 @@ async function versiculoDoDia(){
     <div class="skeleton skeleton-linha"></div>
     <div class="skeleton skeleton-linha" style="width:75%"></div>
   </div>`;
+
   const hoje = new Date();
   const dia = diaDoAno(hoje);
   const [nr,cap,verso] = TODAS[dia % TODAS.length];
@@ -947,9 +1582,18 @@ async function versiculoDoDia(){
     const {texto,versao} = await buscarVerso(nr,cap,verso);
     const extra = document.createElement('div');
     extra.innerHTML =
-      `<div class="bloco-devo"><span class="rotulo-bloco">Reflexão</span><p></p></div>
-       <div class="bloco-devo"><span class="rotulo-bloco">Para meditar</span><p></p></div>
-       <div class="bloco-devo oracao"><span class="rotulo-bloco">Oração</span><p></p></div>`;
+      `<div class="bloco-devo">
+         <span class="rotulo-bloco">Reflexão</span>
+         <p></p>
+       </div>
+       <div class="bloco-devo">
+         <span class="rotulo-bloco">Para meditar</span>
+         <p></p>
+       </div>
+       <div class="bloco-devo oracao">
+         <span class="rotulo-bloco">Oração</span>
+         <p></p>
+       </div>`;
     const ps = extra.querySelectorAll('p');
     ps[0].textContent = REFLEXOES[dia % REFLEXOES.length];
     ps[1].textContent = MEDITACOES[dia % MEDITACOES.length];
@@ -965,6 +1609,7 @@ async function versiculoDoDia(){
   }
 }
 
+/* ---------- promessas ---------- */
 let temaAtual = null;
 function montarTemas(){
   const box = $('temas');
@@ -1012,6 +1657,7 @@ async function tirarPromessa(){
   }
 }
 
+/* ---------- bíblia ---------- */
 function desenharLivros(){
   const alvo = $('lista-livros');
   alvo.innerHTML = '';
@@ -1024,7 +1670,7 @@ function desenharLivros(){
     LIVROS.filter(cond).forEach(l => {
       const b = document.createElement('button');
       b.className = 'livro';
-      b.innerHTML = `\( {l.nome}<small> \){l.caps} cap.</small>`;
+      b.innerHTML = `${l.nome}<small>${l.caps} cap.</small>`;
       b.onclick = () => abrirCapitulos(l);
       grade.appendChild(b);
     });
@@ -1069,8 +1715,9 @@ function desenharCapitulo(dados, nr, cap, destacar){
   frag.style.animation = 'fadeUp 0.3s ease both';
   const h = document.createElement('div');
   h.className = 'cab-cartao';
-  h.innerHTML = `<div class="referencia">${livro.nome} \( {cap}<small> \){versaoAtual.nome}</small></div>`;
+  h.innerHTML = `<div class="referencia">${livro.nome} ${cap}<small>${versaoAtual.nome}</small></div>`;
   frag.appendChild(h);
+
   dados.itens.forEach(item => {
     if(item.tipo === 'titulo'){
       const t = document.createElement('p');
@@ -1087,6 +1734,7 @@ function desenharCapitulo(dados, nr, cap, destacar){
     p.appendChild(document.createTextNode(item.texto));
     frag.appendChild(p);
   });
+
   const passos = document.createElement('div');
   passos.className = 'passos';
   if(cap > 1 || nr > 1){
@@ -1115,6 +1763,7 @@ function mostrarNivel(nivel){
   );
 }
 
+/* ---------- busca por referência ---------- */
 function buscarReferencia(){
   const txt = $('busca').value.trim();
   if(!txt) return;
@@ -1129,6 +1778,7 @@ function buscarReferencia(){
   abrirLeitura(livro.nr, cap, m[3] ? parseInt(m[3], 10) : undefined);
 }
 
+/* ---------- versões e controles ---------- */
 const chaveVersao = v => v.fonte + ':' + v.id;
 function creditar(){
   $('creditos').textContent = ' Exibindo: ' + versaoAtual.nome + ' (' + versaoAtual.licenca + ').';
@@ -1141,6 +1791,7 @@ function montarVersoes(){
     helloao:  {rotulo:'Free Use Bible API', el:document.createElement('optgroup')}
   };
   Object.values(grupos).forEach(g => g.el.label = g.rotulo);
+
   VERSOES.slice().sort((a,b) => (a.nome||'').localeCompare(b.nome||'','pt-BR')).forEach(v => {
     const o = document.createElement('option');
     o.value = chaveVersao(v);
@@ -1148,8 +1799,10 @@ function montarVersoes(){
     grupos[v.fonte].el.appendChild(o);
   });
   Object.values(grupos).forEach(g => { if(g.el.children.length) sel.appendChild(g.el); });
+
   if(versaoAtual) sel.value = chaveVersao(versaoAtual);
   if(versaoAtual) creditar();
+
   sel.onchange = () => {
     versaoAtual = VERSOES.find(v => chaveVersao(v) === sel.value);
     creditar();
@@ -1159,8 +1812,9 @@ function montarVersoes(){
     avisar('Versão: ' + versaoAtual.nome);
   };
 }
-function cacheLimpo(){}
+function cacheLimpo(){ /* cache já é indexado por fonte+versão */ }
 
+/* ---------- descoberta de versões ---------- */
 const LICENCA_LIVRE = /dom[ií]nio p[úu]blico|public domain|creative commons|\bcc[ -]?by\b|\bgpl\b|\bgfdl\b|freely distributable|free use|uso livre/i;
 const LICENCA_RESTRITA = /non-?commercial|n[ãa]o comercial|all rights reserved|permission (to distribute )?granted/i;
 function ehLivre(txt){
@@ -1201,8 +1855,10 @@ async function descobrirHelloao(){
     if(!r.ok) throw new Error('status ' + r.status);
     const d = await r.json();
     const pt = (d.translations||[]).filter(t => {
-      const lin = ((t.language||'') + ' ' + (t.languageName||'') + ' ' + (t.languageEnglishName||'')).toLowerCase();
-      return lin.trim().startsWith('por') || lin.includes('portug');
+      const code = (t.language||'').toLowerCase();
+      const lin = ((t.languageName||'') + ' ' + (t.languageEnglishName||'') + ' ' + (t.name||'')).toLowerCase();
+      // ISO 639-3 para português é "por"; evita falsos positivos como "porções"
+      return code === 'por' || lin.includes('portugu');
     });
     return acrescentar(pt.map(t => ({
       fonte: 'helloao',
@@ -1215,7 +1871,8 @@ async function descobrirHelloao(){
 async function descobrirTudo(){
   const [a,b] = await Promise.all([descobrirGetbible(), descobrirHelloao()]);
   const n = a + b;
-  console.info('Versões em português disponíveis:', VERSOES.length, '(getBible +' + a + ', helloao +' + b + ')');
+  console.info('Versões em português disponíveis:', VERSOES.length,
+               '(getBible +' + a + ', helloao +' + b + ')');
   if(n) avisar(n === 1 ? '1 versão adicionada' : n + ' versões adicionadas');
   if(VERSOES.length && !versaoAtual){
     versaoAtual = VERSOES[0];
@@ -1224,63 +1881,109 @@ async function descobrirTudo(){
   }
 }
 
+/* ---------- gerador de imagem ---------- */
 let imgAtual = { texto: '', ref: '', versao: '' };
+
 function abrirGeradorImagem(texto, ref, versao){
   imgAtual = { texto, ref, versao };
-  $('modal-img').classList.add('aberto');
+  const modal = $('modal-img');
+  modal.classList.add('aberto');
   desenharImagem();
 }
-function fecharModalImg(){ $('modal-img').classList.remove('aberto'); }
+function fecharModalImg(){
+  $('modal-img').classList.remove('aberto');
+}
 
 function desenharImagem(){
   const canvas = $('canvas-verso');
   const ctx = canvas.getContext('2d');
-  const W = canvas.width, H = canvas.height;
+  const W = canvas.width;
+  const H = canvas.height;
   const escuro = document.documentElement.getAttribute('data-tema') === 'escuro';
+
+  // Fundo
   const grad = ctx.createLinearGradient(0, 0, 0, H);
-  if(escuro){ grad.addColorStop(0, '#152238'); grad.addColorStop(1, '#0F141C'); }
-  else { grad.addColorStop(0, '#1A4A82'); grad.addColorStop(1, '#123665'); }
+  if(escuro){
+    grad.addColorStop(0, '#152238');
+    grad.addColorStop(1, '#0F141C');
+  } else {
+    grad.addColorStop(0, '#1A4A82');
+    grad.addColorStop(1, '#123665');
+  }
   ctx.fillStyle = grad;
   ctx.fillRect(0, 0, W, H);
+
+  // Textura sutil
   ctx.fillStyle = 'rgba(255,255,255,0.03)';
   for(let i = 0; i < 40; i++){
+    const x = Math.random() * W;
+    const y = Math.random() * H;
     ctx.beginPath();
-    ctx.arc(Math.random()*W, Math.random()*H, Math.random()*2, 0, Math.PI*2);
+    ctx.arc(x, y, Math.random() * 2, 0, Math.PI * 2);
     ctx.fill();
   }
+
+  // Faixa decorativa superior
   ctx.fillStyle = 'rgba(255,203,74,0.85)';
   ctx.fillRect(0, 0, W, 8);
+
+  // Logo / marca
   ctx.fillStyle = 'rgba(255,255,255,0.7)';
   ctx.font = '500 36px "Source Sans 3", system-ui, sans-serif';
   ctx.textAlign = 'center';
-  ctx.fillText('Lâmpada', W/2, 110);
+  ctx.fillText('Lâmpada', W / 2, 110);
+
+  // Linha decorativa
   ctx.strokeStyle = 'rgba(255,203,74,0.5)';
   ctx.lineWidth = 2;
-  ctx.beginPath(); ctx.moveTo(W*0.35, 140); ctx.lineTo(W*0.65, 140); ctx.stroke();
-  const margem = 100, maxW = W - margem*2;
+  ctx.beginPath();
+  ctx.moveTo(W * 0.35, 140);
+  ctx.lineTo(W * 0.65, 140);
+  ctx.stroke();
+
+  // Texto do versículo (quebra de linha)
+  const margem = 100;
+  const maxW = W - margem * 2;
   ctx.fillStyle = '#FFFFFF';
   ctx.font = '400 52px "Source Serif 4", Georgia, serif';
+  ctx.textAlign = 'center';
+
   const palavras = imgAtual.texto.split(/\s+/);
   const linhas = [];
   let linha = '';
   palavras.forEach(p => {
     const teste = linha ? linha + ' ' + p : p;
-    if(ctx.measureText(teste).width > maxW){ if(linha) linhas.push(linha); linha = p; }
-    else linha = teste;
+    if(ctx.measureText(teste).width > maxW){
+      if(linha) linhas.push(linha);
+      linha = p;
+    } else {
+      linha = teste;
+    }
   });
   if(linha) linhas.push(linha);
+
   const lineH = 72;
-  let y = (H - linhas.length*lineH)/2 - 20;
-  linhas.forEach(l => { ctx.fillText(l, W/2, y); y += lineH; });
+  const blocoH = linhas.length * lineH;
+  let y = (H - blocoH) / 2 - 20;
+  linhas.forEach(l => {
+    ctx.fillText(l, W / 2, y);
+    y += lineH;
+  });
+
+  // Referência
   ctx.fillStyle = 'rgba(255,203,74,0.95)';
   ctx.font = '600 34px "Source Sans 3", system-ui, sans-serif';
-  ctx.fillText(imgAtual.ref, W/2, y + 50);
+  ctx.fillText(imgAtual.ref, W / 2, y + 50);
+
+  // Versão
   ctx.fillStyle = 'rgba(255,255,255,0.45)';
   ctx.font = '400 26px "Source Sans 3", system-ui, sans-serif';
-  ctx.fillText(imgAtual.versao, W/2, y + 100);
+  ctx.fillText(imgAtual.versao, W / 2, y + 100);
+
+  // Rodapé
   ctx.fillStyle = 'rgba(255,255,255,0.3)';
   ctx.font = '400 24px "Source Sans 3", system-ui, sans-serif';
-  ctx.fillText('Devocional diário', W/2, H - 70);
+  ctx.fillText('Devocional diário', W / 2, H - 70);
 }
 
 function baixarImagem(){
@@ -1292,18 +1995,22 @@ function baixarImagem(){
   avisar('Imagem baixada');
 }
 
+/* ---------- favoritos UI ---------- */
 let tabFavAtual = 'favs';
+
 function renderFavoritos(){
   const area = $('area-favoritos');
   if(!area) return;
   const lista = carregarFavs();
+
   if(tabFavAtual === 'favs'){
-    if(!lista.length){
+    const sóFavs = lista;
+    if(!sóFavs.length){
       area.innerHTML = '<div class="vazio-fav">Nenhum favorito ainda.<br>Toque em ☆ Favoritar em qualquer versículo.</div>';
       return;
     }
     area.innerHTML = '';
-    lista.forEach((f, i) => {
+    sóFavs.forEach((f, i) => {
       const el = document.createElement('div');
       el.className = 'item-fav';
       el.style.animationDelay = (i * 0.04) + 's';
@@ -1318,6 +2025,7 @@ function renderFavoritos(){
       area.appendChild(el);
     });
   } else {
+    // Diário: favoritos com espaço para nota
     if(!lista.length){
       area.innerHTML = '<div class="vazio-fav">Salve um versículo nos favoritos para escrever uma nota.</div>';
       return;
@@ -1329,7 +2037,7 @@ function renderFavoritos(){
       el.style.animationDelay = (i * 0.04) + 's';
       el.innerHTML =
         `<div class="ref-fav">${f.ref}</div>
-         <div class="txt-fav">${f.texto.length > 120 ? f.texto.slice(0,120)+'…' : f.texto}</div>
+         <div class="txt-fav">${f.texto.length > 120 ? f.texto.slice(0, 120) + '…' : f.texto}</div>
          <textarea class="campo-nota" placeholder="Escreva uma reflexão ou oração…">${f.nota || ''}</textarea>
          <div class="meta-fav" style="margin-top:8px">
            <span>${new Date(f.data).toLocaleDateString('pt-BR')}</span>
@@ -1344,6 +2052,7 @@ function renderFavoritos(){
   }
 }
 
+/* ---------- tema claro / escuro ---------- */
 function aplicarTema(tema){
   document.documentElement.setAttribute('data-tema', tema);
   localStorage.setItem('lampada-tema', tema);
@@ -1355,6 +2064,7 @@ function alternarTema(){
   aplicarTema(atual === 'escuro' ? 'claro' : 'escuro');
 }
 
+/* ---------- início ---------- */
 (function initTema(){
   const salvo = localStorage.getItem('lampada-tema');
   const prefereEscuro = window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -1374,9 +2084,13 @@ document.querySelectorAll('#tamanhos button').forEach(b => {
 });
 document.querySelectorAll('.voltar').forEach(b => b.onclick = () => mostrarNivel(b.dataset.volta));
 $('btn-tirar').onclick = tirarPromessa;
+
+/* Modal imagem */
 $('btn-fechar-modal').onclick = fecharModalImg;
 $('btn-baixar-img').onclick = baixarImagem;
 $('modal-img').onclick = e => { if(e.target === $('modal-img')) fecharModalImg(); };
+
+/* Tabs favoritos */
 document.querySelectorAll('.tab-fav').forEach(tab => {
   tab.onclick = () => {
     document.querySelectorAll('.tab-fav').forEach(t => t.classList.remove('ativo'));
@@ -1385,6 +2099,8 @@ document.querySelectorAll('.tab-fav').forEach(tab => {
     renderFavoritos();
   };
 });
+
+/* Ripple sutil nos botões principais */
 document.addEventListener('pointerdown', e => {
   const btn = e.target.closest('.btn:not(.claro)');
   if(!btn) return;
@@ -1392,21 +2108,20 @@ document.addEventListener('pointerdown', e => {
   btn.style.setProperty('--x', ((e.clientX - rect.left) / rect.width * 100) + '%');
   btn.style.setProperty('--y', ((e.clientY - rect.top) / rect.height * 100) + '%');
 });
+
 function abrirMenu(estado){
   $('gaveta').classList.toggle('aberta', estado);
   $('veu').classList.toggle('aberto', estado);
 }
 
+versaoAtual = VERSOES[0];
 montarVersoes();
 renderFavoritos();
 montarTemas();
 desenharLivros();
+versiculoDoDia(); // carrega na hora com as versões semente
 descobrirTudo().then(() => {
-  if(VERSOES.length){
-    versaoAtual = VERSOES[0];
-    montarVersoes();
-    versiculoDoDia();
-  }
+  montarVersoes(); // atualiza lista se novas versões forem encontradas
 });
 </script>
 </body>
