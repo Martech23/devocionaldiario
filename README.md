@@ -100,6 +100,24 @@ curl -X GET "https://devocionaldiario-eosin.vercel.app/api/daily-push" \
   -H "Authorization: Bearer SEU_CRON_SECRET"
 ```
 
+## Imagem do versículo
+
+Dez fundos — amanhecer, noite estrelada, montanhas, águas, trigal, deserto,
+raios de luz, ramo de oliveira, vereda e pergaminho — em três formatos: feed
+(1080×1350), story (1080×1920) e quadrado.
+
+**Os fundos são desenhados no canvas, não são fotos.** Banco de fotos
+exigiria licença e chave de API, e mataria o funcionamento offline. Desenhado,
+o app segue estático, sem dependência externa e sem risco de direito autoral.
+
+O fundo é escolhido a partir da referência, então o mesmo versículo gera
+sempre a mesma imagem — e o botão **Trocar fundo** percorre os dez. O tamanho
+da fonte se ajusta sozinho ao comprimento do texto, e um véu suave atrás do
+bloco garante leitura em qualquer cena.
+
+Onde o aparelho permite, **Compartilhar** envia o PNG direto para o WhatsApp
+ou o Instagram; onde não, cai para o download.
+
 ## Versões da Bíblia
 
 Duas regras decidem o que aparece no seletor: **licença de uso livre** e
