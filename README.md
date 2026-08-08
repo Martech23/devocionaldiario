@@ -1,4 +1,4 @@
-# Lâmpada · Devocional diário e Bíblia Sagrada
+# Bíblia Devocional
 
 Site: https://devocionaldiario-eosin.vercel.app/
 

@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Lâmpada · Devocional diário e Bíblia Sagrada</title>
+<title>Bíblia Devocional · Leitura diária, promessas e Bíblia Sagrada</title>
 <meta name="description" content="Versículo do dia, caixa de promessas e a Bíblia Sagrada completa em versões de uso livre.">
 <meta name="theme-color" content="#1A4A82">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="Lâmpada">
+<meta name="apple-mobile-web-app-title" content="Bíblia Devocional">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
@@ -148,15 +148,13 @@ html[data-tema="escuro"] header.barra {
   align-items: center;
   gap: 10px;
 }
-.logo .chama {
-  width: 22px;
-  height: 22px;
-  border-radius: 50% 50% 46% 46% / 62% 62% 40% 40%;
-  background: radial-gradient(circle at 50% 70%, #FFF3CF, #FFCB4A 45%, #E8A020 78%);
-  box-shadow: 0 0 12px rgba(255, 203, 74, 0.55);
+.logo .marca {
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
   flex: 0 0 auto;
-  animation: chama-pulsar 3.2s ease-in-out infinite;
-  will-change: transform, box-shadow;
+  display: block;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
 }
 .logo span {
   font-size: 20px;
@@ -1004,16 +1002,6 @@ html[data-tema="escuro"] .tema.ativo {
   from { opacity: 0; }
   to { opacity: 1; }
 }
-@keyframes chama-pulsar {
-  0%, 100% {
-    transform: scale(1);
-    box-shadow: 0 0 10px rgba(255, 203, 74, 0.45);
-  }
-  50% {
-    transform: scale(1.08);
-    box-shadow: 0 0 18px rgba(255, 203, 74, 0.7), 0 0 28px rgba(255, 180, 40, 0.25);
-  }
-}
 @keyframes destaque-entrar {
   0% {
     background: transparent;
@@ -1621,7 +1609,6 @@ html[data-tema="escuro"] .painel-config header { background: #152238; }
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
-  .logo .chama { animation: none; }
 }
 </style>
 </head>
@@ -1631,8 +1618,8 @@ html[data-tema="escuro"] .painel-config header { background: #152238; }
   <div class="barra-int">
     <button class="icone-btn" id="btn-menu" aria-label="Abrir menu"><span class="hamb"></span></button>
     <div class="logo">
-      <span class="chama" aria-hidden="true"></span>
-      <span>Lâmpada<i>Bíblia</i></span>
+      <img class="marca" src="/favicon.svg" alt="" width="28" height="28" decoding="async">
+      <span>Bíblia <i>Devocional</i></span>
     </div>
     <div class="acoes-direita">
       <button class="btn-tema" id="btn-tema" aria-label="Alternar tema" title="Alternar tema claro/escuro">◐</button>
@@ -1855,7 +1842,7 @@ html[data-tema="escuro"] .painel-config header { background: #152238; }
     <p class="rotulo-secao">Instalar app</p>
     <div class="cartao">
       <div class="pwa-box">
-        <p>Instale a Lâmpada na tela inicial e receba um lembrete diário para o devocional.</p>
+        <p>Instale a Bíblia Devocional na tela inicial e receba um lembrete diário.</p>
         <button class="btn" id="btn-instalar-pwa" type="button">Instalar app</button>
         <button class="btn claro" id="btn-lembrete" type="button">Ativar lembrete diário</button>
       </div>
@@ -3269,7 +3256,7 @@ function desenharImagem(){
   ctx.fillStyle = 'rgba(255,255,255,0.7)';
   ctx.font = '500 36px "Source Sans 3", system-ui, sans-serif';
   ctx.textAlign = 'center';
-  ctx.fillText('Lâmpada', W / 2, 110);
+  ctx.fillText('Bíblia Devocional', W / 2, 110);
 
   // Linha decorativa
   ctx.strokeStyle = 'rgba(255,203,74,0.5)';
@@ -3327,7 +3314,7 @@ function desenharImagem(){
 function baixarImagem(){
   const canvas = $('canvas-verso');
   const link = document.createElement('a');
-  link.download = 'lampada-' + (imgAtual.ref || 'versiculo').replace(/\s+/g, '-').toLowerCase() + '.png';
+  link.download = 'biblia-devocional-' + (imgAtual.ref || 'versiculo').replace(/\s+/g, '-').toLowerCase() + '.png';
   link.href = canvas.toDataURL('image/png');
   link.click();
   avisar('Imagem baixada');
@@ -3876,7 +3863,7 @@ async function pedirLembrete(){
     }
     localStorage.setItem('lampada-lembrete', '1');
     try {
-      reg.showNotification('Lâmpada', {
+      reg.showNotification('Bíblia Devocional', {
         body: 'Web Push ativado. Você receberá o lembrete diário por volta das 8h.',
         icon: '/icon-192.png',
         badge: '/icon-192.png'
