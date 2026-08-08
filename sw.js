@@ -1,5 +1,5 @@
 /* Service Worker — Lâmpada PWA + Web Push */
-const CACHE = 'lampada-v4';
+const CACHE = 'lampada-v5';
 const PRECACHE = [
   '/',
   '/index.html',
