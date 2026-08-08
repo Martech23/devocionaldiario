@@ -13,24 +13,27 @@
     </clipPath>
   </defs>
 
-  <!-- fundo da marca -->
-  <rect width="512" height="512" rx="112" fill="url(#fundo)"/>
+  <!-- fundo da marca (rx=0 nas variantes de app, que recebem máscara própria) -->
+  <rect id="fundo-tile" width="512" height="512" rx="112" fill="url(#fundo)"/>
 
-  <!-- miolo: bordas das páginas aparecendo à direita -->
-  <rect x="360" y="84" width="80" height="344" rx="12" fill="#FCF8EC"/>
-  <rect x="360" y="84" width="80" height="344" rx="12" fill="none" stroke="#DDCFAF" stroke-width="5"/>
+  <!-- livro centrado em 256,256 — as variantes só mudam a escala deste grupo -->
+  <g id="livro">
+    <!-- miolo: bordas das páginas aparecendo à direita -->
+    <rect x="360" y="84" width="80" height="344" rx="12" fill="#FCF8EC"/>
+    <rect x="360" y="84" width="80" height="344" rx="12" fill="none" stroke="#DDCFAF" stroke-width="5"/>
 
-  <!-- capa -->
-  <g clip-path="url(#recorte-capa)">
-    <rect x="72" y="66" width="316" height="380" fill="url(#capa)"/>
-    <rect x="72" y="66" width="42" height="380" fill="#C2871F"/>
-    <rect x="114" y="66" width="10" height="380" fill="#AE7717" opacity="0.5"/>
-  </g>
-  <rect x="72" y="66" width="316" height="380" rx="20" fill="none" stroke="#AE7717" stroke-width="6"/>
+    <!-- capa -->
+    <g clip-path="url(#recorte-capa)">
+      <rect x="72" y="66" width="316" height="380" fill="url(#capa)"/>
+      <rect x="72" y="66" width="42" height="380" fill="#C2871F"/>
+      <rect x="114" y="66" width="10" height="380" fill="#AE7717" opacity="0.5"/>
+    </g>
+    <rect x="72" y="66" width="316" height="380" rx="20" fill="none" stroke="#AE7717" stroke-width="6"/>
 
-  <!-- cruz -->
-  <g fill="#123665">
-    <rect x="232" y="136" width="42" height="248" rx="8"/>
-    <rect x="181" y="202" width="144" height="42" rx="8"/>
+    <!-- cruz -->
+    <g fill="#123665">
+      <rect x="232" y="136" width="42" height="248" rx="8"/>
+      <rect x="181" y="202" width="144" height="42" rx="8"/>
+    </g>
   </g>
 </svg>
