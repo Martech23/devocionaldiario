@@ -1,9 +1,12 @@
 /* Service Worker — Lâmpada PWA + Web Push */
-const CACHE = 'lampada-v5';
+const CACHE = 'lampada-v6';
 const PRECACHE = [
   '/',
   '/index.html',
   '/manifest.webmanifest',
+  '/favicon.svg',
+  '/favicon-32.png',
+  '/favicon-16.png',
   '/icon-192.png',
   '/icon-512.png'
 ];
