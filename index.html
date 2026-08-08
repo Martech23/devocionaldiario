@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lâmpada · Devocional diário e Bíblia Sagrada</title>
+<meta name="description" content="Versículo do dia, caixa de promessas e a Bíblia Sagrada completa em versões de uso livre.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --azul:#1B4F8C;
+  --azul-esc:#143B6B;
+  --azul-cla:#2C6BB8;
+  --azul-claro-bg:#EAF1F9;
+  --fundo:#FAF9F7;
+  --papel:#FFFFFF;
+  --linha:#DCD8D2;
+  --linha-forte:#B9B4AC;
+  --texto:#232323;
+  --texto-2:#5F5B55;
+  --texto-3:#807B74;
+  --esc:1;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  background:var(--fundo);color:var(--texto);
+  font-family:"Source Sans 3",-apple-system,system-ui,sans-serif;
+  font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased;
+}
+.envolve{max-width:900px;margin:0 auto;padding:0 14px}
+a{color:var(--azul);text-decoration:underline;text-underline-offset:2px}
+
+/* ---------------- barra superior ---------------- */
+header.barra{
+  background:var(--azul);color:#fff;position:sticky;top:0;z-index:40;
+  box-shadow:0 1px 4px rgba(0,0,0,.18);
+}
+.barra-int{display:flex;align-items:center;justify-content:space-between;height:56px;max-width:900px;margin:0 auto;padding:0 12px}
+.icone-btn{
+  background:none;border:0;color:#fff;cursor:pointer;padding:8px;border-radius:6px;
+  display:grid;place-items:center;line-height:0;
+}
+.icone-btn:hover{background:rgba(255,255,255,.14)}
+.icone-btn:focus-visible{outline:2px solid #fff;outline-offset:1px}
+.hamb{width:22px;height:2px;background:#fff;position:relative;display:block}
+.hamb::before,.hamb::after{content:"";position:absolute;left:0;width:22px;height:2px;background:#fff}
+.hamb::before{top:-7px}.hamb::after{top:7px}
+.logo{display:flex;align-items:center;gap:9px}
+.logo .chama{
+  width:22px;height:22px;border-radius:50% 50% 46% 46%/62% 62% 40% 40%;
+  background:radial-gradient(circle at 50% 70%,#FFF3CF,#FFD濃 0,#FFCB4A 45%,#E8A020 75%);
+  background:radial-gradient(circle at 50% 70%,#FFF3CF,#FFCB4A 45%,#E8A020 78%);
+  box-shadow:0 0 10px rgba(255,203,74,.6);flex:0 0 auto;
+}
+.logo span{font-size:21px;font-weight:700;letter-spacing:-.01em}
+.logo span i{font-style:normal;font-weight:400;opacity:.85}
+.conta{width:26px;height:26px;border-radius:50%;border:2px solid #fff;display:grid;place-items:center;font-size:13px;font-weight:700}
+
+/* ---------------- menu lateral ---------------- */
+.veu{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:50;opacity:0;pointer-events:none;transition:opacity .2s}
+.veu.aberto{opacity:1;pointer-events:auto}
+.gaveta{
+  position:fixed;top:0;left:0;bottom:0;width:280px;max-width:82vw;background:#fff;z-index:51;
+  transform:translateX(-100%);transition:transform .25s ease;box-shadow:2px 0 18px rgba(0,0,0,.25);
+  display:flex;flex-direction:column;
+}
+.gaveta.aberta{transform:translateX(0)}
+.gaveta header{background:var(--azul);color:#fff;padding:16px 18px;font-size:18px;font-weight:700}
+.gaveta a{display:block;padding:14px 18px;border-bottom:1px solid var(--linha);color:var(--texto);
+  text-decoration:none;font-size:16px;font-weight:600}
+.gaveta a:hover{background:var(--azul-claro-bg);color:var(--azul)}
+.gaveta .nota{margin-top:auto;padding:16px 18px;font-size:12px;color:var(--texto-3);line-height:1.6}
+
+/* ---------------- busca e controles ---------------- */
+.controles{padding-top:14px}
+.linha-busca{display:flex;margin-bottom:8px}
+.linha-busca input{
+  flex:1;min-width:0;font-family:inherit;font-size:16px;padding:11px 13px;
+  border:1px solid var(--linha-forte);border-right:0;border-radius:3px 0 0 3px;background:#fff;color:var(--texto);
+}
+.linha-busca input:focus{outline:2px solid var(--azul-cla);outline-offset:-1px}
+.linha-busca button{
+  background:var(--azul);border:1px solid var(--azul);color:#fff;cursor:pointer;
+  padding:0 20px;border-radius:0 3px 3px 0;font-size:17px;line-height:0;
+}
+.linha-busca button:hover{background:var(--azul-esc)}
+.seletor-versao{position:relative;margin-bottom:10px}
+.seletor-versao select{
+  width:100%;appearance:none;font-family:inherit;font-size:16px;padding:11px 38px 11px 13px;
+  border:1px solid var(--linha-forte);border-radius:3px;background:#fff;color:var(--texto);cursor:pointer;
+}
+.seletor-versao::after{content:"⌄";position:absolute;right:14px;top:6px;font-size:19px;color:var(--texto-2);pointer-events:none}
+.linha-ferramentas{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:6px 0 10px;border-bottom:3px solid var(--azul);margin-bottom:2px;
+}
+.ferramenta{background:none;border:0;font-family:inherit;font-size:15px;color:var(--azul);cursor:pointer;font-weight:600;padding:4px 0}
+.ferramenta:hover{text-decoration:underline}
+.ferramenta:focus-visible{outline:2px solid var(--azul);outline-offset:2px}
+.tamanhos{display:none;gap:6px;padding:10px 0;border-bottom:1px solid var(--linha)}
+.tamanhos.aberto{display:flex;justify-content:flex-end}
+.tamanhos button{
+  font-family:inherit;background:#fff;border:1px solid var(--linha-forte);border-radius:3px;
+  padding:6px 14px;cursor:pointer;color:var(--texto);font-weight:600;
+}
+.tamanhos button:hover{background:var(--azul-claro-bg);border-color:var(--azul)}
+
+/* ---------------- seções e cartões ---------------- */
+.secao{margin-top:22px;scroll-margin-top:70px}
+.rotulo-secao{
+  font-size:13px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--texto-2);padding-bottom:7px;margin-bottom:0;
+}
+.cartao{background:var(--papel);border:1px solid var(--linha);border-radius:3px;padding:20px 18px 22px}
+.cartao + .cartao{margin-top:10px}
+.cab-cartao{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:14px}
+.referencia{font-size:18px;font-weight:600;color:var(--texto)}
+.referencia small{display:block;font-weight:400;font-size:13px;color:var(--texto-3);margin-top:1px}
+.ferr-cartao{display:flex;gap:4px;flex:0 0 auto}
+.ferr-cartao button{
+  background:none;border:0;cursor:pointer;color:var(--texto-2);font-size:16px;
+  padding:6px 8px;border-radius:4px;line-height:1;
+}
+.ferr-cartao button:hover{background:var(--azul-claro-bg);color:var(--azul)}
+.ferr-cartao button:focus-visible{outline:2px solid var(--azul);outline-offset:1px}
+.versiculo{
+  font-family:"Source Serif 4",Georgia,serif;
+  font-size:calc(23px * var(--esc));line-height:1.45;color:var(--texto);margin-bottom:16px;
+}
+.link-cap{font-size:15px}
+.meditacao{margin-top:18px;padding-top:16px;border-top:1px solid var(--linha)}
+.meditacao b{display:block;font-size:12px;letter-spacing:.09em;text-transform:uppercase;color:var(--texto-3);margin-bottom:5px}
+.meditacao p{font-family:"Source Serif 4",serif;font-size:calc(17px * var(--esc));color:var(--texto-2);line-height:1.5}
+
+/* ---------------- promessas ---------------- */
+.temas{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:16px}
+.tema{
+  font-family:inherit;font-size:14px;background:#fff;color:var(--azul);
+  border:1px solid var(--linha-forte);border-radius:99px;padding:6px 14px;cursor:pointer;
+}
+.tema:hover{background:var(--azul-claro-bg);border-color:var(--azul)}
+.tema.ativo{background:var(--azul);color:#fff;border-color:var(--azul);font-weight:600}
+.tema:focus-visible{outline:2px solid var(--azul);outline-offset:2px}
+.btn{
+  font-family:inherit;font-size:15px;font-weight:600;background:var(--azul);color:#fff;
+  border:1px solid var(--azul);border-radius:3px;padding:10px 22px;cursor:pointer;
+}
+.btn:hover{background:var(--azul-esc)}
+.btn:focus-visible{outline:2px solid var(--azul-cla);outline-offset:2px}
+.btn.claro{background:#fff;color:var(--azul)}
+.btn.claro:hover{background:var(--azul-claro-bg)}
+.vazio{text-align:center;padding:26px 12px}
+.vazio p{font-family:"Source Serif 4",serif;font-size:18px;color:var(--texto-2);margin-bottom:16px}
+
+/* ---------------- bíblia ---------------- */
+.grupo{font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--azul);margin:16px 0 9px}
+.livros{display:grid;grid-template-columns:repeat(auto-fill,minmax(146px,1fr));gap:1px;background:var(--linha);border:1px solid var(--linha)}
+.livro{
+  font-family:inherit;font-size:15px;text-align:left;background:#fff;color:var(--texto);
+  border:0;padding:11px 13px;cursor:pointer;
+}
+.livro:hover{background:var(--azul-claro-bg);color:var(--azul)}
+.livro:focus-visible{outline:2px solid var(--azul);outline-offset:-2px}
+.livro small{display:block;font-size:12px;color:var(--texto-3)}
+.capitulos{display:grid;grid-template-columns:repeat(auto-fill,minmax(50px,1fr));gap:1px;background:var(--linha);border:1px solid var(--linha)}
+.cap{font-family:inherit;font-size:16px;font-weight:600;background:#fff;color:var(--azul);border:0;padding:13px 0;cursor:pointer}
+.cap:hover{background:var(--azul);color:#fff}
+.cap:focus-visible{outline:2px solid var(--azul);outline-offset:-2px}
+.voltar{background:none;border:0;color:var(--azul);font-family:inherit;font-size:15px;font-weight:600;cursor:pointer;padding:6px 0;margin-bottom:6px}
+.voltar:hover{text-decoration:underline}
+.v{font-family:"Source Serif 4",Georgia,serif;font-size:calc(19px * var(--esc));line-height:1.6;display:block;margin-bottom:8px;color:var(--texto)}
+.v sup{font-family:"Source Sans 3",sans-serif;font-size:11px;font-weight:700;color:var(--azul);margin-right:5px;vertical-align:super}
+.v.destaque{background:#FFF3C4;padding:2px 4px;border-radius:2px}
+.titulo-sec{font-size:calc(15px * var(--esc));font-weight:700;color:var(--azul);margin:18px 0 8px}
+.passos{display:flex;justify-content:space-between;gap:10px;margin-top:22px;padding-top:16px;border-top:1px solid var(--linha)}
+
+/* ---------------- estados ---------------- */
+.carregando{display:flex;align-items:center;gap:10px;color:var(--texto-3);font-size:15px;padding:14px 0}
+.giro{width:16px;height:16px;border:2px solid var(--linha);border-top-color:var(--azul);border-radius:50%;animation:rodar .8s linear infinite}
+@keyframes rodar{to{rotate:360deg}}
+.erro{background:#FDF4F3;border:1px solid #E4BAB4;border-left:4px solid #B03A2E;border-radius:3px;padding:15px}
+.erro b{display:block;color:#8E2C1F;margin-bottom:5px;font-size:16px}
+.erro ul{margin:10px 0 0 18px;font-size:14px;color:var(--texto-2);line-height:1.65}
+.erro code{background:#EFEBE6;padding:1px 5px;border-radius:2px;font-size:13px}
+.rodape{border-top:1px solid var(--linha);margin-top:30px;padding:20px 0 34px;font-size:13px;color:var(--texto-3);line-height:1.7}
+.aviso{
+  position:fixed;left:50%;bottom:22px;translate:-50% 0;z-index:60;background:#2C2C2C;color:#fff;
+  font-size:14px;padding:11px 22px;border-radius:4px;box-shadow:0 6px 18px rgba(0,0,0,.35);
+  opacity:0;pointer-events:none;transition:opacity .25s,translate .25s;
+}
+.aviso.ver{opacity:1;translate:-50% -6px}
+.oculto{display:none !important}
+@media (prefers-reduced-motion:reduce){*{animation:none !important;transition:none !important}}
+</style>
+</head>
+<body>
+
+<header class="barra">
+  <div class="barra-int">
+    <button class="icone-btn" id="btn-menu" aria-label="Abrir menu"><span class="hamb"></span></button>
+    <div class="logo"><span class="chama" aria-hidden="true"></span><span>Lâmpada<i>Bíblia</i></span></div>
+    <button class="icone-btn" aria-label="Conta"><span class="conta">✦</span></button>
+  </div>
+</header>
+
+<div class="veu" id="veu"></div>
+<aside class="gaveta" id="gaveta" aria-label="Menu">
+  <header>Menu</header>
+  <a href="#sec-hoje" data-fecha>Versículo do dia</a>
+  <a href="#sec-promessas" data-fecha>Caixa de promessas</a>
+  <a href="#sec-biblia" data-fecha>Bíblia completa</a>
+  <p class="nota">Somente versões de uso livre: Almeida (1911, domínio público) e Bíblia Livre (CC BY 3.0 Brasil).</p>
+</aside>
+
+<main class="envolve">
+
+  <div class="controles">
+    <div class="linha-busca">
+      <input id="busca" type="search" placeholder="Digite uma passagem (ex.: João 3:16)" aria-label="Buscar passagem">
+      <button id="btn-busca" aria-label="Buscar">🔍</button>
+    </div>
+    <div class="seletor-versao">
+      <select id="sel-versao" aria-label="Versão da Bíblia"></select>
+    </div>
+    <div class="linha-ferramentas">
+      <button class="ferramenta" id="btn-livros">Lista de livros ⌄</button>
+      <button class="ferramenta" id="btn-fonte">Tamanho da fonte ⌄</button>
+    </div>
+    <div class="tamanhos" id="tamanhos">
+      <button data-esc="0.9">A−</button>
+      <button data-esc="1">A</button>
+      <button data-esc="1.2">A+</button>
+      <button data-esc="1.45">A++</button>
+    </div>
+  </div>
+
+  <!-- ============ VERSÍCULO DO DIA ============ -->
+  <section class="secao" id="sec-hoje">
+    <p class="rotulo-secao">Versículo do dia</p>
+    <div id="cartao-hoje"><div class="cartao"><div class="carregando"><span class="giro"></span> Carregando…</div></div></div>
+  </section>
+
+  <!-- ============ CAIXA DE PROMESSAS ============ -->
+  <section class="secao" id="sec-promessas">
+    <p class="rotulo-secao">Caixa de promessas</p>
+    <div class="cartao">
+      <div class="temas" id="temas"></div>
+      <div id="area-promessa">
+        <div class="vazio">
+          <p>Escolha o que seu coração precisa hoje e tire uma promessa.</p>
+          <button class="btn" id="btn-tirar">Tirar uma promessa</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ BÍBLIA ============ -->
+  <section class="secao" id="sec-biblia">
+    <p class="rotulo-secao">Bíblia Sagrada completa</p>
+    <div class="cartao">
+      <div id="nivel-livros">
+        <div id="lista-livros"></div>
+      </div>
+      <div id="nivel-capitulos" class="oculto">
+        <button class="voltar" data-volta="livros">‹ Todos os livros</button>
+        <p class="grupo" id="titulo-livro"></p>
+        <div class="capitulos" id="lista-capitulos"></div>
+      </div>
+      <div id="nivel-leitura" class="oculto">
+        <button class="voltar" data-volta="capitulos">‹ Capítulos</button>
+        <div id="area-leitura"></div>
+      </div>
+    </div>
+  </section>
+
+  <p class="rodape">
+    Textos de uso livre via <a href="https://api.getbible.net" target="_blank" rel="noopener">getBible</a>
+    e <a href="https://bible.helloao.org" target="_blank" rel="noopener">Free Use Bible API</a>.
+    <span id="creditos"></span>
+  </p>
+</main>
+
+<div class="aviso" id="aviso" role="status" aria-live="polite"></div>
+
+<script>
+/* ===== fontes de texto: só versões de uso livre confirmado ===== */
+/* =====================================================================
+   FONTE ÚNICA: Free Use Bible API (bible.helloao.org)
+   Nenhuma versão fica fixa no código — a lista é montada em tempo de
+   execução a partir do catálogo da própria API.
+   ===================================================================== */
+const VERSOES = [];
+const HELLOAO = 'https://bible.helloao.org/api';
+
+const LIVROS = [
+  [1,'Gênesis',50,'GEN'],[2,'Êxodo',40,'EXO'],[3,'Levítico',27,'LEV'],[4,'Números',36,'NUM'],
+  [5,'Deuteronômio',34,'DEU'],[6,'Josué',24,'JOS'],[7,'Juízes',21,'JDG'],[8,'Rute',4,'RUT'],
+  [9,'1 Samuel',31,'1SA'],[10,'2 Samuel',24,'2SA'],[11,'1 Reis',22,'1KI'],[12,'2 Reis',25,'2KI'],
+  [13,'1 Crônicas',29,'1CH'],[14,'2 Crônicas',36,'2CH'],[15,'Esdras',10,'EZR'],[16,'Neemias',13,'NEH'],
+  [17,'Ester',10,'EST'],[18,'Jó',42,'JOB'],[19,'Salmos',150,'PSA'],[20,'Provérbios',31,'PRO'],
+  [21,'Eclesiastes',12,'ECC'],[22,'Cantares de Salomão',8,'SNG'],[23,'Isaías',66,'ISA'],
+  [24,'Jeremias',52,'JER'],[25,'Lamentações',5,'LAM'],[26,'Ezequiel',48,'EZK'],[27,'Daniel',12,'DAN'],
+  [28,'Oseias',14,'HOS'],[29,'Joel',3,'JOL'],[30,'Amós',9,'AMO'],[31,'Obadias',1,'OBA'],
+  [32,'Jonas',4,'JON'],[33,'Miqueias',7,'MIC'],[34,'Naum',3,'NAM'],[35,'Habacuque',3,'HAB'],
+  [36,'Sofonias',3,'ZEP'],[37,'Ageu',2,'HAG'],[38,'Zacarias',14,'ZEC'],[39,'Malaquias',4,'MAL'],
+  [40,'Mateus',28,'MAT'],[41,'Marcos',16,'MRK'],[42,'Lucas',24,'LUK'],[43,'João',21,'JHN'],
+  [44,'Atos',28,'ACT'],[45,'Romanos',16,'ROM'],[46,'1 Coríntios',16,'1CO'],[47,'2 Coríntios',13,'2CO'],
+  [48,'Gálatas',6,'GAL'],[49,'Efésios',6,'EPH'],[50,'Filipenses',4,'PHP'],[51,'Colossenses',4,'COL'],
+  [52,'1 Tessalonicenses',5,'1TH'],[53,'2 Tessalonicenses',3,'2TH'],[54,'1 Timóteo',6,'1TI'],
+  [55,'2 Timóteo',4,'2TI'],[56,'Tito',3,'TIT'],[57,'Filemom',1,'PHM'],[58,'Hebreus',13,'HEB'],
+  [59,'Tiago',5,'JAS'],[60,'1 Pedro',5,'1PE'],[61,'2 Pedro',3,'2PE'],[62,'1 João',5,'1JN'],
+  [63,'2 João',1,'2JN'],[64,'3 João',1,'3JN'],[65,'Judas',1,'JUD'],[66,'Apocalipse',22,'REV']
+].map(([nr,nome,caps,sigla]) => ({nr,nome,caps,sigla}));
+
+const PROMESSAS = {
+  'Medo e ansiedade':[[23,41,10],[19,56,3],[43,14,27],[50,4,6],[60,5,7],[55,1,7],[19,34,4],[40,6,34],[19,94,19]],
+  'Força':[[23,40,31],[50,4,13],[19,46,1],[16,8,10],[47,12,9],[49,6,10],[19,18,2],[23,41,13]],
+  'Provisão':[[50,4,19],[40,6,33],[19,23,1],[19,37,25],[42,6,38],[39,3,10],[19,34,10]],
+  'Cura e consolo':[[19,147,3],[23,53,5],[24,30,17],[40,11,28],[19,34,18],[66,21,4],[47,1,3],[19,30,2]],
+  'Direção':[[20,3,5],[20,3,6],[19,32,8],[19,119,105],[23,30,21],[24,29,11],[20,16,9]],
+  'Perdão':[[62,1,9],[19,103,12],[23,1,18],[45,8,1],[33,7,19],[19,51,10]],
+  'Fé e esperança':[[58,11,1],[45,8,28],[45,15,13],[25,3,22],[25,3,23],[19,27,14],[23,40,29],[58,10,23]],
+  'Gratidão':[[19,100,4],[52,5,18],[19,118,24],[51,3,15],[19,103,2]],
+  'Família':[[6,24,15],[20,22,6],[21,4,9],[51,3,13],[49,4,32]],
+  'Proteção':[[19,91,1],[19,91,11],[19,121,7],[20,18,10],[53,3,3],[19,4,8]]
+};
+const TODAS = Object.values(PROMESSAS).flat();
+
+const MEDITACOES = [
+  'O que este versículo diz sobre quem Deus é?',
+  'Que promessa há aqui que você ainda não tomou como sua?',
+  'Se você acreditasse nisso por inteiro hoje, o que faria diferente?',
+  'A quem você poderia levar essa palavra hoje?',
+  'Leia de novo, devagar. Que palavra ficou pesando?',
+  'Que medo essa passagem desarma?',
+  'O que Deus está pedindo que você solte?',
+  'Onde você já viu isso se cumprir na sua história?',
+  'Transforme este versículo em uma oração de uma frase.',
+  'O que muda no seu dia se você levar isso a sério até de noite?',
+  'Que parte de você resiste a essa palavra? Por quê?',
+  'Guarde uma frase disso de cor para o resto do dia.'
+];
+
+const $ = id => document.getElementById(id);
+const norm = s => (s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
+let versaoAtual = VERSOES[0];
+const cache = new Map();
+
+function avisar(msg){
+  const a = $('aviso'); a.textContent = msg; a.classList.add('ver');
+  clearTimeout(a._t); a._t = setTimeout(()=>a.classList.remove('ver'),2300);
+}
+function diaDoAno(d){ return Math.floor((d - new Date(d.getFullYear(),0,0))/86400000); }
+function livroPorNr(nr){ return LIVROS.find(l => l.nr === nr); }
+
+/* ---------- rede ---------- */
+/* As duas APIs devolvem formatos diferentes; aqui tudo vira a mesma lista de itens:
+   {tipo:'titulo'|'verso', numero, texto} */
+function juntarPartes(partes){
+  return (partes||[]).map(p => typeof p === 'string' ? p : (p && p.text ? p.text : ''))
+                     .join(' ').replace(/\s+/g,' ').trim();
+}
+async function buscarCapitulo(nr, cap){
+  const livro = livroPorNr(nr);
+  const chave = versaoAtual.fonte+'/'+versaoAtual.id+'/'+nr+'/'+cap;
+  if(cache.has(chave)) return cache.get(chave);
+
+  const url = versaoAtual.fonte === 'helloao'
+    ? `${HELLOAO}/${versaoAtual.id}/${livro.sigla}/${cap}.json`
+    : `${BASE}/${versaoAtual.id}/${nr}/${cap}.json`;
+
+  const r = await fetch(url);
+  if(!r.ok) throw new Error('A fonte respondeu '+r.status+' para esse capítulo.');
+  const d = await r.json();
+
+  let itens;
+  if(versaoAtual.fonte === 'helloao'){
+    if(!d || !d.chapter || !Array.isArray(d.chapter.content)) throw new Error('Resposta em formato inesperado.');
+    itens = d.chapter.content
+      .filter(c => c.type === 'verse' || c.type === 'heading')
+      .map(c => c.type === 'heading'
+        ? {tipo:'titulo', texto:juntarPartes(c.content)}
+        : {tipo:'verso', numero:c.number, texto:juntarPartes(c.content)});
+  }else{
+    if(!d || !Array.isArray(d.verses)) throw new Error('Resposta em formato inesperado.');
+    itens = d.verses.map(v => ({tipo:'verso', numero:v.verse, texto:(v.text||'').trim()}));
+  }
+  const saida = {itens};
+  cache.set(chave, saida);
+  return saida;
+}
+async function versoReserva(nr, cap, verso){
+  const url = `${RESERVA}/${encodeURIComponent(livroPorNr(nr).nome+' '+cap+':'+verso)}?translation=almeida`;
+  const r = await fetch(url);
+  if(!r.ok) throw new Error('reserva '+r.status);
+  const d = await r.json();
+  if(!d.text) throw new Error('reserva vazia');
+  return {texto:d.text.trim(), versao:'Almeida — fonte reserva'};
+}
+async function buscarVerso(nr, cap, verso){
+  try{
+    const d = await buscarCapitulo(nr, cap);
+    const v = d.itens.find(x => x.tipo === 'verso' && x.numero === verso);
+    if(!v) throw new Error('Versículo não existe nesta versão.');
+    return {texto:v.texto, versao:versaoAtual.nome};
+  }catch(e){
+    try{ return await versoReserva(nr, cap, verso); }catch(_){ throw e; }
+  }
+}
+function blocoErro(msg, aoTentar){
+  const d = document.createElement('div');
+  d.className='erro';
+  d.innerHTML = '<b>Não deu para carregar</b>'+msg+
+    '<ul><li>Se você está numa pré-visualização, o ambiente pode bloquear requisições externas. Baixe o arquivo e abra direto no navegador, ou publique num servidor.</li>'+
+    '<li>Abra o console com F12 e veja se aparece erro de <code>CORS</code> ou de rede.</li></ul>';
+  if(aoTentar){
+    const b=document.createElement('button');
+    b.className='btn claro'; b.style.marginTop='14px'; b.textContent='Tentar de novo';
+    b.onclick=aoTentar; d.appendChild(b);
+  }
+  return d;
+}
+
+/* ---------- cartão ---------- */
+function cartaoVersiculo(texto, nr, cap, verso, versao, extra){
+  const ref = `${livroPorNr(nr).nome} ${cap}:${verso}`;
+  const c = document.createElement('div');
+  c.className='cartao';
+  c.innerHTML =
+    `<div class="cab-cartao">
+       <div class="referencia">${ref}<small>${versao}</small></div>
+       <div class="ferr-cartao">
+         <button class="copiar" title="Copiar" aria-label="Copiar versículo">⧉</button>
+         <button class="ouvir" title="Ouvir" aria-label="Ouvir versículo">🔊</button>
+       </div>
+     </div>
+     <p class="versiculo"></p>
+     <a href="#sec-biblia" class="link-cap">Ler o capítulo completo</a>`;
+  c.querySelector('.versiculo').textContent = texto;
+  c.querySelector('.link-cap').onclick = e => { e.preventDefault(); abrirLeitura(nr, cap, verso); };
+  c.querySelector('.copiar').onclick = () => {
+    const t = `"${texto}"\n${ref} — ${versao}`;
+    if(navigator.share) navigator.share({text:t}).catch(()=>{});
+    else if(navigator.clipboard) navigator.clipboard.writeText(t).then(()=>avisar('Versículo copiado')).catch(()=>avisar('Não foi possível copiar'));
+  };
+  c.querySelector('.ouvir').onclick = () => {
+    if(!window.speechSynthesis) return avisar('Seu navegador não suporta leitura em voz');
+    speechSynthesis.cancel();
+    const f = new SpeechSynthesisUtterance(texto + '. ' + ref);
+    f.lang='pt-BR'; speechSynthesis.speak(f);
+  };
+  if(extra) c.appendChild(extra);
+  return c;
+}
+
+/* ---------- versículo do dia ---------- */
+async function versiculoDoDia(){
+  const alvo = $('cartao-hoje');
+  alvo.innerHTML = '<div class="cartao"><div class="carregando"><span class="giro"></span> Carregando…</div></div>';
+  const hoje = new Date();
+  const [nr,cap,verso] = TODAS[diaDoAno(hoje) % TODAS.length];
+  try{
+    const {texto,versao} = await buscarVerso(nr,cap,verso);
+    const med = document.createElement('div');
+    med.className='meditacao';
+    med.innerHTML = '<b>Para meditar</b><p></p>';
+    med.querySelector('p').textContent = MEDITACOES[diaDoAno(hoje) % MEDITACOES.length];
+    alvo.innerHTML='';
+    alvo.appendChild(cartaoVersiculo(texto,nr,cap,verso,versao,med));
+  }catch(e){
+    alvo.innerHTML='';
+    const w = document.createElement('div'); w.className='cartao';
+    w.appendChild(blocoErro(e.message, versiculoDoDia));
+    alvo.appendChild(w);
+  }
+}
+
+/* ---------- promessas ---------- */
+let temaAtual = null;
+function montarTemas(){
+  const box=$('temas'); box.innerHTML='';
+  const todos=document.createElement('button');
+  todos.className='tema ativo'; todos.textContent='Qualquer uma';
+  todos.onclick=()=>selecionarTema(null,todos);
+  box.appendChild(todos);
+  Object.keys(PROMESSAS).forEach(t=>{
+    const b=document.createElement('button');
+    b.className='tema'; b.textContent=t;
+    b.onclick=()=>selecionarTema(t,b);
+    box.appendChild(b);
+  });
+}
+function selecionarTema(t,botao){
+  temaAtual=t;
+  document.querySelectorAll('.tema').forEach(x=>x.classList.remove('ativo'));
+  botao.classList.add('ativo');
+}
+async function tirarPromessa(){
+  const area=$('area-promessa');
+  area.innerHTML='<div class="carregando"><span class="giro"></span> Abrindo a caixa…</div>';
+  const pool = temaAtual ? PROMESSAS[temaAtual] : TODAS;
+  const [nr,cap,verso]=pool[Math.floor(Math.random()*pool.length)];
+  try{
+    const {texto,versao}=await buscarVerso(nr,cap,verso);
+    area.innerHTML='';
+    const cartao = cartaoVersiculo(texto,nr,cap,verso,versao);
+    cartao.style.border='0'; cartao.style.padding='0';
+    area.appendChild(cartao);
+    const outra=document.createElement('div');
+    outra.style.marginTop='18px';
+    outra.innerHTML='<button class="btn claro">Tirar outra</button>';
+    outra.querySelector('button').onclick=tirarPromessa;
+    area.appendChild(outra);
+  }catch(e){
+    area.innerHTML='';
+    area.appendChild(blocoErro(e.message,tirarPromessa));
+  }
+}
+
+/* ---------- bíblia ---------- */
+function desenharLivros(){
+  const alvo=$('lista-livros'); alvo.innerHTML='';
+  [['Antigo Testamento', l=>l.nr<=39],['Novo Testamento', l=>l.nr>39]].forEach(([titulo,cond])=>{
+    const h=document.createElement('p'); h.className='grupo'; h.textContent=titulo;
+    const grade=document.createElement('div'); grade.className='livros';
+    LIVROS.filter(cond).forEach(l=>{
+      const b=document.createElement('button');
+      b.className='livro';
+      b.innerHTML=`${l.nome}<small>${l.caps} cap.</small>`;
+      b.onclick=()=>abrirCapitulos(l);
+      grade.appendChild(b);
+    });
+    alvo.appendChild(h); alvo.appendChild(grade);
+  });
+}
+function abrirCapitulos(livro){
+  $('titulo-livro').textContent=livro.nome;
+  const grade=$('lista-capitulos'); grade.innerHTML='';
+  for(let i=1;i<=livro.caps;i++){
+    const b=document.createElement('button');
+    b.className='cap'; b.textContent=i;
+    b.onclick=()=>abrirLeitura(livro.nr,i);
+    grade.appendChild(b);
+  }
+  mostrarNivel('capitulos');
+  $('sec-biblia').scrollIntoView({behavior:'smooth',block:'start'});
+}
+async function abrirLeitura(nr,cap,destacar){
+  mostrarNivel('leitura');
+  $('sec-biblia').scrollIntoView({behavior:'smooth',block:'start'});
+  const alvo=$('area-leitura');
+  alvo.innerHTML='<div class="carregando"><span class="giro"></span> Abrindo o capítulo…</div>';
+  try{
+    const d=await buscarCapitulo(nr,cap);
+    alvo.innerHTML='';
+    alvo.appendChild(desenharCapitulo(d,nr,cap,destacar));
+  }catch(e){
+    alvo.innerHTML='';
+    alvo.appendChild(blocoErro(e.message,()=>abrirLeitura(nr,cap,destacar)));
+  }
+}
+function desenharCapitulo(dados,nr,cap,destacar){
+  const livro=livroPorNr(nr);
+  const frag=document.createElement('div');
+  const h=document.createElement('div');
+  h.className='cab-cartao';
+  h.innerHTML=`<div class="referencia">${livro.nome} ${cap}<small>${versaoAtual.nome}</small></div>`;
+  frag.appendChild(h);
+
+  dados.itens.forEach(item=>{
+    if(item.tipo==='titulo'){
+      const t=document.createElement('p'); t.className='titulo-sec'; t.textContent=item.texto;
+      frag.appendChild(t);
+      return;
+    }
+    const p=document.createElement('span');
+    p.className='v'+(destacar===item.numero?' destaque':'');
+    const s=document.createElement('sup'); s.textContent=item.numero;
+    p.appendChild(s); p.appendChild(document.createTextNode(item.texto));
+    frag.appendChild(p);
+  });
+
+  const passos=document.createElement('div'); passos.className='passos';
+  if(cap>1 || nr>1){
+    const b=document.createElement('button'); b.className='btn claro'; b.textContent='‹ Anterior';
+    b.onclick=()=> cap>1 ? abrirLeitura(nr,cap-1) : abrirLeitura(nr-1,livroPorNr(nr-1).caps);
+    passos.appendChild(b);
+  }else passos.appendChild(document.createElement('span'));
+  if(cap<livro.caps || nr<66){
+    const b=document.createElement('button'); b.className='btn'; b.textContent='Próximo ›';
+    b.onclick=()=> cap<livro.caps ? abrirLeitura(nr,cap+1) : abrirLeitura(nr+1,1);
+    passos.appendChild(b);
+  }
+  frag.appendChild(passos);
+  return frag;
+}
+function mostrarNivel(nivel){
+  ['livros','capitulos','leitura'].forEach(n=>$('nivel-'+n).classList.toggle('oculto', n!==nivel));
+}
+
+/* ---------- busca por referência ---------- */
+function buscarReferencia(){
+  const txt = $('busca').value.trim();
+  if(!txt) return;
+  const m = txt.match(/^(.+?)\s*(\d+)(?:\s*[:.\s]\s*(\d+))?$/);
+  if(!m) return avisar('Formato: livro capítulo:versículo');
+  const alvo = norm(m[1]);
+  const livro = LIVROS.find(l => norm(l.nome) === alvo)
+             || LIVROS.find(l => norm(l.nome).startsWith(alvo))
+             || LIVROS.find(l => norm(l.nome).includes(alvo));
+  if(!livro) return avisar('Livro não encontrado: ' + m[1]);
+  const cap = Math.min(parseInt(m[2],10), livro.caps);
+  abrirLeitura(livro.nr, cap, m[3] ? parseInt(m[3],10) : undefined);
+}
+
+/* ---------- versões e controles ---------- */
+const chaveVersao = v => v.fonte+':'+v.id;
+function creditar(){
+  $('creditos').textContent = 'Exibindo: '+versaoAtual.nome+' ('+versaoAtual.licenca+').';
+}
+function montarVersoes(){
+  const sel=$('sel-versao');
+  sel.innerHTML='';
+  const grupos = {
+    getbible:{rotulo:'getBible', el:document.createElement('optgroup')},
+    helloao :{rotulo:'Free Use Bible API', el:document.createElement('optgroup')}
+  };
+  Object.values(grupos).forEach(g => g.el.label = g.rotulo);
+
+  VERSOES.slice().sort((a,b)=>(a.nome||'').localeCompare(b.nome||'','pt-BR')).forEach(v=>{
+    const o=document.createElement('option');
+    o.value=chaveVersao(v); o.textContent=v.nome+' — '+v.licenca;
+    grupos[v.fonte].el.appendChild(o);
+  });
+  Object.values(grupos).forEach(g=>{ if(g.el.children.length) sel.appendChild(g.el); });
+
+  sel.value=chaveVersao(versaoAtual);
+  creditar();
+  sel.onchange=()=>{
+    versaoAtual = VERSOES.find(v => chaveVersao(v) === sel.value);
+    creditar();
+    cacheLimpo();
+    mostrarNivel('livros');
+    versiculoDoDia();
+    avisar('Versão: '+versaoAtual.nome);
+  };
+}
+function cacheLimpo(){ /* o cache já é indexado por fonte+versão, nada a limpar */ }
+
+/* =====================================================================
+   DESCOBERTA DE VERSÕES
+   Varre os catálogos das duas APIs e traz tudo que for português e
+   de licença livre. As três versões fixas acima garantem que o app
+   funcione mesmo que nenhuma descoberta responda.
+   ===================================================================== */
+const LICENCA_LIVRE = /dom[ií]nio p[úu]blico|public domain|creative commons|\bcc[ -]?by\b|\bgpl\b|\bgfdl\b|freely distributable|free use|uso livre/i;
+const LICENCA_RESTRITA = /non-?commercial|n[ãa]o comercial|all rights reserved|permission (to distribute )?granted/i;
+function ehLivre(txt){
+  const t=(txt||'').trim();
+  if(!t) return false;
+  if(LICENCA_RESTRITA.test(t)) return false;
+  return LICENCA_LIVRE.test(t);
+}
+function acrescentar(novas){
+  let add=0;
+  novas.forEach(v=>{
+    if(!v.id) return;
+    if(VERSOES.some(x => x.fonte===v.fonte && x.id===v.id)) return;
+    VERSOES.push(v); add++;
+  });
+  if(add) montarVersoes();
+  return add;
+}
+async function descobrirGetbible(){
+  try{
+    const r = await fetch(`${BASE}/translations.json`);
+    if(!r.ok) throw new Error('status '+r.status);
+    const d = await r.json();
+    const pt = Object.values(d).filter(t =>
+      (t.lang||'').toLowerCase().startsWith('pt') && ehLivre(t.distribution_license));
+    return acrescentar(pt.map(t => ({
+      fonte:'getbible',
+      id:t.abbreviation,
+      nome:t.translation || t.description || t.abbreviation,
+      licenca:t.distribution_license
+    })));
+  }catch(e){ console.info('getBible: catálogo não carregado —', e.message); return 0; }
+}
+async function descobrirHelloao(){
+  try{
+    const r = await fetch(`${HELLOAO}/available_translations.json`);
+    if(!r.ok) throw new Error('status '+r.status);
+    const d = await r.json();
+    const pt = (d.translations||[]).filter(t=>{
+      const lin = ((t.language||'')+' '+(t.languageName||'')+' '+(t.languageEnglishName||'')).toLowerCase();
+      return lin.trim().startsWith('por') || lin.includes('portug');
+    });
+    return acrescentar(pt.map(t => ({
+      fonte:'helloao',
+      id:t.id,
+      nome:t.name || t.englishName || t.id,
+      licenca:'Uso livre'
+    })));
+  }catch(e){ console.info('helloao: catálogo não carregado —', e.message); return 0; }
+}
+async function descobrirTudo(){
+  const [a,b] = await Promise.all([descobrirGetbible(), descobrirHelloao()]);
+  const n = a + b;
+  console.info('Versões em português disponíveis:', VERSOES.length,
+               '(getBible +'+a+', helloao +'+b+')');
+  if(n) avisar(n===1 ? '1 versão adicionada' : n+' versões adicionadas');
+}
+function abrirMenu(estado){
+  $('gaveta').classList.toggle('aberta',estado);
+  $('veu').classList.toggle('aberto',estado);
+}
+$('btn-menu').onclick=()=>abrirMenu(true);
+$('veu').onclick=()=>abrirMenu(false);
+document.querySelectorAll('[data-fecha]').forEach(a=>a.onclick=()=>abrirMenu(false));
+$('btn-busca').onclick=buscarReferencia;
+$('busca').onkeydown=e=>{ if(e.key==='Enter') buscarReferencia(); };
+$('btn-livros').onclick=()=>{ mostrarNivel('livros'); $('sec-biblia').scrollIntoView({behavior:'smooth'}); };
+$('btn-fonte').onclick=()=>$('tamanhos').classList.toggle('aberto');
+document.querySelectorAll('#tamanhos button').forEach(b=>{
+  b.onclick=()=>document.documentElement.style.setProperty('--esc', b.dataset.esc);
+});
+document.querySelectorAll('.voltar').forEach(b=>b.onclick=()=>mostrarNivel(b.dataset.volta));
+$('btn-tirar').onclick=tirarPromessa;
+
+/* ---------- início ---------- */
+montarVersoes();
+montarTemas();
+desenharLivros();
+versiculoDoDia();
+descobrirTudo();
+</script>
+</body>
+</html>
