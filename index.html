@@ -614,7 +614,9 @@ html[data-tema="escuro"] .gaveta header { background: #152238; }
   background: var(--papel);
   border-radius: 14px;
   padding: 20px;
-  max-width: 400px;
+  max-width: 460px;
+  max-height: 92vh;
+  overflow-y: auto;
   width: 100%;
   box-shadow: 0 20px 50px rgba(0,0,0,0.25);
   transform: scale(0.94) translateY(12px);
@@ -622,14 +624,54 @@ html[data-tema="escuro"] .gaveta header { background: #152238; }
 }
 .modal-fundo.aberto .modal-caixa { transform: scale(1) translateY(0); }
 .modal-caixa h3 { font-size: 16px; margin-bottom: 14px; font-weight: 700; }
+
+/* o canvas muda de proporção conforme o formato: o palco mantém
+   a altura sob controle e centraliza o que sobrar */
+.palco-img {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 14px;
+}
 .modal-caixa canvas {
-  width: 100%;
+  max-width: 100%;
+  max-height: 46vh;
+  width: auto;
+  height: auto;
   border-radius: 8px;
   display: block;
-  margin-bottom: 16px;
   box-shadow: var(--sombra);
 }
-.modal-acoes { display: flex; gap: 10px; justify-content: flex-end; }
+.rotulo-img {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--texto-3);
+  margin-bottom: 7px;
+}
+.chips-img {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+.chip-img {
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  padding: 7px 12px;
+  border-radius: 99px;
+  border: 1px solid var(--linha-forte);
+  background: var(--papel);
+  color: var(--texto-2);
+  cursor: pointer;
+  transition: all var(--trans);
+}
+.chip-img:hover { border-color: var(--azul); color: var(--azul); }
+.chip-img.ativo { background: var(--azul); border-color: var(--azul); color: #fff; }
+
+.modal-acoes { display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; }
+.modal-acoes .btn { padding: 10px 16px; font-size: 14px; }
 
 /* Favoritos / diário */
 .item-fav {
@@ -2236,10 +2278,19 @@ html[data-tema="escuro"] .painel-config header { background: #152238; }
 <div class="modal-fundo" id="modal-img">
   <div class="modal-caixa">
     <h3>Imagem para compartilhar</h3>
-    <canvas id="canvas-verso" width="1080" height="1350"></canvas>
+    <div class="palco-img"><canvas id="canvas-verso" width="1080" height="1350"></canvas></div>
+
+    <p class="rotulo-img">Fundo</p>
+    <div class="chips-img" id="img-fundos" role="group" aria-label="Escolher o fundo"></div>
+
+    <p class="rotulo-img">Formato</p>
+    <div class="chips-img" id="img-formatos" role="group" aria-label="Escolher o formato"></div>
+
     <div class="modal-acoes">
       <button class="btn claro" id="btn-fechar-modal">Fechar</button>
-      <button class="btn" id="btn-baixar-img">Baixar imagem</button>
+      <button class="btn claro" id="btn-trocar-fundo">🎨 Trocar fundo</button>
+      <button class="btn" id="btn-compartilhar-img">Compartilhar</button>
+      <button class="btn claro" id="btn-baixar-img">Baixar</button>
     </div>
   </div>
 </div>
@@ -4061,115 +4112,537 @@ async function descobrirTudo(){
 /* ---------- gerador de imagem ---------- */
 let imgAtual = { texto: '', ref: '', versao: '' };
 
+/* =========================================================
+   GERADOR DE IMAGEM DO VERSÍCULO
+   Os fundos são desenhados aqui, no canvas — não são fotos.
+   Foto de banco exigiria licença e chave de API, e mataria o
+   funcionamento offline. Desenhado, o app continua estático,
+   sem dependência externa e sem risco de direito autoral.
+   ========================================================= */
+
+const FORMATOS = [
+  { id: 'feed',     nome: 'Feed',     w: 1080, h: 1350 },
+  { id: 'story',    nome: 'Story',    w: 1080, h: 1920 },
+  { id: 'quadrado', nome: 'Quadrado', w: 1080, h: 1080 }
+];
+
+/* Ruído determinístico: o mesmo versículo gera sempre a mesma
+   imagem, mas as estrelas e o trigo não ficam alinhados. */
+function semente(txt){
+  let h = 2166136261;
+  for(let i = 0; i < txt.length; i++){
+    h ^= txt.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return () => {
+    h += 0x6D2B79F5;
+    let t = h;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function faixa(ctx, x0, y0, x1, y1, paradas){
+  const g = ctx.createLinearGradient(x0, y0, x1, y1);
+  paradas.forEach(([p, c]) => g.addColorStop(p, c));
+  return g;
+}
+
+/* Silhueta de morro: uma senóide amaciada, do x=0 ao x=W */
+function morro(ctx, W, H, base, altura, fase, cor){
+  ctx.fillStyle = cor;
+  ctx.beginPath();
+  ctx.moveTo(0, H);
+  for(let x = 0; x <= W; x += 8){
+    const t = x / W;
+    const y = base - altura * (0.5 + 0.5 * Math.sin(fase + t * Math.PI * 1.6))
+                   - altura * 0.25 * Math.sin(fase * 2 + t * Math.PI * 4);
+    ctx.lineTo(x, y);
+  }
+  ctx.lineTo(W, H);
+  ctx.closePath();
+  ctx.fill();
+}
+
+function brilho(ctx, x, y, raio, cor){
+  const g = ctx.createRadialGradient(x, y, 0, x, y, raio);
+  g.addColorStop(0, cor);
+  g.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = g;
+  ctx.fillRect(x - raio, y - raio, raio * 2, raio * 2);
+}
+
+const FUNDOS = [
+  {
+    id: 'amanhecer', nome: 'Amanhecer', claro: false,
+    desenhar(ctx, W, H){
+      ctx.fillStyle = faixa(ctx, 0, 0, 0, H, [
+        [0, '#2B1B4A'], [0.35, '#8E3B62'], [0.62, '#E0714A'], [0.82, '#F2A65A'], [1, '#F6C978']
+      ]);
+      ctx.fillRect(0, 0, W, H);
+      brilho(ctx, W * 0.5, H * 0.26, W * 0.52, 'rgba(255,226,150,0.6)');
+      ctx.fillStyle = 'rgba(255,244,206,0.97)';
+      ctx.beginPath();
+      ctx.arc(W * 0.5, H * 0.26, W * 0.095, 0, Math.PI * 2);
+      ctx.fill();
+      morro(ctx, W, H, H * 0.74, H * 0.07, 1.1, 'rgba(90,45,60,0.55)');
+      morro(ctx, W, H, H * 0.83, H * 0.06, 2.4, 'rgba(52,26,42,0.85)');
+      morro(ctx, W, H, H * 0.92, H * 0.05, 0.4, '#241426');
+    }
+  },
+  {
+    id: 'noite', nome: 'Noite estrelada', claro: false,
+    desenhar(ctx, W, H, r){
+      ctx.fillStyle = faixa(ctx, 0, 0, 0, H, [
+        [0, '#070B18'], [0.45, '#101C3A'], [0.8, '#1B2E56'], [1, '#24406E']
+      ]);
+      ctx.fillRect(0, 0, W, H);
+      for(let i = 0; i < 260; i++){
+        const x = r() * W, y = r() * H * 0.85, s = r();
+        ctx.fillStyle = 'rgba(255,255,255,' + (0.15 + s * 0.75) + ')';
+        ctx.beginPath();
+        ctx.arc(x, y, s * 2.4 + 0.4, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      brilho(ctx, W * 0.74, H * 0.17, W * 0.30, 'rgba(214,229,255,0.30)');
+      ctx.fillStyle = '#EAF1FF';
+      ctx.beginPath();
+      ctx.arc(W * 0.74, H * 0.17, W * 0.072, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.globalCompositeOperation = 'destination-out';
+      ctx.beginPath();
+      ctx.arc(W * 0.70, H * 0.145, W * 0.066, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.globalCompositeOperation = 'source-over';
+      morro(ctx, W, H, H * 0.90, H * 0.05, 1.9, '#080C16');
+    }
+  },
+  {
+    id: 'montanhas', nome: 'Montanhas', claro: false,
+    desenhar(ctx, W, H){
+      ctx.fillStyle = faixa(ctx, 0, 0, 0, H, [
+        [0, '#1D3557'], [0.5, '#3D6188'], [1, '#88A8C4']
+      ]);
+      ctx.fillRect(0, 0, W, H);
+      /* cumes com ombros arredondados: triângulo puro parece serra */
+      const pico = (base, alt, desl, cor) => {
+        ctx.fillStyle = cor;
+        ctx.beginPath();
+        ctx.moveTo(0, H);
+        ctx.lineTo(0, base);
+        for(let k = 0; k < 5; k++){
+          const larg = W / 3.4;
+          const x0 = (k + desl) * larg;
+          const topo = base - alt * (0.66 + ((k * 7) % 5) * 0.09);
+          ctx.lineTo(x0, base);
+          ctx.quadraticCurveTo(x0 + larg * 0.30, topo + alt * 0.16, x0 + larg * 0.5, topo);
+          ctx.quadraticCurveTo(x0 + larg * 0.70, topo + alt * 0.16, x0 + larg, base);
+        }
+        ctx.lineTo(W, H);
+        ctx.closePath();
+        ctx.fill();
+      };
+      pico(H * 0.70, H * 0.20, -0.4, 'rgba(45,78,112,0.75)');
+      pico(H * 0.82, H * 0.17, 0.15, 'rgba(28,50,76,0.9)');
+      pico(H * 0.93, H * 0.13, -0.15, '#152436');
+    }
+  },
+  {
+    id: 'aguas', nome: 'Águas tranquilas', claro: false,
+    desenhar(ctx, W, H, r){
+      const linha = H * 0.58;
+      ctx.fillStyle = faixa(ctx, 0, 0, 0, linha, [
+        [0, '#12324F'], [0.6, '#2E6E8E'], [1, '#7FB6C4']
+      ]);
+      ctx.fillRect(0, 0, W, linha);
+      brilho(ctx, W * 0.5, linha, W * 0.42, 'rgba(255,236,190,0.45)');
+      ctx.fillStyle = faixa(ctx, 0, linha, 0, H, [
+        [0, '#2A6076'], [0.5, '#17384C'], [1, '#0C1E2C']
+      ]);
+      ctx.fillRect(0, linha, W, H - linha);
+      for(let i = 0; i < 70; i++){
+        const y = linha + r() * (H - linha);
+        const larg = (0.1 + r() * 0.5) * W;
+        ctx.fillStyle = 'rgba(255,236,190,' + (0.03 + r() * 0.10) + ')';
+        ctx.fillRect(W / 2 - larg / 2, y, larg, 2 + r() * 3);
+      }
+    }
+  },
+  {
+    id: 'trigal', nome: 'Trigal', claro: false,
+    desenhar(ctx, W, H, r){
+      ctx.fillStyle = faixa(ctx, 0, 0, 0, H, [
+        [0, '#5B4A20'], [0.35, '#A8792C'], [0.7, '#D7A544'], [1, '#8A6420']
+      ]);
+      ctx.fillRect(0, 0, W, H);
+      brilho(ctx, W * 0.5, H * 0.30, W * 0.6, 'rgba(255,231,160,0.35)');
+      for(let i = 0; i < 420; i++){
+        const x = r() * W;
+        const alt = (0.08 + r() * 0.20) * H;
+        const y = H - r() * H * 0.30;
+        ctx.strokeStyle = 'rgba(60,40,12,' + (0.25 + r() * 0.5) + ')';
+        ctx.lineWidth = 2 + r() * 2;
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+        ctx.quadraticCurveTo(x + (r() - 0.5) * 40, y - alt * 0.6, x + (r() - 0.5) * 70, y - alt);
+        ctx.stroke();
+      }
+    }
+  },
+  {
+    id: 'deserto', nome: 'Deserto', claro: false,
+    desenhar(ctx, W, H){
+      ctx.fillStyle = faixa(ctx, 0, 0, 0, H, [
+        [0, '#3D2B45'], [0.3, '#9B5B58'], [0.55, '#D98E5C'], [1, '#E8B979']
+      ]);
+      ctx.fillRect(0, 0, W, H);
+      brilho(ctx, W * 0.30, H * 0.22, W * 0.34, 'rgba(255,226,170,0.62)');
+      ctx.fillStyle = 'rgba(255,242,212,0.97)';
+      ctx.beginPath();
+      ctx.arc(W * 0.30, H * 0.22, W * 0.060, 0, Math.PI * 2);
+      ctx.fill();
+      const duna = (base, alt, fase, cor) => {
+        ctx.fillStyle = cor;
+        ctx.beginPath();
+        ctx.moveTo(0, H);
+        for(let x = 0; x <= W; x += 6){
+          const t = x / W;
+          ctx.lineTo(x, base - alt * Math.sin(fase + t * Math.PI * 1.1));
+        }
+        ctx.lineTo(W, H);
+        ctx.closePath();
+        ctx.fill();
+      };
+      duna(H * 0.68, H * 0.06, 0.5, 'rgba(150,90,60,0.5)');
+      duna(H * 0.80, H * 0.07, 2.2, 'rgba(108,62,48,0.8)');
+      duna(H * 0.91, H * 0.05, 3.6, '#4E2C26');
+    }
+  },
+  {
+    id: 'luz', nome: 'Raios de luz', claro: false,
+    desenhar(ctx, W, H){
+      ctx.fillStyle = faixa(ctx, 0, 0, 0, H, [
+        [0, '#123253'], [0.55, '#0C2038'], [1, '#07131F']
+      ]);
+      ctx.fillRect(0, 0, W, H);
+      ctx.save();
+      ctx.translate(W * 0.5, -H * 0.12);
+      for(let i = 0; i < 13; i++){
+        const a = (-0.85 + i * 0.14);
+        ctx.save();
+        ctx.rotate(a);
+        const g = ctx.createLinearGradient(0, 0, 0, H * 1.25);
+        g.addColorStop(0, 'rgba(255,232,175,0.30)');
+        g.addColorStop(1, 'rgba(255,232,175,0)');
+        ctx.fillStyle = g;
+        ctx.fillRect(-W * 0.022, 0, W * 0.044, H * 1.25);
+        ctx.restore();
+      }
+      ctx.restore();
+      brilho(ctx, W * 0.5, 0, W * 0.55, 'rgba(255,236,185,0.45)');
+    }
+  },
+  {
+    id: 'oliveira', nome: 'Ramo de oliveira', claro: true,
+    desenhar(ctx, W, H, r){
+      ctx.fillStyle = faixa(ctx, 0, 0, 0, H, [
+        [0, '#F6F1E3'], [0.6, '#EDE5D1'], [1, '#DFD3B8']
+      ]);
+      ctx.fillRect(0, 0, W, H);
+      const ramo = (x0, y0, ang, comp, folhas) => {
+        ctx.strokeStyle = 'rgba(90,102,62,0.75)';
+        ctx.lineWidth = 6;
+        ctx.beginPath();
+        ctx.moveTo(x0, y0);
+        ctx.quadraticCurveTo(x0 + Math.cos(ang) * comp * 0.5, y0 + Math.sin(ang) * comp * 0.5 - 40,
+                             x0 + Math.cos(ang) * comp, y0 + Math.sin(ang) * comp);
+        ctx.stroke();
+        for(let i = 1; i <= folhas; i++){
+          const t = i / (folhas + 1);
+          const x = x0 + Math.cos(ang) * comp * t;
+          const y = y0 + Math.sin(ang) * comp * t - 40 * Math.sin(Math.PI * t);
+          const lado = i % 2 ? 1 : -1;
+          ctx.save();
+          ctx.translate(x, y);
+          ctx.rotate(ang + lado * 0.9);
+          ctx.fillStyle = 'rgba(104,124,72,' + (0.55 + r() * 0.35) + ')';
+          ctx.beginPath();
+          ctx.ellipse(0, 0, 34, 13, 0, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        }
+      };
+      ramo(-40, H * 0.14, 0.34, W * 0.62, 9);
+      ramo(W + 40, H * 0.90, Math.PI - 0.30, W * 0.60, 8);
+      ctx.fillStyle = 'rgba(120,104,70,0.10)';
+      for(let i = 0; i < 900; i++){
+        ctx.fillRect(r() * W, r() * H, 2, 2);
+      }
+    }
+  },
+  {
+    id: 'caminho', nome: 'Vereda', claro: false,
+    desenhar(ctx, W, H){
+      ctx.fillStyle = faixa(ctx, 0, 0, 0, H, [
+        [0, '#24405C'], [0.4, '#4E7A8C'], [0.62, '#9CB79E'], [1, '#4B6340']
+      ]);
+      ctx.fillRect(0, 0, W, H);
+      brilho(ctx, W * 0.5, H * 0.55, W * 0.4, 'rgba(255,240,200,0.4)');
+      morro(ctx, W, H, H * 0.66, H * 0.05, 2.0, 'rgba(52,78,64,0.65)');
+      morro(ctx, W, H, H * 0.74, H * 0.04, 0.6, 'rgba(40,60,48,0.85)');
+      ctx.fillStyle = 'rgba(226,214,178,0.85)';
+      ctx.beginPath();
+      ctx.moveTo(W * 0.47, H * 0.70);
+      ctx.quadraticCurveTo(W * 0.62, H * 0.84, W * 0.30, H);
+      ctx.lineTo(W * 0.70, H);
+      ctx.quadraticCurveTo(W * 0.70, H * 0.84, W * 0.53, H * 0.70);
+      ctx.closePath();
+      ctx.fill();
+      ctx.fillStyle = '#243A2A';
+      ctx.fillRect(0, H * 0.985, W, H * 0.015);
+    }
+  },
+  {
+    id: 'pergaminho', nome: 'Pergaminho', claro: true,
+    desenhar(ctx, W, H, r){
+      ctx.fillStyle = faixa(ctx, 0, 0, W, H, [
+        [0, '#F7EFDC'], [0.5, '#EFE2C6'], [1, '#E2D2AE']
+      ]);
+      ctx.fillRect(0, 0, W, H);
+      for(let i = 0; i < 2600; i++){
+        const a = r();
+        ctx.fillStyle = 'rgba(120,94,52,' + (a * 0.09) + ')';
+        ctx.fillRect(r() * W, r() * H, 1 + a * 3, 1 + a * 2);
+      }
+      for(let i = 0; i < 18; i++){
+        ctx.strokeStyle = 'rgba(150,120,70,0.07)';
+        ctx.lineWidth = 1 + r() * 2;
+        ctx.beginPath();
+        const y = r() * H;
+        ctx.moveTo(0, y);
+        ctx.bezierCurveTo(W * 0.3, y + (r() - 0.5) * 60, W * 0.7, y + (r() - 0.5) * 60, W, y);
+        ctx.stroke();
+      }
+      const v = ctx.createRadialGradient(W / 2, H / 2, H * 0.28, W / 2, H / 2, H * 0.72);
+      v.addColorStop(0, 'rgba(120,90,45,0)');
+      v.addColorStop(1, 'rgba(96,70,32,0.34)');
+      ctx.fillStyle = v;
+      ctx.fillRect(0, 0, W, H);
+    }
+  }
+];
+
+let imgFormato = 'feed';
+let imgFundo = null;      // null = escolhido a partir da referência
+
+function fundoAtual(){
+  if(imgFundo){
+    const f = FUNDOS.find(x => x.id === imgFundo);
+    if(f) return f;
+  }
+  const r = semente(imgAtual.ref || 'versiculo');
+  return FUNDOS[Math.floor(r() * FUNDOS.length)];
+}
+
 function abrirGeradorImagem(texto, ref, versao){
   imgAtual = { texto, ref, versao };
+  imgFundo = null;
   const modal = $('modal-img');
   modal.classList.add('aberto');
+  montarOpcoesImagem();
   desenharImagem();
+  /* o canvas usa a fonte que estiver pronta no momento do fillText:
+     se as webfonts ainda estavam carregando, redesenha ao chegarem */
+  if(document.fonts && document.fonts.ready){
+    document.fonts.ready.then(() => {
+      if($('modal-img').classList.contains('aberto')) desenharImagem();
+    });
+  }
 }
 function fecharModalImg(){
   $('modal-img').classList.remove('aberto');
 }
 
+function montarOpcoesImagem(){
+  const chips = $('img-fundos');
+  if(chips && !chips.children.length){
+    FUNDOS.forEach(f => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'chip-img';
+      b.textContent = f.nome;
+      b.dataset.fundo = f.id;
+      b.onclick = () => { imgFundo = f.id; marcarOpcoes(); desenharImagem(); };
+      chips.appendChild(b);
+    });
+  }
+  const fmt = $('img-formatos');
+  if(fmt && !fmt.children.length){
+    FORMATOS.forEach(f => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'chip-img';
+      b.textContent = f.nome;
+      b.dataset.formato = f.id;
+      b.onclick = () => { imgFormato = f.id; marcarOpcoes(); desenharImagem(); };
+      fmt.appendChild(b);
+    });
+  }
+  marcarOpcoes();
+}
+
+function marcarOpcoes(){
+  const atual = fundoAtual().id;
+  document.querySelectorAll('#img-fundos .chip-img').forEach(b =>
+    b.classList.toggle('ativo', b.dataset.fundo === atual));
+  document.querySelectorAll('#img-formatos .chip-img').forEach(b =>
+    b.classList.toggle('ativo', b.dataset.formato === imgFormato));
+}
+
+function trocarFundo(){
+  const atual = fundoAtual().id;
+  const i = FUNDOS.findIndex(f => f.id === atual);
+  imgFundo = FUNDOS[(i + 1) % FUNDOS.length].id;
+  marcarOpcoes();
+  desenharImagem();
+}
+
+/* Quebra o texto em linhas e reduz a fonte até o bloco caber */
+function ajustarTexto(ctx, texto, maxW, maxH, fonteMax, fonteMin){
+  for(let tam = fonteMax; tam >= fonteMin; tam -= 2){
+    ctx.font = '500 ' + tam + 'px "Source Serif 4", Georgia, serif';
+    const linhas = [];
+    let linha = '';
+    texto.split(/\s+/).forEach(p => {
+      const teste = linha ? linha + ' ' + p : p;
+      if(ctx.measureText(teste).width > maxW && linha){ linhas.push(linha); linha = p; }
+      else linha = teste;
+    });
+    if(linha) linhas.push(linha);
+    const alturaLinha = tam * 1.42;
+    if(linhas.length * alturaLinha <= maxH) return { linhas, tam, alturaLinha };
+  }
+  return null;
+}
+
 function desenharImagem(){
   const canvas = $('canvas-verso');
+  const fmt = FORMATOS.find(f => f.id === imgFormato) || FORMATOS[0];
+  canvas.width = fmt.w;
+  canvas.height = fmt.h;
   const ctx = canvas.getContext('2d');
-  const W = canvas.width;
-  const H = canvas.height;
-  const escuro = document.documentElement.getAttribute('data-tema') === 'escuro';
+  const W = canvas.width, H = canvas.height;
 
-  // Fundo
-  const grad = ctx.createLinearGradient(0, 0, 0, H);
-  if(escuro){
-    grad.addColorStop(0, '#152238');
-    grad.addColorStop(1, '#0F141C');
-  } else {
-    grad.addColorStop(0, '#1A4A82');
-    grad.addColorStop(1, '#123665');
-  }
-  ctx.fillStyle = grad;
-  ctx.fillRect(0, 0, W, H);
+  const fundo = fundoAtual();
+  const r = semente((imgAtual.ref || '') + fundo.id);
+  fundo.desenhar(ctx, W, H, r);
 
-  // Textura sutil
-  ctx.fillStyle = 'rgba(255,255,255,0.03)';
-  for(let i = 0; i < 40; i++){
-    const x = Math.random() * W;
-    const y = Math.random() * H;
-    ctx.beginPath();
-    ctx.arc(x, y, Math.random() * 2, 0, Math.PI * 2);
-    ctx.fill();
-  }
+  /* Mede antes de desenhar: o texto, a referência e a versão formam um
+     bloco só, centrado como grupo. Centrar apenas o versículo deixava a
+     imagem pesada em cima e um terço vazio embaixo. */
+  const margem = W * 0.11;
+  const ajuste = ajustarTexto(ctx, '\u201C' + imgAtual.texto + '\u201D',
+                              W - margem * 2, H * 0.44,
+                              Math.round(W * 0.062), Math.round(W * 0.026));
+  const linhas = ajuste ? ajuste.linhas : ['Versículo longo demais para a imagem'];
+  const tam = ajuste ? ajuste.tam : Math.round(W * 0.030);
+  const alturaLinha = ajuste ? ajuste.alturaLinha : tam * 1.42;
 
-  // Faixa decorativa superior
-  ctx.fillStyle = 'rgba(255,203,74,0.85)';
-  ctx.fillRect(0, 0, W, 8);
+  const hTexto  = linhas.length * alturaLinha;
+  const gapOrn  = H * 0.040;
+  const gapRef  = H * 0.052;
+  const gapVer  = H * 0.036;
+  const grupoH  = hTexto + gapOrn + gapRef + gapVer;
+  const topo    = H * 0.52 - grupoH / 2;
 
-  // Logo / marca
-  ctx.fillStyle = 'rgba(255,255,255,0.7)';
-  ctx.font = '500 36px "Source Sans 3", system-ui, sans-serif';
+  /* Véu ancorado no bloco de texto, e fraco: forte demais apagava o
+     sol e a lua, que passavam a parecer manchas cinzas. */
+  const base = fundo.claro ? '248,242,228' : '6,10,18';
+  const alfa = fundo.claro ? 0.34 : 0.44;
+  const y0 = topo - H * 0.11, y1 = topo + grupoH + H * 0.11;
+  const veu = ctx.createLinearGradient(0, y0, 0, y1);
+  veu.addColorStop(0, 'rgba(' + base + ',0)');
+  veu.addColorStop(0.24, 'rgba(' + base + ',' + alfa + ')');
+  veu.addColorStop(0.76, 'rgba(' + base + ',' + alfa + ')');
+  veu.addColorStop(1, 'rgba(' + base + ',0)');
+  ctx.fillStyle = veu;
+  ctx.fillRect(0, y0, W, y1 - y0);
+
+  const tinta   = fundo.claro ? '#2A2418' : '#FFFFFF';
+  const dourado = fundo.claro ? '#8A6A22' : '#FFD98A';
+  const suave   = fundo.claro ? 'rgba(42,36,24,0.58)' : 'rgba(255,255,255,0.66)';
+
   ctx.textAlign = 'center';
-  ctx.fillText('Bíblia Devocional', W / 2, 110);
 
-  // Linha decorativa
-  ctx.strokeStyle = 'rgba(255,203,74,0.5)';
+  /* marca no topo */
+  ctx.fillStyle = suave;
+  ctx.font = '600 ' + Math.round(W * 0.026) + 'px "Source Sans 3", system-ui, sans-serif';
+  ctx.fillText('BÍBLIA DEVOCIONAL', W / 2, H * 0.075);
+  ctx.strokeStyle = dourado;
   ctx.lineWidth = 2;
   ctx.beginPath();
-  ctx.moveTo(W * 0.35, 140);
-  ctx.lineTo(W * 0.65, 140);
+  ctx.moveTo(W * 0.44, H * 0.092);
+  ctx.lineTo(W * 0.56, H * 0.092);
   ctx.stroke();
 
-  // Texto do versículo (quebra de linha)
-  const margem = 100;
-  const maxW = W - margem * 2;
-  ctx.fillStyle = '#FFFFFF';
-  ctx.font = '400 52px "Source Serif 4", Georgia, serif';
-  ctx.textAlign = 'center';
+  /* versículo */
+  ctx.fillStyle = tinta;
+  ctx.font = '500 ' + tam + 'px "Source Serif 4", Georgia, serif';
+  let y = topo + alturaLinha * 0.78;
+  linhas.forEach(l => { ctx.fillText(l, W / 2, y); y += alturaLinha; });
 
-  const palavras = imgAtual.texto.split(/\s+/);
-  const linhas = [];
-  let linha = '';
-  palavras.forEach(p => {
-    const teste = linha ? linha + ' ' + p : p;
-    if(ctx.measureText(teste).width > maxW){
-      if(linha) linhas.push(linha);
-      linha = p;
-    } else {
-      linha = teste;
-    }
-  });
-  if(linha) linhas.push(linha);
+  /* ornamento */
+  const yOrn = topo + hTexto + gapOrn * 0.5;
+  ctx.strokeStyle = dourado;
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(W * 0.45, yOrn);
+  ctx.lineTo(W * 0.55, yOrn);
+  ctx.stroke();
 
-  const lineH = 72;
-  const blocoH = linhas.length * lineH;
-  let y = (H - blocoH) / 2 - 20;
-  linhas.forEach(l => {
-    ctx.fillText(l, W / 2, y);
-    y += lineH;
-  });
+  /* referência e versão */
+  ctx.fillStyle = dourado;
+  ctx.font = '700 ' + Math.round(W * 0.038) + 'px "Source Sans 3", system-ui, sans-serif';
+  ctx.fillText(imgAtual.ref, W / 2, topo + hTexto + gapOrn + gapRef * 0.72);
 
-  // Referência
-  ctx.fillStyle = 'rgba(255,203,74,0.95)';
-  ctx.font = '600 34px "Source Sans 3", system-ui, sans-serif';
-  ctx.fillText(imgAtual.ref, W / 2, y + 50);
+  ctx.fillStyle = suave;
+  ctx.font = '400 ' + Math.round(W * 0.023) + 'px "Source Sans 3", system-ui, sans-serif';
+  ctx.fillText(imgAtual.versao, W / 2, topo + hTexto + gapOrn + gapRef + gapVer * 0.62);
+}
 
-  // Versão
-  ctx.fillStyle = 'rgba(255,255,255,0.45)';
-  ctx.font = '400 26px "Source Sans 3", system-ui, sans-serif';
-  ctx.fillText(imgAtual.versao, W / 2, y + 100);
-
-  // Rodapé
-  ctx.fillStyle = 'rgba(255,255,255,0.3)';
-  ctx.font = '400 24px "Source Sans 3", system-ui, sans-serif';
-  ctx.fillText('Devocional diário', W / 2, H - 70);
+function nomeArquivoImagem(){
+  return 'biblia-devocional-' +
+    (imgAtual.ref || 'versiculo').replace(/\s+/g, '-').replace(/:/g, '-').toLowerCase() +
+    '.png';
 }
 
 function baixarImagem(){
   const canvas = $('canvas-verso');
   const link = document.createElement('a');
-  link.download = 'biblia-devocional-' + (imgAtual.ref || 'versiculo').replace(/\s+/g, '-').toLowerCase() + '.png';
+  link.download = nomeArquivoImagem();
   link.href = canvas.toDataURL('image/png');
   link.click();
   avisar('Imagem baixada');
+}
+
+/* Compartilhar o arquivo direto, quando o aparelho permite */
+function compartilharImagem(){
+  const canvas = $('canvas-verso');
+  if(!canvas.toBlob || !navigator.share) return baixarImagem();
+  canvas.toBlob(blob => {
+    if(!blob) return baixarImagem();
+    const arquivo = new File([blob], nomeArquivoImagem(), { type: 'image/png' });
+    if(navigator.canShare && !navigator.canShare({ files: [arquivo] })) return baixarImagem();
+    navigator.share({
+      files: [arquivo],
+      title: imgAtual.ref,
+      text: imgAtual.ref + ' — Bíblia Devocional'
+    }).catch(e => {
+      if(e && e.name === 'AbortError') return;   // a pessoa desistiu
+      baixarImagem();
+    });
+  }, 'image/png');
 }
 
 /* ---------- favoritos UI ---------- */
@@ -4342,6 +4815,8 @@ $('btn-tirar').onclick = tirarPromessa;
 /* Modal imagem */
 $('btn-fechar-modal').onclick = fecharModalImg;
 $('btn-baixar-img').onclick = baixarImagem;
+$('btn-trocar-fundo').onclick = trocarFundo;
+$('btn-compartilhar-img').onclick = compartilharImagem;
 $('modal-img').onclick = e => { if(e.target === $('modal-img')) fecharModalImg(); };
 
 /* Tabs favoritos */
