@@ -4,12 +4,37 @@ Site: https://devocionaldiario-eosin.vercel.app/
 
 ## Funcionalidades
 
-- Devocional do dia, caixa de promessas, Bíblia completa
-- Favoritos, diário, planos de leitura, progresso e streak
+- Devocional do dia, com histórico dos últimos 30 dias
+- Caixa de promessas por tema e Bíblia completa
+- **Destaques coloridos** e **notas** em qualquer versículo
+- **Comparar versões** lado a lado
+- **Minhas orações** — pedidos, respondidas e datas
+- Favoritos, diário, progresso e streak
+- 12 planos de leitura, incluindo Bíblia em 1 ano
 - Busca por referência ou palavra
 - PWA instalável
 - **Web Push** — lembrete diário (~8h Brasília)
-- **Leitura em voz** — acessibilidade para quem não sabe ler
+- **Leitura em voz** e **ditado por voz** — para quem não lê nem escreve
+
+## Toque num versículo
+
+Dentro de um capítulo, tocar num versículo abre a folha de ações: marcar com
+uma das quatro cores, favoritar, escrever uma nota, comparar as versões,
+copiar, gerar imagem ou ouvir.
+
+Os destaques e as notas ficam no aparelho (`localStorage`) e reaparecem
+sempre que o capítulo é reaberto. As notas antigas, que só existiam presas a
+um favorito, são migradas na primeira abertura.
+
+## Planos de leitura
+
+Nove planos escritos à mão (Provérbios em 31 dias, ansiedade, luto,
+casamento, a vida de Jesus…) e três gerados a partir da lista de livros:
+**Bíblia em 1 ano**, **Novo Testamento em 90 dias** e **Salmos e Provérbios
+em 60 dias**.
+
+Um dia de plano pode ter vários capítulos — `[[1,1],[1,2],[1,3]]` vira
+"Gênesis 1–3" — e o botão **Ouvir** lê o dia inteiro de uma vez.
 
 ## Leitura em voz
 
@@ -32,6 +57,17 @@ funciona offline depois que o app está instalado.
 A qualidade da voz vem do aparelho. No Android, instalar a "Fala do Google"
 melhora bastante; no iPhone, Ajustes → Acessibilidade → Conteúdo Falado →
 Vozes → Português (Brasil).
+
+## Ditado por voz
+
+Quem não lê também não escreve. O microfone aparece na busca, na nota do
+versículo e no campo de oração, usando `SpeechRecognition` — sem servidor.
+
+Na busca, números falados viram referência: "João três dezesseis" e
+"Gênesis capítulo um versículo três" chegam como `João 3:16` e `Gênesis 1:3`.
+
+Só funciona onde o navegador implementa a API — hoje, na prática, Chrome e
+Safari. Onde não houver, o app avisa em vez de falhar em silêncio.
 
 ## Web Push — configuração na Vercel
 
