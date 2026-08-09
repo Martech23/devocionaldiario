@@ -1,0 +1,379 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Política de Privacidade · Bíblia Devocional</title>
+<meta name="description" content="Como o Bíblia Devocional trata seus dados, conforme a Lei Geral de Proteção de Dados.">
+<meta name="theme-color" content="#1A4A82">
+<meta name="robots" content="index, follow">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<style>
+:root {
+  --azul: #1A4A82;
+  --azul-esc: #123665;
+  --azul-suave: rgba(26, 74, 130, 0.08);
+  --azul-claro-bg: #E8F0FA;
+  --fundo: #F7F5F1;
+  --papel: #FFFFFF;
+  --linha: #E6E1D9;
+  --linha-forte: #C9C2B6;
+  --texto: #1F1E1C;
+  --texto-2: #5A564F;
+  --texto-3: #8A847A;
+  --sombra: 0 1px 2px rgba(28,24,18,.04), 0 4px 16px rgba(28,24,18,.06);
+  --radius: 10px;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --azul: #5B9BE8; --azul-esc: #3D7BC4;
+    --azul-suave: rgba(91,155,232,.12); --azul-claro-bg: #1A2A40;
+    --fundo: #12151A; --papel: #1C2129;
+    --linha: #2E3540; --linha-forte: #3D4654;
+    --texto: #EDEAE4; --texto-2: #A8A29A; --texto-3: #7A756E;
+    --sombra: 0 1px 2px rgba(0,0,0,.25), 0 4px 16px rgba(0,0,0,.3);
+  }
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--fundo);
+  color: var(--texto);
+  font-family: "Source Sans 3", -apple-system, system-ui, sans-serif;
+  font-size: 16.5px;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+}
+.barra { background: var(--azul); color: #fff; }
+.barra-int {
+  max-width: 760px; margin: 0 auto; padding: 14px 20px;
+  display: flex; align-items: center; gap: 11px;
+}
+.barra img { width: 28px; height: 28px; border-radius: 7px; display: block; }
+.barra b { font-size: 18px; font-weight: 700; letter-spacing: -.02em; }
+.barra i { font-style: normal; font-weight: 400; opacity: .82; }
+.barra a { color: #fff; text-decoration: none; display: flex; align-items: center; gap: 11px; }
+
+.envolve { max-width: 760px; margin: 0 auto; padding: 30px 20px 70px; }
+
+h1 { font-size: 27px; line-height: 1.25; letter-spacing: -.02em; margin-bottom: 8px; }
+.atualizado { color: var(--texto-3); font-size: 14px; margin-bottom: 26px; }
+h2 {
+  font-size: 20px; margin: 36px 0 12px; letter-spacing: -.01em;
+  padding-top: 22px; border-top: 1px solid var(--linha);
+}
+h2:first-of-type { border-top: 0; padding-top: 0; }
+h3 { font-size: 16.5px; margin: 22px 0 8px; color: var(--azul); }
+p { margin-bottom: 14px; }
+ul, ol { margin: 0 0 16px 22px; }
+li { margin-bottom: 7px; }
+a { color: var(--azul); }
+b, strong { font-weight: 700; }
+
+.resumo {
+  background: var(--azul-suave);
+  border-radius: var(--radius);
+  padding: 20px 22px;
+  margin-bottom: 30px;
+}
+.resumo h2 { border: 0; padding: 0; margin: 0 0 10px; font-size: 17px; }
+.resumo ul { margin-bottom: 0; }
+
+.aviso-preencher {
+  background: #FFF4D6;
+  border: 1.5px solid #E0B54A;
+  color: #6B4E10;
+  border-radius: var(--radius);
+  padding: 16px 18px;
+  margin-bottom: 26px;
+  font-size: 14.5px;
+}
+@media (prefers-color-scheme: dark) {
+  .aviso-preencher { background: #3A3218; border-color: #7A6320; color: #F0DFA8; }
+}
+.aviso-preencher b { display: block; margin-bottom: 5px; }
+
+.tabela { width: 100%; overflow-x: auto; margin-bottom: 18px; }
+table { border-collapse: collapse; width: 100%; font-size: 15px; }
+th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--linha); vertical-align: top; }
+th { background: var(--azul-suave); font-weight: 700; font-size: 13.5px; }
+td code, p code { font-size: 13.5px; background: var(--azul-suave); padding: 1px 5px; border-radius: 4px; }
+
+.destaque {
+  border-left: 3px solid var(--azul);
+  background: var(--papel);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  padding: 16px 18px;
+  margin-bottom: 18px;
+  box-shadow: var(--sombra);
+}
+.rodape {
+  margin-top: 44px; padding-top: 22px; border-top: 1px solid var(--linha);
+  font-size: 14px; color: var(--texto-3);
+}
+</style>
+</head>
+<body>
+
+<header class="barra">
+  <div class="barra-int">
+    <a href="/">
+      <img src="/favicon.svg" alt="" width="28" height="28">
+      <b>Bíblia <i>Devocional</i></b>
+    </a>
+  </div>
+</header>
+
+<main class="envolve">
+
+  <h1>Política de Privacidade</h1>
+  <p class="atualizado">Última atualização: 9 de agosto de 2026</p>
+
+  <div class="aviso-preencher">
+    <b>Pendente de preenchimento</b>
+    Antes de publicar, substitua <code>[RESPONSÁVEL]</code>, <code>[CPF/CNPJ]</code> e
+    <code>[E-MAIL DE CONTATO]</code> pelos dados reais do controlador. Sem eles, esta
+    política não cumpre o Art. 9º da LGPD, que exige identificação clara de quem trata
+    os dados e de um canal para exercer direitos.
+  </div>
+
+  <div class="resumo">
+    <h2>Em resumo</h2>
+    <ul>
+      <li><b>Sem conta, nada sai do seu aparelho.</b> Favoritos, notas, orações e progresso ficam guardados só no navegador.</li>
+      <li><b>A conta é opcional.</b> Ela existe para o seu histórico sobreviver à troca de celular.</li>
+      <li><b>Seu histórico devocional é dado sensível.</b> Ele revela convicção religiosa, e por isso só é enviado ao servidor com a sua autorização explícita.</li>
+      <li><b>Você pode apagar tudo</b> a qualquer momento, sozinho, pelo painel da conta.</li>
+      <li><b>Não vendemos, alugamos nem usamos seus dados para publicidade.</b> Não há anúncios nem rastreadores.</li>
+    </ul>
+  </div>
+
+  <h2>1. Quem trata os seus dados</h2>
+  <p>
+    O controlador dos dados, nos termos do Art. 5º, VI da Lei nº 13.709/2018 (LGPD), é
+    <b>[RESPONSÁVEL]</b>, inscrito sob <b>[CPF/CNPJ]</b>, responsável pelo aplicativo
+    Bíblia Devocional.
+  </p>
+  <p>
+    Para qualquer assunto relativo aos seus dados pessoais, incluindo o exercício dos
+    direitos descritos na seção 8, escreva para <b>[E-MAIL DE CONTATO]</b>.
+  </p>
+
+  <h2>2. O que fica só no seu aparelho</h2>
+  <p>
+    O aplicativo foi construído para funcionar por inteiro sem conta. Nesse caso, tudo o
+    que você faz é gravado apenas no armazenamento local do seu navegador
+    (<code>localStorage</code>) e <b>nunca é enviado a servidor nenhum</b>:
+  </p>
+  <div class="tabela">
+    <table>
+      <tr><th>Guardado</th><th>O que é</th></tr>
+      <tr><td>Favoritos</td><td>Versículos que você marcou</td></tr>
+      <tr><td>Notas</td><td>O que você escreveu sobre cada versículo</td></tr>
+      <tr><td>Destaques</td><td>As cores com que você marcou versículos</td></tr>
+      <tr><td>Orações</td><td>Seus pedidos e quais foram respondidos</td></tr>
+      <tr><td>Progresso</td><td>Capítulos lidos, dias de leitura e planos</td></tr>
+      <tr><td>Preferências</td><td>Tema, voz, velocidade da leitura</td></tr>
+    </table>
+  </div>
+  <p>
+    Esses dados somem se você limpar os dados do navegador ou desinstalar o aplicativo.
+    Não temos como recuperá-los, porque nunca os recebemos.
+  </p>
+
+  <h2>3. O que vai para o servidor quando você cria uma conta</h2>
+  <p>Se — e somente se — você criar uma conta, passamos a tratar:</p>
+  <div class="tabela">
+    <table>
+      <tr><th>Dado</th><th>Para quê</th><th>Base legal</th></tr>
+      <tr>
+        <td>E-mail</td>
+        <td>Identificar a sua conta e permitir que você entre</td>
+        <td>Execução de serviço solicitado por você (Art. 7º, V)</td>
+      </tr>
+      <tr>
+        <td>Senha</td>
+        <td>Proteger o acesso. Guardamos apenas um resultado criptográfico irreversível (<i>scrypt</i>), nunca a senha em si</td>
+        <td>Execução de serviço solicitado por você (Art. 7º, V)</td>
+      </tr>
+      <tr>
+        <td><b>Histórico devocional</b> — favoritos, notas, destaques, orações, capítulos lidos, dias de leitura e progresso dos planos</td>
+        <td>Manter a sua cópia de segurança e sincronizar entre aparelhos</td>
+        <td><b>Consentimento específico e destacado</b> (Art. 11, I)</td>
+      </tr>
+      <tr>
+        <td>Sessão</td>
+        <td>Manter você conectado por até 30 dias</td>
+        <td>Execução de serviço solicitado por você (Art. 7º, V)</td>
+      </tr>
+      <tr>
+        <td>Tentativas de login malsucedidas</td>
+        <td>Travar ataques de força bruta. Apagadas em 15 minutos</td>
+        <td>Legítimo interesse em segurança (Art. 7º, IX)</td>
+      </tr>
+    </table>
+  </div>
+
+  <h2>4. Dado pessoal sensível</h2>
+  <div class="destaque">
+    <p style="margin:0">
+      O seu histórico devocional <b>revela convicção religiosa</b>. A LGPD, no Art. 5º, II,
+      classifica esse tipo de informação como <b>dado pessoal sensível</b>, com proteção
+      mais rígida.
+    </p>
+  </div>
+  <p>
+    Por isso, esse conteúdo só sai do seu aparelho depois que você marca, no momento do
+    cadastro, uma autorização escrita em linguagem clara e apresentada separadamente do
+    restante do formulário — conforme exige o Art. 11, I.
+  </p>
+  <p>
+    <b>Você pode revogar essa autorização a qualquer momento</b>, excluindo a conta pelo
+    painel. A revogação apaga do servidor tudo o que estava guardado.
+  </p>
+
+  <h2>5. Notificações e lembrete diário</h2>
+  <p>
+    Se você ativar o lembrete diário, guardamos o endereço técnico de notificação que o
+    seu navegador gera (<i>push subscription</i>). Ele identifica o aparelho, não a
+    pessoa, e não fica associado à sua conta. É usado apenas para enviar o lembrete do
+    devocional, uma vez por dia. Desativar a notificação nas configurações do navegador
+    encerra o envio.
+  </p>
+
+  <h2>6. Terceiros que participam</h2>
+  <p>
+    Não vendemos, alugamos nem compartilhamos seus dados para publicidade. Não usamos
+    ferramentas de rastreamento ou de perfil de comportamento. Os terceiros abaixo
+    participam por necessidade técnica:
+  </p>
+  <div class="tabela">
+    <table>
+      <tr><th>Quem</th><th>Papel</th><th>O que recebe</th></tr>
+      <tr>
+        <td>Vercel</td>
+        <td>Hospedagem do site e execução das funções de servidor</td>
+        <td>Endereço IP e registros técnicos de acesso</td>
+      </tr>
+      <tr>
+        <td>Upstash</td>
+        <td>Banco de dados onde a conta e o histórico ficam guardados</td>
+        <td>Os dados descritos na seção 3</td>
+      </tr>
+      <tr>
+        <td>Google Fonts</td>
+        <td>Fontes tipográficas do site</td>
+        <td>Endereço IP, ao carregar a página</td>
+      </tr>
+      <tr>
+        <td>getBible e Free Use Bible API</td>
+        <td>Texto bíblico</td>
+        <td>Endereço IP e qual capítulo foi pedido</td>
+      </tr>
+    </table>
+  </div>
+
+  <h3>Ditado por voz</h3>
+  <p>
+    Quando você usa o microfone para ditar uma nota, um pedido de oração ou uma busca, o
+    aplicativo aciona o recurso de reconhecimento de fala do <b>seu próprio navegador</b>.
+    Em navegadores baseados no Chrome, <b>esse recurso envia o áudio capturado aos
+    servidores do Google</b> para transcrição — o tratamento nesse ponto segue a política
+    de privacidade do Google, não a nossa. Nós recebemos apenas o texto transcrito, e
+    somente se você o salvar.
+  </p>
+  <p>
+    A leitura em voz, ao contrário, acontece inteiramente no seu aparelho e não envia nada
+    para lugar nenhum.
+  </p>
+
+  <h3>Transferência internacional</h3>
+  <p>
+    Vercel, Upstash e Google são empresas sediadas fora do Brasil e podem armazenar ou
+    processar dados em outros países. Essa transferência ocorre nos termos do Art. 33 da
+    LGPD, na medida necessária para a execução do serviço que você solicitou.
+  </p>
+
+  <h2>7. Por quanto tempo guardamos</h2>
+  <ul>
+    <li><b>Conta e histórico:</b> enquanto a conta existir. Ao excluí-la, os dados são apagados imediatamente do banco.</li>
+    <li><b>Sessões:</b> 30 dias sem uso, e são descartadas automaticamente.</li>
+    <li><b>Tentativas de login:</b> 15 minutos.</li>
+    <li><b>Registros técnicos de acesso:</b> pelo prazo de guarda praticado pela Vercel, conforme a política dela.</li>
+  </ul>
+
+  <h2>8. Os seus direitos</h2>
+  <p>O Art. 18 da LGPD garante a você, a qualquer momento:</p>
+  <ul>
+    <li>Confirmar se tratamos dados seus e <b>acessar</b> esses dados;</li>
+    <li><b>Corrigir</b> dados incompletos, inexatos ou desatualizados;</li>
+    <li>Pedir <b>anonimização, bloqueio ou eliminação</b> de dados desnecessários ou tratados fora da lei;</li>
+    <li>Pedir a <b>portabilidade</b> a outro fornecedor;</li>
+    <li><b>Eliminar</b> os dados tratados com base no seu consentimento;</li>
+    <li>Saber com quem <b>compartilhamos</b> seus dados;</li>
+    <li>Ser informado sobre a possibilidade de <b>não consentir</b>, e o que isso acarreta;</li>
+    <li><b>Revogar o consentimento</b>.</li>
+  </ul>
+  <p>
+    Dois desses direitos você exerce sozinho, sem pedir nada a ninguém: abra o painel
+    <b>Sua conta</b>, no ícone ✦ do topo, e use <b>Excluir minha conta</b> para eliminar
+    tudo, ou <b>Sair</b> para parar de sincronizar mantendo o que está no aparelho.
+  </p>
+  <p>
+    Para os demais, escreva para <b>[E-MAIL DE CONTATO]</b>. Respondemos em até 15 dias.
+  </p>
+
+  <h2>9. Segurança</h2>
+  <ul>
+    <li>Todo o tráfego usa <b>HTTPS</b>.</li>
+    <li>Senhas passam por <b>scrypt com sal individual</b> por conta, e a verificação é feita em tempo constante, para não vazar informação por medida de tempo.</li>
+    <li><b>O identificador da sua sessão não é guardado.</b> Gravamos apenas um resumo criptográfico dele — assim, um eventual vazamento do banco não permitiria assumir sessões ativas.</li>
+    <li>O cookie de sessão é <code>HttpOnly</code>, <code>Secure</code> e <code>SameSite=Lax</code>, o que impede que scripts o leiam e reduz risco de requisições forjadas.</li>
+    <li>O canal de sincronização aceita <b>apenas uma lista fechada de campos</b>, para que a conta não possa ser usada como depósito de conteúdo arbitrário.</li>
+    <li>Excluir a conta <b>exige a senha novamente</b>: estar conectado não basta.</li>
+  </ul>
+  <p>
+    Nenhum sistema é infalível. Se ocorrer incidente de segurança com risco relevante,
+    comunicaremos você e a Autoridade Nacional de Proteção de Dados, como manda o
+    Art. 48.
+  </p>
+
+  <h2>10. Crianças e adolescentes</h2>
+  <p>
+    A criação de conta é destinada a maiores de 18 anos. Menores de idade podem usar o
+    aplicativo livremente <b>sem conta</b>, já que nesse modo nenhum dado sai do aparelho.
+    Havendo conta criada por criança ou adolescente, o tratamento depende de consentimento
+    específico de pelo menos um dos pais ou do responsável legal, conforme o Art. 14. Se
+    identificarmos essa situação, a conta será excluída.
+  </p>
+
+  <h2>11. Cookies</h2>
+  <p>
+    Usamos <b>um único cookie</b>, chamado <code>bd_sessao</code>, criado apenas quando
+    você entra na conta e usado apenas para manter você conectado. Não há cookies de
+    publicidade, de análise nem de terceiros.
+  </p>
+
+  <h2>12. Mudanças nesta política</h2>
+  <p>
+    Se esta política mudar, a data no topo será atualizada. Mudanças que ampliem o uso de
+    dados sensíveis serão comunicadas e dependerão de novo consentimento.
+  </p>
+
+  <h2>13. Contato</h2>
+  <p>
+    Dúvidas, pedidos e reclamações: <b>[E-MAIL DE CONTATO]</b>.
+  </p>
+  <p>
+    Você também pode registrar reclamação junto à
+    <a href="https://www.gov.br/anpd/" target="_blank" rel="noopener">Autoridade Nacional
+    de Proteção de Dados (ANPD)</a>.
+  </p>
+
+  <p class="rodape">
+    <a href="/">← Voltar para o Bíblia Devocional</a>
+  </p>
+
+</main>
+</body>
+</html>
