@@ -4613,6 +4613,61 @@ async function buscarCapituloEm(v, nr, cap){
   return saida;
 }
 
+/* =========================================================
+   LIVRO INTEIRO DE UMA VEZ
+   A busca por palavra pedia um capítulo por vez: 929 idas e
+   voltas para varrer o Antigo Testamento. O gargalo não é o
+   texto, é a viagem — o getBible serve o livro inteiro numa
+   resposta só, o que troca 929 pedidos por 39.
+   Não dá para confiar cegamente que o endereço existe em toda
+   fonte, então a primeira falha desliga o atalho para o resto
+   da sessão e tudo volta a funcionar capítulo a capítulo.
+   ========================================================= */
+const semLivroInteiro = new Set();
+const provaLivroInteiro = new Map();
+
+async function buscarLivroInteiro(v, nr){
+  if(v.fonte !== 'getbible' || semLivroInteiro.has(v.id)) return null;
+  /* A primeira chamada vale como prova. Sem isso os livros que a busca pede
+     em paralelo saem todos juntos, antes de qualquer um registrar a falha,
+     e uma fonte sem esse endereço custaria um pedido perdido por livro em
+     voo em vez de um só. */
+  if(!provaLivroInteiro.has(v.id)){
+    const p = pedirLivroInteiro(v, nr);
+    provaLivroInteiro.set(v.id, p);
+    return p;
+  }
+  await provaLivroInteiro.get(v.id).catch(() => {});
+  if(semLivroInteiro.has(v.id)) return null;
+  return pedirLivroInteiro(v, nr);
+}
+
+async function pedirLivroInteiro(v, nr){
+  try{
+    const r = await fetch(`${BASE}/${v.id}/${nr}.json`);
+    if(!r.ok) throw new Error('status ' + r.status);
+    const d = await r.json();
+    if(!d || !Array.isArray(d.chapters)) throw new Error('formato inesperado');
+    /* alimenta o mesmo cache que buscarCapituloEm consulta: daqui em diante
+       qualquer parte do app que peça um capítulo desse livro já o tem */
+    const caps = new Map();
+    for(const c of d.chapters){
+      if(!c || !Array.isArray(c.verses)) continue;
+      const itens = c.verses.map(x => ({ tipo: 'verso', numero: x.verse, texto: (x.text || '').trim() }));
+      const saida = { itens };
+      caps.set(c.chapter, saida);
+      cache.set(v.fonte + '/' + v.id + '/' + nr + '/' + c.chapter, saida);
+    }
+    if(!caps.size) throw new Error('livro sem capítulos');
+    return caps;
+  }catch(e){
+    /* uma falha basta: insistir 65 vezes sairia mais caro que o atalho economiza */
+    semLivroInteiro.add(v.id);
+    console.info('Livro inteiro indisponível em', v.nome, '—', e.message);
+    return null;
+  }
+}
+
 /* Texto de um versículo numa versão específica (usado na comparação) */
 async function buscarVersoEm(v, nr, cap, verso){
   const d = await buscarCapituloEm(v, nr, cap);
@@ -5347,6 +5402,18 @@ function buscarReferencia(){
     abrirLeitura(livro.nr, cap, m[3] ? parseInt(m[3], 10) : undefined);
     return;
   }
+
+  /* Só o nome do livro, sem capítulo: "genesis", "salmos", "1 joao".
+     Sem isto a palavra caía na busca de texto e varria os 929 capítulos do
+     Antigo Testamento atrás de versículos que contivessem "gênesis" — que
+     não é o que ninguém quer ao digitar o nome de um livro. */
+  const soLivro = LIVROS.find(l => norm(l.nome) === norm(txt));
+  if(soLivro){
+    $('sec-busca').classList.add('oculto');
+    abrirLeitura(soLivro.nr, 1);
+    return;
+  }
+
   // Caso contrário: busca por palavra
   buscarPalavra(txt);
 }
@@ -5375,68 +5442,77 @@ async function buscarPalavra(termo){
   if(escopo === 'nt') livros = LIVROS.filter(l => l.nr >= 40);
   else if(escopo === 'at') livros = LIVROS.filter(l => l.nr <= 39);
 
-  const jobs = [];
-  livros.forEach(l => {
-    for(let c = 1; c <= l.caps; c++) jobs.push({ nr: l.nr, cap: c, nome: l.nome });
-  });
-
   const sec = $('sec-busca');
   const lista = $('lista-busca');
   const status = $('status-busca');
   sec.classList.remove('oculto');
   lista.innerHTML = '';
-  status.textContent = 'Buscando “' + termo + '” em ' + jobs.length + ' capítulos…';
+  status.textContent = 'Buscando “' + termo + '” em ' + livros.length + ' livros…';
   mostrarSecao('sec-busca');
 
-  const resultados = [];
   const MAX = 40;
-  let feitos = 0;
-  let cancelado = false;
+  const re = new RegExp('(' + termo.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'ig');
+  let achados = 0, feitos = 0, cancelado = false;
 
-  await mapPool(jobs, 4, async (job) => {
-    if(cancelado || resultados.length >= MAX) return;
-    try{
-      const d = await buscarCapitulo(job.nr, job.cap);
-      d.itens.forEach(item => {
-        if(resultados.length >= MAX) return;
-        if(item.tipo !== 'verso') return;
-        if(norm(item.texto).includes(q)){
-          resultados.push({
-            nr: job.nr, cap: job.cap, verso: item.numero,
-            nome: job.nome, texto: item.texto
-          });
-        }
-      });
-    }catch(_){ /* ignora capítulo indisponível */ }
-    feitos++;
-    if(feitos % 8 === 0 || feitos === jobs.length){
-      status.textContent = 'Buscando… ' + feitos + '/' + jobs.length +
-        (resultados.length ? ' · ' + resultados.length + ' encontrados' : '');
+  /* Cada acerto vai para a tela na hora. Antes a lista só era montada
+     depois de varrer tudo, então uma busca que levava meio minuto passava
+     esse tempo inteiro parecendo travada, mesmo já tendo o que mostrar. */
+  function mostrar(nr, cap, verso, nome, texto){
+    const el = document.createElement('div');
+    el.className = 'item-busca';
+    el.innerHTML = `<div class="busca-corpo"><div class="ref-busca">${nome} ${cap}:${verso}</div>` +
+                   `<div class="txt-busca">${texto.replace(re, '<mark>$1</mark>')}</div></div>`;
+    el.prepend(criarOuvirMini('Ouvir ' + nome + ' ' + cap + ':' + verso, () => [
+      { texto: refFalada(nr, cap, verso), rotulo: 'Referência' },
+      { texto, rotulo: 'Versículo', el }
+    ], { voz: { titulo: nome + ' ' + cap + ':' + verso } }));
+    el.querySelector('.busca-corpo').onclick = () => abrirLeitura(nr, cap, verso);
+    lista.appendChild(el);
+  }
+
+  const varrer = (nr, cap, nome, itens) => {
+    for(const item of itens){
+      if(achados >= MAX) return;
+      if(item.tipo !== 'verso') continue;
+      if(!norm(item.texto).includes(q)) continue;
+      achados++;
+      mostrar(nr, cap, item.numero, nome, item.texto);
     }
-    if(resultados.length >= MAX) cancelado = true;
+  };
+
+  /* Livro a livro, não capítulo a capítulo: são 39 pedidos no Antigo
+     Testamento em vez de 929 quando a fonte serve o livro inteiro. */
+  await mapPool(livros, 6, async (l) => {
+    if(cancelado) return;
+    try{
+      const caps = await buscarLivroInteiro(versaoAtual, l.nr);
+      if(caps){
+        for(const [cap, d] of [...caps.entries()].sort((a, b) => a[0] - b[0])){
+          if(achados >= MAX) break;
+          varrer(l.nr, cap, l.nome, d.itens);
+        }
+      } else {
+        /* fonte sem livro inteiro: volta ao capítulo a capítulo, mas com
+           mais pedidos em paralelo do que os 4 de antes */
+        const caps = Array.from({ length: l.caps }, (_, i) => i + 1);
+        await mapPool(caps, 8, async (c) => {
+          if(cancelado || achados >= MAX) return;
+          try{ varrer(l.nr, c, l.nome, (await buscarCapitulo(l.nr, c)).itens); }catch(_){}
+        });
+      }
+    }catch(_){ /* livro indisponível: segue para o próximo */ }
+    feitos++;
+    status.textContent = 'Buscando… ' + feitos + '/' + livros.length + ' livros' +
+      (achados ? ' · ' + achados + ' encontrados' : '');
+    if(achados >= MAX) cancelado = true;
   });
 
-  if(!resultados.length){
+  if(!achados){
     status.textContent = 'Nenhum versículo encontrado para “' + termo + '” neste escopo.';
     return;
   }
-
-  status.textContent = resultados.length + (resultados.length >= MAX ? '+' : '') +
+  status.textContent = achados + (achados >= MAX ? '+' : '') +
     ' resultado(s) para “' + termo + '”';
-  lista.innerHTML = '';
-  const re = new RegExp('(' + termo.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'ig');
-  resultados.forEach(r => {
-    const el = document.createElement('div');
-    el.className = 'item-busca';
-    const txt = r.texto.replace(re, '<mark>$1</mark>');
-    el.innerHTML = `<div class="busca-corpo"><div class="ref-busca">${r.nome} ${r.cap}:${r.verso}</div><div class="txt-busca">${txt}</div></div>`;
-    el.prepend(criarOuvirMini('Ouvir ' + r.nome + ' ' + r.cap + ':' + r.verso, () => [
-      { texto: refFalada(r.nr, r.cap, r.verso), rotulo: 'Referência' },
-      { texto: r.texto, rotulo: 'Versículo', el }
-    ], { voz: { titulo: r.nome + ' ' + r.cap + ':' + r.verso } }));
-    el.querySelector('.busca-corpo').onclick = () => abrirLeitura(r.nr, r.cap, r.verso);
-    lista.appendChild(el);
-  });
   registrarAtividade();
 }
 
