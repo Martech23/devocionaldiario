@@ -18,6 +18,63 @@ Site: https://devocionaldiario-eosin.vercel.app/
 - **Web Push** — lembrete diário (~8h Brasília)
 - **Leitura em voz** e **ditado por voz** — para quem não lê nem escreve
 
+## Acessibilidade estrutural
+
+Um app cuja premissa é servir quem tem dificuldade de ler tinha três
+defeitos medidos que atrapalhavam exatamente esse público.
+
+### Cabeçalhos
+
+A página não tinha **nenhum `<h1>` nem `<h2>`**. Os dez títulos de seção
+eram `<p class="rotulo-secao">`, e a hierarquia começava direto no `<h3>`.
+Quem usa TalkBack ou VoiceOver navega por cabeçalhos — é como um cego
+"passa o olho" numa tela — e esse atalho simplesmente não existia aqui.
+
+Agora: `<h1>` no nome do app, os dez títulos como `<h2>`, `<h3>` nos
+cartões. Sem pular nível. O CSS não mudou, só a tag.
+
+### Foco nos painéis
+
+Abrir a gaveta não mexia no foco: ele ficava no ☰ *atrás* do painel, e o
+Tab seguinte caía em botões cobertos. O módulo `Foco` resolve os três
+lados:
+
+- o foco **entra** no painel ao abrir
+- o Tab **dá a volta dentro** dele e não vaza para trás
+- ao fechar, o foco **volta** ao botão que abriu
+
+Vale para gaveta, painel de voz, painel de conta, folha do versículo e
+modal da imagem, todos marcados com `role="dialog"` e `aria-modal`. A
+pilha existe porque o painel de voz abre por cima da gaveta — o Tab tem de
+respeitar só o de cima. Devolver o foco a um elemento escondido joga a
+pessoa para o começo da página, então esse caso é detectado e evitado.
+
+**Os versículos eram `<span>` com `onclick`**: quem usa teclado não
+conseguia abrir a folha de ações de jeito nenhum, e o leitor de tela não
+dizia que aquilo era tocável. Agora têm `tabindex`, `role="button"`,
+`aria-haspopup="dialog"` e respondem a Enter e espaço.
+
+### Alvos de toque
+
+41 controles ficavam abaixo dos 44 px da WCAG 2.5.5 — o ☰ tinha **18 px**
+de altura. Quem tem tremor, artrite ou dedo grosso erra o alvo e não sabe
+por quê. Hoje são zero.
+
+Dois casos não levam `min-height`, e é de propósito:
+
+- **o chip do tema** estende a área de toque por fora, com `::after`: com
+  44 px de altura ele pesaria mais que o próprio título ao lado
+- **os versículos e o link do consentimento** são dispensados pela WCAG
+  2.5.8 — alvos cujo tamanho é ditado pelo texto em volta. Forçar 44 px num
+  versículo abriria buracos entre as linhas da leitura
+
+### Ainda falta
+
+Link "pular para o conteúdo", e anunciar mudanças dinâmicas por
+`aria-live` — quando o devocional carrega, quando a busca termina, quando
+a aba troca, o leitor de tela do sistema fica em silêncio. O modo áudio já
+fala essas coisas, mas com a voz do *app*, não com a do leitor de tela.
+
 ## Navegação em abas
 
 Tudo vivia numa página só, e a home tinha **8.004 px — 9,5 telas de
