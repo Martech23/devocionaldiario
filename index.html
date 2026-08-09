@@ -345,7 +345,8 @@ html[data-tema="escuro"] .gaveta header { background: #152238; }
   width: 18px;
   height: 18px;
   display: block;
-  opacity: 0.85;
+  opacity: 1;
+  filter: none;
 }
 #btn-busca-voz:hover { background: var(--azul-claro-bg); }
 #btn-busca-voz:hover img { opacity: 1; }
@@ -358,6 +359,13 @@ html[data-tema="escuro"] .gaveta header { background: #152238; }
 #btn-busca-voz.ouvindo img {
   filter: brightness(0) invert(1);
   opacity: 1;
+}
+html[data-tema="escuro"] #btn-busca-voz img {
+  filter: brightness(0) invert(1);
+  opacity: 1;
+}
+html[data-tema="escuro"] #btn-busca-voz.ouvindo img {
+  filter: brightness(0) invert(1);
 }
 button.copiar {
   display: inline-flex;
