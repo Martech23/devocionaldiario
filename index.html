@@ -335,15 +335,49 @@ html[data-tema="escuro"] .gaveta header { background: #152238; }
   background: var(--papel);
   border-color: var(--linha-forte);
   color: var(--azul);
-  padding: 0 14px;
+  padding: 0 12px;
   line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+#btn-busca-voz img {
+  width: 18px;
+  height: 18px;
+  display: block;
+  opacity: 0.85;
 }
 #btn-busca-voz:hover { background: var(--azul-claro-bg); }
+#btn-busca-voz:hover img { opacity: 1; }
 #btn-busca-voz.ouvindo {
   background: #C0392F;
   border-color: #C0392F;
   color: #fff;
   animation: mic-pulsar 1.2s ease-in-out infinite;
+}
+#btn-busca-voz.ouvindo img {
+  filter: brightness(0) invert(1);
+  opacity: 1;
+}
+button.copiar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+}
+button.copiar img,
+#fa-copiar img {
+  width: 16px;
+  height: 16px;
+  display: block;
+  opacity: 0.8;
+}
+button.copiar:hover img,
+#fa-copiar:hover img { opacity: 1; }
+#fa-copiar {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .seletor-versao {
@@ -2420,7 +2454,7 @@ html[data-tema="escuro"] .painel-config header { background: #152238; }
   <div class="controles">
     <div class="linha-busca">
       <input id="busca" type="search" placeholder="Passagem (João 3:16) ou palavra (amor, fé…)" aria-label="Buscar passagem ou palavra">
-      <button id="btn-busca-voz" aria-label="Buscar falando" title="Buscar falando">🎤</button>
+      <button id="btn-busca-voz" aria-label="Buscar falando" title="Buscar falando"><img src="/icon-mic.png" alt="" width="18" height="18" decoding="async"></button>
       <button id="btn-busca" aria-label="Buscar">🔍</button>
     </div>
     <div class="seletor-versao" style="margin-bottom:8px">
@@ -2716,7 +2750,7 @@ html[data-tema="escuro"] .painel-config header { background: #152238; }
       <button type="button" id="fa-fav">☆ Favoritar</button>
       <button type="button" id="fa-nota">✎ Nota</button>
       <button type="button" id="fa-comparar">⇄ Comparar</button>
-      <button type="button" id="fa-copiar">⧉ Copiar</button>
+      <button type="button" id="fa-copiar"><img src="/icon-share.png" alt="" width="16" height="16" decoding="async"> Compartilhar</button>
       <button type="button" id="fa-imagem">🖼 Imagem</button>
     </div>
   </div>
@@ -4437,7 +4471,7 @@ function cartaoVersiculo(texto, nr, cap, verso, versao, extra, opcoes){
     `<div class="cab-cartao">
        <div class="referencia">${ref}<small>${versao}</small></div>
        <div class="ferr-cartao">
-         <button class="copiar" title="Copiar" aria-label="Copiar versículo">⧉</button>
+         <button class="copiar" title="Compartilhar" aria-label="Compartilhar versículo"><img src="/icon-share.png" alt="" width="16" height="16" decoding="async"></button>
          <button class="ouvir" title="Ouvir" aria-label="Ouvir versículo">🔊</button>
        </div>
      </div>
@@ -4452,7 +4486,7 @@ function cartaoVersiculo(texto, nr, cap, verso, versao, extra, opcoes){
   c.querySelector('.copiar').onclick = () => {
     const t = `"${texto}"\n${ref} — ${versao}`;
     if(navigator.share) navigator.share({text:t}).catch(()=>{});
-    else if(navigator.clipboard) navigator.clipboard.writeText(t).then(()=>avisar('Versículo copiado')).catch(()=>avisar('Não foi possível copiar'));
+    else if(navigator.clipboard) navigator.clipboard.writeText(t).then(()=>avisar('Texto copiado para compartilhar')).catch(()=>avisar('Não foi possível compartilhar'));
   };
   const op = opcoes || {};
   /* O que será lido em voz: referência, versículo e — no devocional —
@@ -6347,7 +6381,7 @@ $('fa-copiar').onclick = () => {
   const t = `"${texto}"\n${ref} — ${versaoAtual.nome}`;
   if(navigator.share) navigator.share({ text: t }).catch(() => {});
   else if(navigator.clipboard) navigator.clipboard.writeText(t)
-    .then(() => avisar('Versículo copiado'))
+    .then(() => avisar('Texto copiado para compartilhar'))
     .catch(() => avisar('Não foi possível copiar'));
 };
 
