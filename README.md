@@ -5,7 +5,7 @@ Site: https://devocionaldiario-eosin.vercel.app/
 ## Funcionalidades
 
 - **Percurso guiado** do devocional — um passo por vez, com estimativa de tempo
-- Devocional do dia, com histórico dos últimos 30 dias
+- Devocional do dia **por tema**, com histórico dos últimos 30 dias
 - Caixa de promessas por tema e Bíblia completa
 - **Destaques coloridos** e **notas** em qualquer versículo
 - **Comparar versões** lado a lado
@@ -16,6 +16,34 @@ Site: https://devocionaldiario-eosin.vercel.app/
 - PWA instalável
 - **Web Push** — lembrete diário (~8h Brasília)
 - **Leitura em voz** e **ditado por voz** — para quem não lê nem escreve
+
+## Conteúdo do devocional
+
+Cada versículo pertence a um dos dez temas, e **os três textos do dia saem
+do tema do próprio versículo**. Antes não era assim: reflexão, meditação e
+oração eram três listas soltas indexadas só pelo dia, à parte do versículo
+— um texto de gratidão podia vir acompanhado de uma reflexão sobre
+ansiedade. O percurso guiado tornou o problema visível, porque a premissa
+dele é que os quatro passos formam um caminho só.
+
+| | Antes | Agora |
+|---|---|---|
+| Versículos | 69 | **180** (18 por tema) |
+| Reflexões / meditações / orações | 12 de cada, soltas | **8 de cada por tema**, 240 no total |
+| Relação com o versículo | nenhuma | mesma do tema |
+| Volta a repetir a combinação | a cada 276 dias | **nunca dentro do ano** |
+
+O versículo dá a volta a cada 180 dias e as reflexões a cada 8. Se o índice
+fosse só o dia, os dois ciclos voltariam a coincidir no dia 361 e a última
+semana do ano repetiria a combinação da primeira; somar o número da volta
+desencontra os ciclos — 366 dias, 366 pares distintos.
+
+O devocional continua **determinístico pelo dia do ano**: o histórico dos
+últimos 30 dias precisa reencontrar exatamente o que foi mostrado.
+
+Um chip com o nome do tema aparece ao lado do rótulo do passo. Tocar nele
+seleciona esse tema na caixa de promessas e leva até lá — dá para continuar
+lendo sobre o mesmo assunto.
 
 ## Percurso guiado
 

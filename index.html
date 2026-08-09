@@ -1366,7 +1366,32 @@ html[data-tema="escuro"] .aviso {
   text-transform: uppercase;
   color: var(--azul);
   margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
 }
+
+/* chip do tema — leva às outras promessas sobre o mesmo assunto */
+.tema-devo {
+  font: inherit;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: none;
+  color: var(--texto-3);
+  background: var(--papel-alt);
+  border: 1px solid var(--linha);
+  border-radius: 999px;
+  padding: 3px 10px;
+  cursor: pointer;
+  transition: all var(--trans);
+}
+.tema-devo:hover, .tema-devo:focus-visible {
+  color: var(--azul);
+  border-color: var(--azul);
+  background: var(--azul-suave);
+}
+
 .passo .texto-passo {
   font-family: "Source Serif 4", serif;
   font-size: calc(17.5px * var(--esc));
@@ -1375,14 +1400,24 @@ html[data-tema="escuro"] .aviso {
 }
 .passo .texto-passo.oracao { font-style: italic; }
 
+/* Três botões numa linha só não cabem em 390px: "Voltar" quebrava no
+   meio e o "›" de "Continuar" caía para a linha de baixo. Em duas faixas
+   fixas — ouvir em cima, navegação embaixo — nada depende da largura.
+   As áreas são explícitas para o layout não mudar no primeiro passo,
+   onde o "Voltar" nem existe. */
 .navega-passo {
-  display: flex;
-  gap: 8px;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 10px 8px;
   align-items: center;
   margin-top: 22px;
   padding-top: 18px;
   border-top: 1px solid var(--linha);
 }
+.navega-passo > * { white-space: nowrap; }
+.navega-passo .btn-ouvir    { grid-area: 1 / 1 / 2 / 3; justify-content: center; }
+.navega-passo .voltar-passo { grid-area: 2 / 1 / 3 / 2; justify-self: start; }
+.navega-passo .btn          { grid-area: 2 / 2 / 3 / 3; justify-self: end; }
 .navega-passo .voltar-passo {
   font-family: inherit;
   font-size: 14px;
@@ -1396,7 +1431,6 @@ html[data-tema="escuro"] .aviso {
   transition: color var(--trans);
 }
 .navega-passo .voltar-passo:hover { color: var(--azul); }
-.navega-passo .btn-ouvir { margin-left: auto; }
 
 /* fim do percurso */
 .fim-percurso { text-align: center; padding: 8px 0 4px; }
@@ -2659,63 +2693,404 @@ const LIVROS = [
 ].map(([nr,nome,caps,sigla]) => ({nr,nome,caps,sigla}));
 
 const PROMESSAS = {
-  'Medo e ansiedade':[[23,41,10],[19,56,3],[43,14,27],[50,4,6],[60,5,7],[55,1,7],[19,34,4],[40,6,34],[19,94,19]],
-  'Força':[[23,40,31],[50,4,13],[19,46,1],[16,8,10],[47,12,9],[49,6,10],[19,18,2],[23,41,13]],
-  'Provisão':[[50,4,19],[40,6,33],[19,23,1],[19,37,25],[42,6,38],[39,3,10],[19,34,10]],
-  'Cura e consolo':[[19,147,3],[23,53,5],[24,30,17],[40,11,28],[19,34,18],[66,21,4],[47,1,3],[19,30,2]],
-  'Direção':[[20,3,5],[20,3,6],[19,32,8],[19,119,105],[23,30,21],[24,29,11],[20,16,9]],
-  'Perdão':[[62,1,9],[19,103,12],[23,1,18],[45,8,1],[33,7,19],[19,51,10]],
-  'Fé e esperança':[[58,11,1],[45,8,28],[45,15,13],[25,3,22],[25,3,23],[19,27,14],[23,40,29],[58,10,23]],
-  'Gratidão':[[19,100,4],[52,5,18],[19,118,24],[51,3,15],[19,103,2]],
-  'Família':[[6,24,15],[20,22,6],[21,4,9],[51,3,13],[49,4,32]],
-  'Proteção':[[19,91,1],[19,91,11],[19,121,7],[20,18,10],[53,3,3],[19,4,8]]
+  'Medo e ansiedade':[[23,41,10],[19,56,3],[43,14,27],[50,4,6],[60,5,7],[55,1,7],[19,34,4],[40,6,34],[19,94,19],
+    [6,1,9],[19,23,4],[19,27,1],[23,43,1],[5,31,6],[43,16,33],[19,55,22],[23,26,3],[19,118,6]],
+  'Força':[[23,40,31],[50,4,13],[19,46,1],[16,8,10],[47,12,9],[49,6,10],[19,18,2],[23,41,13],
+    [19,28,7],[19,73,26],[35,3,19],[46,16,13],[49,3,16],[51,1,11],[55,4,17],[19,138,3],[23,12,2],[38,4,6]],
+  'Provisão':[[50,4,19],[40,6,33],[19,23,1],[19,37,25],[42,6,38],[39,3,10],[19,34,10],
+    [19,84,11],[40,6,26],[47,9,8],[19,145,16],[20,3,10],[1,22,14],[2,16,4],[11,17,14],[19,111,5],[43,6,35],[59,1,17]],
+  'Cura e consolo':[[19,147,3],[23,53,5],[24,30,17],[40,11,28],[19,34,18],[66,21,4],[47,1,3],[19,30,2],
+    [59,5,16],[19,103,3],[23,61,1],[40,5,4],[19,6,2],[2,15,26],[60,2,24],[19,42,11],[39,4,2],[24,17,14]],
+  'Direção':[[20,3,5],[20,3,6],[19,32,8],[19,119,105],[23,30,21],[24,29,11],[20,16,9],
+    [19,25,4],[19,37,23],[23,58,11],[59,1,5],[20,16,3],[19,143,8],[43,16,13],[19,48,14],[20,4,11],[23,42,16],[19,139,10]],
+  'Perdão':[[62,1,9],[19,103,12],[23,1,18],[45,8,1],[33,7,19],[19,51,10],
+    [19,32,1],[40,6,14],[42,6,37],[19,130,4],[44,3,19],[58,8,12],[19,86,5],[23,43,25],[41,11,25],[42,23,34],[14,7,14],[56,3,5]],
+  'Fé e esperança':[[58,11,1],[45,8,28],[45,15,13],[25,3,22],[25,3,23],[19,27,14],[23,40,29],[58,10,23],
+    [45,5,5],[58,11,6],[60,1,3],[41,9,23],[47,5,7],[19,130,5],[45,12,12],[49,2,8],[19,39,7],[59,1,6]],
+  'Gratidão':[[19,100,4],[52,5,18],[19,118,24],[51,3,15],[19,103,2],
+    [19,107,1],[51,3,17],[49,5,20],[19,136,1],[13,16,34],[19,9,1],[47,9,15],[19,95,2],[42,17,15],[19,34,1],[58,12,28],[19,92,1],[27,2,23]],
+  'Família':[[6,24,15],[20,22,6],[21,4,9],[51,3,13],[49,4,32],
+    [19,127,3],[49,6,4],[5,6,7],[20,17,6],[19,133,1],[54,5,8],[8,1,16],[44,16,31],[19,128,3],[51,3,20],[20,31,28],[41,10,9],[46,13,7]],
+  'Proteção':[[19,91,1],[19,91,11],[19,121,7],[20,18,10],[53,3,3],[19,4,8],
+    [19,121,8],[19,46,7],[23,54,17],[19,32,7],[19,5,11],[20,30,5],[19,91,4],[5,33,27],[19,3,3],[55,4,18],[19,27,5],[34,1,7]]
 };
-const TODAS = Object.values(PROMESSAS).flat();
 
-const MEDITACOES = [
-  'O que este versículo diz sobre quem Deus é?',
-  'Que promessa há aqui que você ainda não tomou como sua?',
-  'Se você acreditasse nisso por inteiro hoje, o que faria diferente?',
-  'A quem você poderia levar essa palavra hoje?',
-  'Leia de novo, devagar. Que palavra ficou pesando?',
-  'Que medo essa passagem desarma?',
-  'O que Deus está pedindo que você solte?',
-  'Onde você já viu isso se cumprir na sua história?',
-  'Transforme este versículo em uma oração de uma frase.',
-  'O que muda no seu dia se você levar isso a sério até de noite?',
-  'Que parte de você resiste a essa palavra? Por quê?',
-  'Guarde uma frase disso de cor para o resto do dia.'
-];
+/* TODAS guarda o tema junto com a referência: é o que permite ao devocional
+   do dia servir uma reflexão que fala do mesmo assunto do versículo. */
+const TODAS = [];
+const TEMA_DO_VERSO = [];
+for(const [tema, versos] of Object.entries(PROMESSAS)){
+  for(const v of versos){ TODAS.push(v); TEMA_DO_VERSO.push(tema); }
+}
 
-const REFLEXOES = [
-  'A Palavra não é só informação — é convite. Deus fala para nos aproximar, não para nos sobrecarregar. Receba este versículo como um olhar de amor sobre o seu dia.',
-  'Muitas vezes queremos a resposta antes de confiar. Este texto nos lembra que a segurança não está no controle, mas em quem nos segura.',
-  'Há promessas que só florescem quando paramos de correr. Hoje, permita-se ouvir sem pressa o que Deus já disse.',
-  'A fé não elimina as perguntas; ela nos dá companhia enquanto caminhamos com elas. Leve este versículo como companheiro, não como regra fria.',
-  'Deus não desperdiça palavras. Se este texto chegou até você hoje, há algo nele que o seu coração precisa ouvir — mesmo que ainda não saiba o quê.',
-  'A força de Deus não compete com a nossa fraqueza: ela a preenche. Onde você se sente pequeno, há espaço para a graça agir.',
-  'A Bíblia não foi escrita para heróis perfeitos, mas para pessoas reais. Este versículo fala com a sua humanidade, não contra ela.',
-  'Quando a ansiedade grita, a Palavra sussurra verdades mais profundas. Escolha ouvir a voz mais quieta e mais verdadeira.',
-  'Cada promessa de Deus carrega o peso da fidelidade dEle. Você não precisa merecer o que já foi dado em amor.',
-  'Há um ritmo de graça neste texto: receber, confiar, seguir. Não pule etapas. Comece simplesmente recebendo.',
-  'A direção de Deus raramente chega como mapa completo. Costuma ser a próxima luz no caminho. Este versículo pode ser essa luz hoje.',
-  'Consolo não é fuga da realidade — é a presença de Deus no meio dela. Deixe esta palavra tocar o lugar que dói.'
-];
+/* =========================================================
+   DEVOCIONAL POR TEMA
+   Antes, reflexão, meditação e oração eram três listas soltas
+   sorteadas à parte do versículo — um texto sobre gratidão
+   podia vir acompanhado de uma reflexão sobre ansiedade. Aqui
+   cada tema tem os seus, e o percurso do dia fala de uma coisa
+   só, do começo ao fim.
+   ========================================================= */
+const DEVOCIONAL = {
 
-const ORACOES = [
-  'Senhor, abre o meu coração para receber o que queres dizer hoje. Ensina-me a confiar mais do que a controlar. Amém.',
-  'Pai, onde há medo, planta a Tua paz. Onde há dúvida, fortalece a minha fé. Guia os meus passos neste dia. Amém.',
-  'Deus de toda graça, obrigado por falar comigo. Ajuda-me a viver esta palavra com simplicidade e coragem. Amém.',
-  'Senhor Jesus, eu entrego a Ti o que pesa em mim. Que a Tua promessa seja mais real do que as minhas preocupações. Amém.',
-  'Espírito Santo, ilumina este texto no meu interior. Que ele se torne oração, atitude e esperança ao longo do dia. Amém.',
-  'Pai bondoso, agradeço pela Tua fidelidade. Ensina-me a descansar naquilo que Tu já garantiste. Amém.',
-  'Senhor, eu me coloco diante da Tua Palavra. Molda o meu coração e renova a minha mente. Amém.',
-  'Deus de consolo, toca as feridas que eu nem sempre sei nomear. Que a Tua presença seja suficiente hoje. Amém.',
-  'Pai, dá-me olhos para ver a Tua mão e ouvidos para ouvir a Tua voz no meio do barulho. Amém.',
-  'Senhor, que esta promessa não fique só na mente — que desça ao coração e se torne vida. Amém.',
-  'Jesus, Tu és a palavra viva. Ajuda-me a seguir-Te com confiança, um passo de cada vez. Amém.',
-  'Pai celestial, recebe a minha gratidão e as minhas perguntas. Em tudo, seja feita a Tua vontade. Amém.'
-];
+'Medo e ansiedade': {
+  reflexoes: [
+    'O medo mente sobre o tamanho das coisas. Ele aumenta o problema e diminui Deus. Este versículo faz o contrário: devolve cada coisa ao seu tamanho real.',
+    'Deus não pede que você deixe de sentir medo. Ele pede que não caminhe sozinho com ele. Há uma diferença entre não ter medo e não estar só.',
+    'A ansiedade vive no amanhã. A graça vive no hoje. Por isso é tão cansativo — você está tentando viver um dia que ainda não existe, com forças que só chegam quando ele chegar.',
+    'Repare que a Bíblia quase nunca diz "não tenha medo" sem completar com um motivo. Nunca é uma ordem seca: é sempre "não temas, porque Eu…". O que sustenta não é o esforço, é a companhia.',
+    'Entregar não é fingir que passou. É dizer em voz alta o que pesa e deixar de carregar sozinho. Deus aguenta ouvir o tamanho real da sua preocupação.',
+    'Quem tem medo costuma se sentir fraco na fé. Mas o medo não é ausência de fé — é o lugar onde a fé trabalha. Fé sem nada a temer não precisaria existir.',
+    'Há noites em que a única oração possível é ficar quieto. Também isso conta. Deus não exige palavras bonitas de quem está com o coração apertado.',
+    'A paz que este texto oferece não é a ausência de tempestade. É alguém com você dentro dela. Repare que a promessa não é de mar calmo, é de presença.'
+  ],
+  meditacoes: [
+    'Que medo específico esta palavra desarma hoje?',
+    'O que você está tentando carregar sozinho, e por quê?',
+    'De tudo que te preocupa agora, o que é de hoje e o que é de um dia que ainda não chegou?',
+    'Diga em voz alta o nome do seu maior medo. Depois leia o versículo de novo, devagar.',
+    'Quando você já teve medo antes e Deus te sustentou? Lembre de uma vez.',
+    'O que muda no seu dia se você acreditar nesta frase por inteiro?',
+    'Que preocupação você poderia entregar agora, mesmo sem sentir alívio imediato?',
+    'Transforme este versículo numa frase curta para repetir quando a angústia voltar.'
+  ],
+  oracoes: [
+    'Senhor, Tu conheces o que me aperta o peito e eu nem sei nomear. Fica comigo. Não peço um caminho fácil, peço a Tua companhia nele. Amém.',
+    'Pai, onde há medo, planta a Tua paz. Onde há dúvida, fortalece a minha fé. Guia os meus passos neste dia. Amém.',
+    'Deus, eu me preocupo com amanhãs que talvez nem cheguem. Ensina-me a viver hoje, com a força de hoje. Amém.',
+    'Senhor Jesus, eu entrego a Ti o que pesa em mim. Que a Tua promessa seja mais real do que as minhas preocupações. Amém.',
+    'Pai, quando o medo gritar mais alto, faz-me lembrar da Tua voz. Amém.',
+    'Deus, eu não consigo parar de pensar nisso sozinho. Toma conta do que eu não consigo soltar. Amém.',
+    'Senhor, dá-me esta noite de sono e amanhã a coragem que hoje me falta. Amém.',
+    'Pai, obrigado por não te assustares com o tamanho do meu medo. Segura-me firme. Amém.'
+  ]
+},
+
+'Força': {
+  reflexoes: [
+    'A força de Deus não compete com a nossa fraqueza: ela a preenche. Onde você se sente pequeno, há espaço para a graça agir.',
+    'Há um tipo de força que não parece força: é continuar. Levantar de novo, fazer de novo, esperar de novo. Esta é a que a Bíblia mais elogia.',
+    'Repare que a promessa não é de nunca cansar. É de ser renovado. O cansaço não é sinal de que você falhou — é sinal de que você é gente.',
+    'Deus costuma dar força para o próximo passo, não para o caminho inteiro de uma vez. Se você olhou o caminho todo e sentiu que não dá, é porque não era para olhar tudo agora.',
+    'A pessoa forte da Bíblia não é a que nunca chorou. É a que chorou e continuou. Davi escreveu salmos desesperados e ainda assim são chamados de canções.',
+    'Quando a força vem de dentro, ela acaba. Quando vem de Deus, ela é reposta. Por isso vale mais aprender a receber do que a aguentar.',
+    'Você não precisa se sentir forte para ser sustentado. O apoio não depende de você reconhecê-lo no momento em que ele age.',
+    'Há dias em que a vitória é apenas ter atravessado o dia. Não desqualifique isso. Deus não desqualifica.'
+  ],
+  meditacoes: [
+    'Onde você está tentando ser forte por conta própria?',
+    'Que peso você está carregando que nunca foi seu para carregar?',
+    'O que seria "o próximo passo" hoje — só ele, sem o caminho todo?',
+    'Em que área da sua vida você já não tem forças? Diga isso a Deus com essas palavras mesmo.',
+    'Lembre de uma vez em que você achou que não daria conta — e deu. Quem te sustentou?',
+    'O que você precisa parar de fazer para ter força para o que importa?',
+    'Se a sua fraqueza é o lugar onde a graça age, que fraqueza você poderia parar de esconder?',
+    'Guarde uma frase deste versículo de cor. Repita quando quiser desistir.'
+  ],
+  oracoes: [
+    'Senhor, a minha força acabou antes do meu dia. Renova o que em mim se gastou. Amém.',
+    'Pai, ensina-me a diferença entre desistir e descansar. Amém.',
+    'Deus, dá-me força para o próximo passo. Só ele. Confio-Te o resto do caminho. Amém.',
+    'Senhor, onde eu sou fraco, sê Tu forte por mim. Não tenho vergonha de precisar. Amém.',
+    'Pai, obrigado por me sustentares mesmo nos dias em que eu nem percebi. Amém.',
+    'Deus, tira de mim o peso que nunca foi meu para levar. Amém.',
+    'Senhor, quero continuar. Dá-me hoje o suficiente para continuar. Amém.',
+    'Pai celestial, faz da minha fraqueza um lugar onde a Tua graça caiba. Amém.'
+  ]
+},
+
+'Provisão': {
+  reflexoes: [
+    'Deus provê, mas quase nunca com antecedência confortável. O maná caía de manhã, para o dia. Isso não é descuido: é um convite a caminhar junto, um dia de cada vez.',
+    'Há diferença entre o que precisamos e o que queremos, e a maior parte da nossa angústia mora nessa distância. Este texto fala do primeiro.',
+    'Provisão nem sempre chega como dinheiro. Às vezes chega como alguém que aparece, uma porta que fecha na hora certa, uma força que você não sabia que tinha.',
+    'Confiar não substitui o trabalho — acompanha. A fé não é preguiça santificada; é fazer a sua parte sem carregar o peso do que não te cabe.',
+    'A viúva tinha um punhado de farinha. Deus não multiplicou o que ela guardou, multiplicou o que ela repartiu. Há uma lógica aqui que o medo não entende.',
+    'Quem já passou necessidade sabe: o mais difícil não é a falta, é o não saber. Este versículo não promete abundância — promete que você não está esquecido.',
+    'Deus alimenta os pássaros, mas não põe comida no ninho. Ele provê o mundo onde há o que buscar. Isso muda o que significa esperar nEle.',
+    'Gratidão pelo que já veio é a melhor preparação para o que ainda falta. Quem lembra do que recebeu tem menos medo do que virá.'
+  ],
+  meditacoes: [
+    'O que você realmente precisa hoje — e o que só parece necessidade?',
+    'Como Deus já proveu para você de um jeito que você não esperava?',
+    'Que parte disso é sua para fazer, e que parte você precisa soltar?',
+    'Se o suficiente chegasse só para hoje, isso bastaria? Por quê?',
+    'A quem você poderia repartir algo do pouco que tem?',
+    'Faça uma lista mental de três coisas que você tem hoje e não tinha há um ano.',
+    'O que o medo da falta está te fazendo guardar demais?',
+    'Transforme este versículo em uma oração de uma frase.'
+  ],
+  oracoes: [
+    'Senhor, dá-me hoje o pão de hoje. Ensina-me a confiar amanhã de novo. Amém.',
+    'Pai, tira de mim a angústia do que ainda não chegou. Obrigado pelo que já está aqui. Amém.',
+    'Deus, ensina-me a diferença entre precisar e querer. Amém.',
+    'Senhor, eu faço a minha parte e Te entrego o resultado. Amém.',
+    'Pai, onde falta, sustenta. Onde sobra, ensina-me a repartir. Amém.',
+    'Deus, obrigado pelas provisões que eu nem percebi que vieram de Ti. Amém.',
+    'Senhor, quando eu não souber como será, faz-me lembrar de como foi. Amém.',
+    'Pai bondoso, agradeço pela Tua fidelidade. Ensina-me a descansar naquilo que Tu já garantiste. Amém.'
+  ]
+},
+
+'Cura e consolo': {
+  reflexoes: [
+    'Consolo não é fuga da realidade — é a presença de Deus dentro dela. Deixe esta palavra tocar o lugar que dói, sem pressa de melhorar.',
+    'Nem toda cura é imediata e nem toda cura é do corpo. Há feridas que Deus fecha e há feridas que Ele acompanha. As duas coisas são cuidado.',
+    'Jesus chorou diante de um túmulo que Ele mesmo ia abrir. Deus não acha a nossa dor exagerada, mesmo sabendo o fim da história.',
+    'Você não precisa estar bem para se aproximar. Aliás, é justamente quando não está que este convite faz sentido.',
+    'A pressa em superar é uma forma de fugir. O luto tem tempo próprio, e Deus não apressa quem Ele carrega.',
+    'Há dores que não têm nome. Deus entende também as que você não consegue explicar para ninguém.',
+    'Quem já foi consolado consola diferente. A sua dor, um dia, vai caber nas mãos de outra pessoa como remédio.',
+    'A promessa não é de uma vida sem lágrimas. É de que elas serão enxugadas — uma por uma, por alguém que conhece cada uma delas.'
+  ],
+  meditacoes: [
+    'Que ferida você está tentando esconder até de Deus?',
+    'Do que você precisa hoje: de solução ou de companhia?',
+    'Que dor sua já virou capacidade de entender outra pessoa?',
+    'A quem você poderia dizer hoje "eu sei como é"?',
+    'Você está se cobrando por não ter superado ainda? Diga isso a Deus.',
+    'Leia o versículo de novo, devagar. Que palavra ficou pesando?',
+    'O que seria descansar hoje, de verdade?',
+    'Guarde uma frase deste texto para os momentos em que a dor voltar.'
+  ],
+  oracoes: [
+    'Deus de consolo, toca as feridas que eu nem sempre sei nomear. Que a Tua presença seja suficiente hoje. Amém.',
+    'Senhor, eu não venho arrumado. Venho como estou. Recebe-me assim. Amém.',
+    'Pai, cura o que puder ser curado e sustenta o que ainda vai doer um tempo. Amém.',
+    'Jesus, Tu choraste. Obrigado por não achares a minha dor pequena demais nem grande demais. Amém.',
+    'Senhor, dá-me paciência comigo mesmo enquanto sararo. Amém.',
+    'Deus, usa o que me machucou para que eu saiba cuidar de alguém. Amém.',
+    'Pai, esta noite eu só preciso descansar. Fica comigo. Amém.',
+    'Senhor, enxuga hoje uma das minhas lágrimas. Só uma já basta para eu seguir. Amém.'
+  ]
+},
+
+'Direção': {
+  reflexoes: [
+    'A direção de Deus raramente chega como mapa completo. Costuma ser a próxima luz no caminho. Este versículo pode ser essa luz hoje.',
+    'Uma lâmpada aos pés ilumina um passo. Não é pouco: é exatamente o que se precisa para não tropeçar. Querer ver o fim do caminho é querer outra coisa que não confiança.',
+    'Muitas vezes queremos a resposta antes de confiar. Este texto lembra que a segurança não está no controle, mas em quem nos segura.',
+    'Deus dirige mais pelo caráter que Ele forma em nós do que por sinais no céu. A pergunta "que caminho?" às vezes é menos útil que "que tipo de pessoa devo ser aqui?".',
+    'Há decisões em que nenhuma opção é errada, e a angústia vem de acreditar que existe uma única resposta certa escondida. Deus caminha com quem escolhe de coração honesto.',
+    'Pedir sabedoria é permitido. A Bíblia diz que Deus dá sem tirar sarro de quem pergunta. Você não precisa fingir que já sabe.',
+    'O caminho de Deus quase nunca é o mais curto. Israel foi pelo deserto por um motivo. O trajeto também faz parte do que Ele quer te dar.',
+    'Se você está parado sem saber para onde ir, talvez o próximo passo não seja escolher — seja esperar. Esperar também é obedecer.'
+  ],
+  meditacoes: [
+    'Que decisão está te tirando o sono?',
+    'Você está pedindo direção ou pedindo confirmação do que já decidiu?',
+    'Qual é o próximo passo — não o plano inteiro, só o próximo?',
+    'Que tipo de pessoa você quer ser nessa situação, independente do caminho?',
+    'O que muda se, em vez de saber tudo, você só precisar dar um passo?',
+    'Que conselho você já recebeu e ainda não seguiu?',
+    'Se Deus te dissesse "espere", você conseguiria?',
+    'Transforme este versículo numa oração pedindo sabedoria pelo dia de hoje.'
+  ],
+  oracoes: [
+    'Senhor, não me mostres o caminho todo. Mostra-me o próximo passo e dá-me coragem para dá-lo. Amém.',
+    'Pai, dá-me olhos para ver a Tua mão e ouvidos para ouvir a Tua voz no meio do barulho. Amém.',
+    'Deus, eu não sei o que fazer. Ensina-me a esperar sem me desesperar. Amém.',
+    'Senhor, dá-me sabedoria, porque prometeste dar a quem pede. Estou pedindo. Amém.',
+    'Pai, quero mais a Tua vontade do que a minha certeza. Amém.',
+    'Deus, se for para parar, dá-me paz para parar. Se for para andar, dá-me firmeza. Amém.',
+    'Senhor, guarda-me de decidir por medo. Que eu decida por confiança. Amém.',
+    'Espírito Santo, ilumina este texto no meu interior. Que ele se torne oração, atitude e esperança ao longo do dia. Amém.'
+  ]
+},
+
+'Perdão': {
+  reflexoes: [
+    'Perdão não é dizer que não doeu. É deixar de cobrar uma dívida que talvez nunca seja paga. Custa caro — e é por isso que Deus sabe do que está falando.',
+    'Muita gente carrega culpa por algo que Deus já esqueceu. Se Ele apagou, continuar cobrando de si mesmo não é humildade: é não acreditar no que Ele disse.',
+    'Perdoar não obriga a confiar de novo, nem a voltar. São coisas diferentes. Perdão é soltar o peso; confiança se reconstrói com tempo e com provas.',
+    'A dificuldade de perdoar os outros costuma ter a ver com a dificuldade de acreditar que fomos perdoados. Quem recebeu muito perdoa mais fácil.',
+    'Guardar mágoa é beber veneno esperando que o outro adoeça. Você é quem acorda com isso todo dia.',
+    'Confessar não é informar a Deus algo que Ele não sabia. É parar de fingir. O alívio começa aí.',
+    'Jesus perdoou de dentro da cruz, antes de qualquer pedido de desculpa. Isso mostra que o perdão nasce de quem perdoa, não do arrependimento do outro.',
+    'Se você errou com alguém, o versículo de hoje não é só conforto — é chamado. Há telefonemas que são oração.'
+  ],
+  meditacoes: [
+    'De quem você ainda está cobrando uma dívida?',
+    'Que culpa você carrega que Deus já apagou?',
+    'Perdoar essa pessoa mudaria o quê no seu dia?',
+    'Existe alguém a quem você precisa pedir perdão? O que te impede?',
+    'Qual a diferença, no seu caso, entre perdoar e voltar a confiar?',
+    'Fale a Deus, com todas as palavras, o que você fez ou o que te fizeram.',
+    'O que você ganharia em soltar isso hoje?',
+    'Guarde uma frase deste versículo para quando a mágoa voltar a falar.'
+  ],
+  oracoes: [
+    'Senhor, eu não consigo perdoar sozinho. Começa em mim o que eu não consigo começar. Amém.',
+    'Pai, obrigado por não me tratares conforme os meus erros. Ajuda-me a tratar assim quem me feriu. Amém.',
+    'Deus, eu confesso o que Tu já sabes. Não quero mais fingir. Amém.',
+    'Senhor, tira de mim a culpa que Tu já perdoaste. Ensina-me a acreditar no Teu perdão. Amém.',
+    'Pai, se eu feri alguém, dá-me coragem para procurar essa pessoa. Amém.',
+    'Deus, esvazia o meu coração da mágoa que já ocupou espaço demais. Amém.',
+    'Jesus, Tu perdoaste de dentro da dor. Ensina-me esse caminho. Amém.',
+    'Senhor, cria em mim um coração limpo e renova em mim um espírito firme. Amém.'
+  ]
+},
+
+'Fé e esperança': {
+  reflexoes: [
+    'A fé não elimina as perguntas; ela nos dá companhia enquanto caminhamos com elas. Leve este versículo como companheiro, não como regra fria.',
+    'Esperança bíblica não é otimismo. Otimismo aposta que vai dar certo; esperança confia em quem sustenta, inclusive quando não dá.',
+    'Fé pequena em um Deus grande vale mais do que fé grande em nada. Jesus elogiou fé do tamanho de uma semente.',
+    'Duvidar não é o contrário de crer. O contrário de crer é a indiferença. Quem duvida ainda está lidando com Deus.',
+    'A Bíblia não foi escrita para heróis perfeitos, mas para pessoas reais. Este versículo fala com a sua humanidade, não contra ela.',
+    'Há promessas que só florescem quando paramos de correr. Hoje, permita-se ouvir sem pressa o que Deus já disse.',
+    'Esperar em Deus não é ficar parado achando bonito. É continuar fazendo o que se deve, sem saber ainda como termina.',
+    'Cada promessa de Deus carrega o peso da fidelidade dEle. Você não precisa merecer o que já foi dado em amor.'
+  ],
+  meditacoes: [
+    'Que promessa há aqui que você ainda não tomou como sua?',
+    'Em que você está esperando neste momento da sua vida?',
+    'Que dúvida você tem vergonha de levar a Deus? Leve hoje.',
+    'Se você acreditasse nisso por inteiro hoje, o que faria diferente?',
+    'Onde você já viu Deus cumprir algo na sua história?',
+    'O que a sua esperança está apoiada: no resultado ou em quem sustenta?',
+    'O que muda no seu dia se você levar isso a sério até de noite?',
+    'A quem você poderia levar essa palavra hoje?'
+  ],
+  oracoes: [
+    'Senhor, abre o meu coração para receber o que queres dizer hoje. Ensina-me a confiar mais do que a controlar. Amém.',
+    'Pai, eu creio; ajuda a minha incredulidade. Amém.',
+    'Deus, quando eu não entender, ensina-me a confiar mesmo assim. Amém.',
+    'Senhor, que esta promessa não fique só na mente — que desça ao coração e se torne vida. Amém.',
+    'Pai, eu espero em Ti. Sustenta-me enquanto espero. Amém.',
+    'Jesus, Tu és a palavra viva. Ajuda-me a seguir-Te com confiança, um passo de cada vez. Amém.',
+    'Deus de toda graça, obrigado por falares comigo. Ajuda-me a viver esta palavra com simplicidade e coragem. Amém.',
+    'Senhor, guarda a minha esperança de virar só expectativa. Que ela se apoie em Ti. Amém.'
+  ]
+},
+
+'Gratidão': {
+  reflexoes: [
+    'Gratidão não é fingir que está tudo bem. É reparar no que é bom sem esperar que o resto se resolva primeiro.',
+    'Agradecer muda quem agradece antes de mudar qualquer circunstância. É por isso que a Bíblia insiste tanto nisso — não é para Deus se sentir bem.',
+    'Dos dez curados, um voltou. A cura foi para os dez; o encontro foi só para quem voltou. Há coisas que só recebe quem agradece.',
+    'A memória curta é a raiz da murmuração. Israel reclamava no deserto lembrando do Egito e esquecendo do mar aberto.',
+    'Agradecer em tudo não é agradecer por tudo. Nem toda coisa é boa; mas em toda coisa há algo a reconhecer.',
+    'Quem agradece pelo pouco costuma reparar mais no que vem. A gratidão treina os olhos.',
+    'Reclamar é fácil porque a falta grita e a bênção sussurra. Gratidão é o esforço de ouvir o que sussurra.',
+    'Deus não desperdiça palavras. Se este texto chegou até você hoje, há algo nele que o seu coração precisa reconhecer.'
+  ],
+  meditacoes: [
+    'Cite três coisas boas de hoje, mesmo que pequenas.',
+    'Por quem você é grato e nunca disse isso a essa pessoa?',
+    'O que você tem hoje que já pediu muito um dia?',
+    'Que bênção virou rotina e você parou de notar?',
+    'O que este versículo diz sobre quem Deus é?',
+    'A quem você poderia agradecer hoje, em voz alta?',
+    'Do que você reclamou nesta semana que, olhando bem, é privilégio?',
+    'Transforme este versículo em uma oração de agradecimento de uma frase.'
+  ],
+  oracoes: [
+    'Senhor, obrigado. Simplesmente obrigado, por hoje. Amém.',
+    'Pai, ensina-me a reparar no bom antes que ele passe. Amém.',
+    'Deus, obrigado pelo que eu já nem percebo de tão acostumado. Amém.',
+    'Senhor, obrigado pelas orações que Tu respondeste com um não. Amém.',
+    'Pai celestial, recebe a minha gratidão e as minhas perguntas. Em tudo, seja feita a Tua vontade. Amém.',
+    'Deus, dá-me memória para lembrar do que já fizeste quando eu duvidar do que farás. Amém.',
+    'Senhor, faz da gratidão o meu primeiro pensamento e não o último. Amém.',
+    'Pai, obrigado por hoje ter sido possível. Amém.'
+  ]
+},
+
+'Família': {
+  reflexoes: [
+    'A família da Bíblia não é modelo de perfeição: é gente que erra, se magoa e volta. Deus trabalha dentro do que é real, não do que é ideal.',
+    'Ensinar em casa é menos discurso e mais convivência. As crianças aprendem o que veem repetido, não o que ouvem uma vez.',
+    'Amar quem mora com você é mais difícil do que amar de longe, porque de perto ninguém consegue disfarçar. É também onde o amor é mais verdadeiro.',
+    'Há famílias que a gente recebe e famílias que a gente escolhe. Rute escolheu, e virou parte da história de Jesus.',
+    'Suportar uns aos outros é uma expressão pouco romântica e muito honesta. Amor duradouro tem uma parte grande de paciência.',
+    'Sua casa é o primeiro lugar onde a sua fé é testada — e o único onde ninguém acredita na versão editada.',
+    'Cuidar dos seus não é menos espiritual do que cuidar de estranhos. A Bíblia trata isso como coisa séria.',
+    'Nem toda família é lugar seguro, e a Bíblia não pede que se finja o contrário. Deus também é Pai de quem não teve um.'
+  ],
+  meditacoes: [
+    'Com quem da sua casa você precisa ter uma conversa?',
+    'O que a sua família vê em você que você não fala?',
+    'A quem da sua família você poderia ligar hoje?',
+    'Onde você tem sido mais paciente com estranhos do que com os seus?',
+    'Que padrão da sua família de origem você quer interromper?',
+    'Pelo que você é grato na sua casa hoje?',
+    'O que você poderia perdoar dentro de casa nesta semana?',
+    'Ore pelo nome de cada pessoa da sua família, uma por uma.'
+  ],
+  oracoes: [
+    'Senhor, abençoa cada pessoa da minha casa hoje, uma por uma. Amém.',
+    'Pai, ensina-me a ter em casa a paciência que eu tenho com estranhos. Amém.',
+    'Deus, cura o que se rompeu na minha família. Onde não puder ser restaurado, dá-me paz. Amém.',
+    'Senhor, que a minha vida ensine mais do que as minhas palavras. Amém.',
+    'Pai, obrigado pelas pessoas que Tu me deste para amar de perto. Amém.',
+    'Deus, guarda os que eu amo quando eu não puder estar por perto. Amém.',
+    'Senhor, quebra em mim o que eu não quero passar adiante. Amém.',
+    'Pai, sê Tu a casa de quem não teve uma. Amém.'
+  ]
+},
+
+'Proteção': {
+  reflexoes: [
+    'Proteção na Bíblia não significa vida sem perigo. Significa que o perigo não tem a última palavra. Daniel foi guardado dentro da cova, não longe dela.',
+    'Deus é chamado de refúgio, não de muro. Refúgio é lugar para onde se corre — implica movimento da nossa parte.',
+    'Há um cuidado que se percebe e um cuidado que só se descobre depois. Boa parte do que Deus evitou, você nunca vai saber.',
+    'Estar sob a sombra do Altíssimo é uma imagem de proximidade, não de blindagem. Sombra só existe quando se está muito perto.',
+    'A promessa é de que Ele guarda a sua saída e a sua entrada — o começo e o fim de cada coisa, inclusive o que acontece no meio.',
+    'Quem se sente frágil costuma se sentir esquecido. Este texto diz o contrário: você é olhado de perto justamente porque é frágil.',
+    'Dormir em paz é um ato de fé. Você entrega o controle por oito horas todos os dias. Deus continua acordado.',
+    'Ser guardado não quer dizer não sofrer. Quer dizer não se perder — e há uma diferença enorme entre as duas coisas.'
+  ],
+  meditacoes: [
+    'De que você tem pedido para ser guardado?',
+    'De que perigo Deus já te livrou sem você perceber na hora?',
+    'O que te tira o sono? Entregue isso antes de deitar.',
+    'Você corre para Deus como refúgio ou como último recurso?',
+    'Por quem você poderia orar hoje pedindo proteção?',
+    'O que significa, no seu caso, "ser guardado" e não "não sofrer"?',
+    'Onde você se sente exposto agora?',
+    'Guarde uma frase deste versículo para dizer ao deitar.'
+  ],
+  oracoes: [
+    'Senhor, guarda a minha saída e a minha entrada, hoje e sempre. Amém.',
+    'Pai, guarda quem eu amo, mesmo longe dos meus olhos. Amém.',
+    'Deus, esta noite eu entrego o controle. Faz-me dormir em paz. Amém.',
+    'Senhor, sê o meu refúgio — e dá-me pressa para correr para Ti. Amém.',
+    'Pai, obrigado pelos perigos de que me livraste e eu nunca soube. Amém.',
+    'Deus, onde eu me sinto exposto, cobre-me. Amém.',
+    'Senhor, se eu tiver de passar por isso, passa comigo. Amém.',
+    'Pai, guarda-me de me perder, mesmo que eu não seja poupado da dificuldade. Amém.'
+  ]
+}
+
+};
+
+/* Compatibilidade: o restante do app ainda pede uma lista solta em alguns
+   pontos genéricos, e a folha do dia usa as do tema. */
+const REFLEXOES  = Object.values(DEVOCIONAL).flatMap(d => d.reflexoes);
+const MEDITACOES = Object.values(DEVOCIONAL).flatMap(d => d.meditacoes);
+const ORACOES    = Object.values(DEVOCIONAL).flatMap(d => d.oracoes);
+
+/* Monta o devocional de um dia: o versículo escolhe o tema, e o tema
+   escolhe os três textos. Determinístico pelo dia do ano — o histórico
+   precisa reencontrar exatamente o que foi mostrado. */
+function devocionalDoDia(dia){
+  const idx  = dia % TODAS.length;
+  const [nr, cap, verso] = TODAS[idx];
+  const tema = TEMA_DO_VERSO[idx];
+  const d    = DEVOCIONAL[tema];
+  /* O versículo dá a volta a cada 180 dias e as reflexões a cada 8. Se o
+     índice fosse só o dia, os dois ciclos voltariam a coincidir no dia 361
+     e a última semana do ano repetiria a combinação da primeira. Somar a
+     volta desencontra os ciclos: 366 dias, 366 pares distintos. */
+  const giro = dia + Math.floor(dia / TODAS.length);
+  return {
+    nr, cap, verso, tema,
+    reflexao:  d.reflexoes[giro % d.reflexoes.length],
+    meditacao: d.meditacoes[giro % d.meditacoes.length],
+    oracao:    d.oracoes[giro % d.oracoes.length]
+  };
+}
 
 /* ---------- favoritos (localStorage) ---------- */
 const CHAVE_FAVS = 'lampada-favoritos';
@@ -3389,7 +3764,7 @@ function montarHistorico(){
   for(let i = 0; i < 30; i++){
     const d = new Date(hoje);
     d.setDate(d.getDate() - i);
-    const [nr, cap, verso] = TODAS[diaDoAno(d) % TODAS.length];
+    const { nr, cap, verso } = devocionalDoDia(diaDoAno(d));
     const el = document.createElement('div');
     el.className = 'item-hist' + (i === 0 ? ' hoje' : '');
     const data = document.createElement('div');
@@ -4142,6 +4517,7 @@ function montarPercurso(dados){
     const rot = document.createElement('p');
     rot.className = 'rotulo-passo';
     rot.textContent = passo.rotulo;
+    rot.appendChild(chipTema(dados.tema));
     corpo.appendChild(rot);
 
     /* o primeiro passo mantém o cartão de versículo inteiro, com
@@ -4214,6 +4590,27 @@ function montarPercurso(dados){
 }
 
 /* O formato antigo continua disponível: quem prefere rolar não perde nada */
+/* O tema é o fio que costura os quatro passos. Mostrá-lo deixa a costura
+   à vista, e tocar nele leva às outras promessas sobre o mesmo assunto. */
+function chipTema(tema){
+  const frag = document.createDocumentFragment();
+  if(!tema) return frag;
+  const b = document.createElement('button');
+  b.type = 'button';
+  b.className = 'tema-devo';
+  b.textContent = tema;
+  b.setAttribute('aria-label', 'Tema: ' + tema + '. Ver outras promessas sobre isso');
+  b.onclick = () => irParaTema(tema);
+  frag.appendChild(b);
+  return frag;
+}
+
+function irParaTema(tema){
+  const alvo = [...document.querySelectorAll('#temas .tema')].find(b => b.textContent === tema);
+  if(alvo) selecionarTema(tema, alvo);
+  $('sec-promessas').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
 function montarTudoDeUmaVez(dados){
   const alvo = $('cartao-hoje');
   const { nr, cap, verso, texto, versao, reflexao, meditacao, oracao } = dados;
@@ -4223,7 +4620,15 @@ function montarTudoDeUmaVez(dados){
     `<div class="bloco-devo"><span class="rotulo-bloco">Reflexão</span><p></p></div>
      <div class="bloco-devo"><span class="rotulo-bloco">Para meditar</span><p></p></div>
      <div class="bloco-devo oracao"><span class="rotulo-bloco">Oração</span><p></p></div>`;
-  const ps = extra.querySelectorAll('p');
+  if(dados.tema){
+    const fita = document.createElement('p');
+    fita.className = 'rotulo-passo';
+    fita.style.marginTop = '18px';
+    fita.appendChild(chipTema(dados.tema));
+    extra.prepend(fita);
+  }
+  /* escopado aos blocos: a fita do tema também é um <p> e entraria na conta */
+  const ps = extra.querySelectorAll('.bloco-devo p');
   ps[0].textContent = reflexao;
   ps[1].textContent = meditacao;
   ps[2].textContent = oracao;
@@ -4265,15 +4670,11 @@ async function versiculoDoDia(){
   </div>`;
 
   const dia = diaDoAno(new Date());
-  const [nr, cap, verso] = TODAS[dia % TODAS.length];
+  const base = devocionalDoDia(dia);
+  const { nr, cap, verso } = base;
   try{
     const { texto, versao } = await buscarVerso(nr, cap, verso);
-    const dados = {
-      nr, cap, verso, texto, versao,
-      reflexao:  REFLEXOES[dia % REFLEXOES.length],
-      meditacao: MEDITACOES[dia % MEDITACOES.length],
-      oracao:    ORACOES[dia % ORACOES.length]
-    };
+    const dados = Object.assign({ texto, versao }, base);
     if(modoDevocional() === 'tudo') montarTudoDeUmaVez(dados);
     else montarPercurso(dados);
   }catch(e){
