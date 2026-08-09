@@ -1216,28 +1216,56 @@ body.modo-foco #sec-promessas,
 body.modo-foco #sec-planos,
 body.modo-foco #sec-favoritos,
 body.modo-foco #sec-app,
+body.modo-foco #sec-busca,
 body.modo-foco .rodape,
 body.modo-foco #wrap-progresso-biblia,
 body.modo-foco .painel-config,
 body.modo-foco .gaveta,
-body.modo-foco .veu {
+body.modo-foco .veu,
+body.modo-foco .barra-audio,
+body.modo-foco #painel-voz,
+body.modo-foco .aviso {
   display: none !important;
 }
+body.modo-foco {
+  background: var(--fundo);
+}
 body.modo-foco .envolve {
-  max-width: 720px;
-  padding-top: 28px;
-  padding-bottom: 96px;
+  max-width: 680px;
+  padding-top: 48px;
+  padding-bottom: 120px;
 }
 body.modo-foco #sec-hoje .rotulo-secao,
 body.modo-foco #sec-biblia .rotulo-secao {
   text-align: center;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.14em;
+  font-size: 12px;
+  opacity: 0.75;
 }
 body.modo-foco .cartao,
 body.modo-foco #cartao-hoje .cartao {
   box-shadow: none;
   border: none;
   background: transparent;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+/* Tipografia mais confortável para leitura */
+body.modo-foco .texto-verso,
+body.modo-foco .v,
+body.modo-foco #area-leitura {
+  font-size: calc(1.12rem * var(--esc, 1));
+  line-height: 1.75;
+}
+body.modo-foco .referencia {
+  text-align: center;
+  width: 100%;
+}
+/* Ações secundárias mais discretas */
+body.modo-foco .btn-acao.btn-img,
+body.modo-foco .chips-tema,
+body.modo-foco .linha-ferramentas {
+  display: none !important;
 }
 body.modo-foco #btn-sair-foco {
   display: inline-flex !important;
@@ -1245,8 +1273,8 @@ body.modo-foco #btn-sair-foco {
 #btn-sair-foco {
   display: none;
   position: fixed;
-  top: 14px;
-  right: 14px;
+  top: max(12px, env(safe-area-inset-top));
+  right: max(12px, env(safe-area-inset-right));
   z-index: 80;
   align-items: center;
   gap: 6px;
@@ -1263,6 +1291,10 @@ body.modo-foco #btn-sair-foco {
 }
 #btn-sair-foco:hover { border-color: var(--azul); color: var(--azul); }
 body.modo-foco #btn-entrar-foco { display: none; }
+/* Atalho discreto no cabeçalho do card quando em foco */
+body.modo-foco #sec-biblia .voltar {
+  opacity: 0.7;
+}
 
 
 
