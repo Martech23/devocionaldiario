@@ -7005,14 +7005,17 @@ descobrirTudo().then(() => {
 function entrarModoFoco(){
   document.body.classList.add('modo-foco');
   localStorage.setItem('lampada-modo-foco', '1');
-  abrirMenu(false);
-  const alvo = $('sec-hoje') || $('sec-biblia');
+  try { abrirMenu(false); } catch(_) {}
+  try { if(window.speechSynthesis) speechSynthesis.cancel(); } catch(_) {}
+  const bibliaAberta = $('nivel-leitura') && !$('nivel-leitura').classList.contains('oculto');
+  const alvo = bibliaAberta ? $('sec-biblia') : ($('sec-hoje') || $('sec-biblia'));
   if(alvo) alvo.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  avisar('Modo foco: só o texto. Toque em “Sair do foco” ou pressione Esc');
+  avisar('Modo foco ativo — Esc ou “Sair do foco” para voltar');
 }
 function sairModoFoco(){
   document.body.classList.remove('modo-foco');
   localStorage.removeItem('lampada-modo-foco');
+  avisar('Modo foco desativado');
 }
 function alternarModoFoco(){
   if(document.body.classList.contains('modo-foco')) sairModoFoco();
@@ -7024,10 +7027,17 @@ function alternarModoFoco(){
   const b3 = $('btn-foco-menu');
   if(b1) b1.onclick = entrarModoFoco;
   if(b2) b2.onclick = sairModoFoco;
-  if(b3) b3.onclick = () => { entrarModoFoco(); };
+  if(b3) b3.onclick = () => { try { abrirMenu(false); } catch(_) {} entrarModoFoco(); };
   document.addEventListener('keydown', e => {
     if(e.key === 'Escape' && document.body.classList.contains('modo-foco')){
+      e.preventDefault();
       sairModoFoco();
+    }
+    if((e.key === 'f' || e.key === 'F') && !e.ctrlKey && !e.metaKey && !e.altKey){
+      const tag = (e.target && e.target.tagName || '').toLowerCase();
+      if(tag === 'input' || tag === 'textarea' || tag === 'select' || (e.target && e.target.isContentEditable)) return;
+      e.preventDefault();
+      alternarModoFoco();
     }
   });
 })();
