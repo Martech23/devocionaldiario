@@ -1333,6 +1333,43 @@ body.modo-foco #btn-sair-foco {
 }
 #btn-sair-foco:hover { border-color: var(--azul); color: var(--azul); }
 body.modo-foco #btn-entrar-foco { display: none; }
+
+button.ouvir {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+button.ouvir img,
+#fa-ouvir img,
+.btn-ouvir .ico img {
+  width: 16px;
+  height: 16px;
+  display: block;
+  opacity: 1;
+}
+html[data-tema="escuro"] button.ouvir img,
+html[data-tema="escuro"] #fa-ouvir img,
+html[data-tema="escuro"] .btn-ouvir .ico img {
+  filter: brightness(0) invert(1);
+}
+button.ouvir.tocando img,
+.btn-ouvir.tocando .ico img {
+  filter: brightness(0) invert(1);
+}
+#fa-ouvir {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.ouvir-mini {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.ouvir-mini img { width: 14px; height: 14px; display: block; }
+html[data-tema="escuro"] .ouvir-mini img { filter: brightness(0) invert(1); }
+
+
 /* Atalho discreto no cabeçalho do card quando em foco */
 body.modo-foco #sec-biblia .voltar {
   opacity: 0.7;
@@ -2425,7 +2462,7 @@ html[data-tema="escuro"] .painel-config header { background: #152238; }
 
     <div class="linha-ouvir" style="margin-top:20px;margin-bottom:22px">
       <button class="btn-ouvir" id="btn-testar-voz" type="button">
-        <span class="ico" aria-hidden="true">▶</span> Ouvir um exemplo
+        <span class="ico" aria-hidden="true"><img src="/icon-speaker.png" alt="" width="16" height="16" decoding="async"></span> Ouvir um exemplo
       </button>
     </div>
 
@@ -2551,7 +2588,7 @@ html[data-tema="escuro"] .painel-config header { background: #152238; }
           <span class="ico" aria-hidden="true">＋</span> Adicionar pedido
         </button>
         <button class="btn-ouvir claro" id="btn-ouvir-oracoes" type="button">
-          <span class="ico" aria-hidden="true">▶</span> Ouvir meus pedidos
+          <span class="ico" aria-hidden="true"><img src="/icon-speaker.png" alt="" width="16" height="16" decoding="async"></span> Ouvir meus pedidos
         </button>
       </div>
       <div id="lista-oracoes"></div>
@@ -2754,7 +2791,7 @@ html[data-tema="escuro"] .painel-config header { background: #152238; }
       <button type="button" class="c-limpar"  data-cor=""        aria-label="Tirar a marca">✕</button>
     </div>
     <div class="folha-acoes">
-      <button type="button" id="fa-ouvir">🔊 Ouvir</button>
+      <button type="button" id="fa-ouvir"><img src="/icon-speaker.png" alt="" width="16" height="16" decoding="async"> Ouvir</button>
       <button type="button" id="fa-fav">☆ Favoritar</button>
       <button type="button" id="fa-nota">✎ Nota</button>
       <button type="button" id="fa-comparar">⇄ Comparar</button>
@@ -4344,9 +4381,15 @@ function criarBotaoOuvir(rotulo, montar, opcoes){
   const ico = document.createElement('span');
   ico.className = 'ico';
   ico.setAttribute('aria-hidden', 'true');
-  ico.textContent = '▶';
+  const img = document.createElement('img');
+  img.src = '/icon-speaker.png';
+  img.alt = '';
+  img.width = 16;
+  img.height = 16;
+  img.decoding = 'async';
+  ico.appendChild(img);
   b.appendChild(ico);
-  b.appendChild(document.createTextNode(rotulo));
+  b.appendChild(document.createTextNode(' ' + rotulo));
   b.onclick = () => {
     if(b.classList.contains('tocando')) return Voz.parar();
     Voz.falar(montar(), Object.assign({ botao: b }, op.voz || {}));
@@ -4359,7 +4402,7 @@ function criarOuvirMini(rotulo, montar, opcoes){
   const b = document.createElement('button');
   b.type = 'button';
   b.className = 'ouvir-mini';
-  b.textContent = '▶';
+  b.innerHTML = '<img src="/icon-speaker.png" alt="" width="14" height="14" decoding="async">';
   b.setAttribute('aria-label', rotulo);
   b.title = rotulo;
   b.onclick = (e) => {
@@ -4480,7 +4523,7 @@ function cartaoVersiculo(texto, nr, cap, verso, versao, extra, opcoes){
        <div class="referencia">${ref}<small>${versao}</small></div>
        <div class="ferr-cartao">
          <button class="copiar" title="Compartilhar" aria-label="Compartilhar versículo"><img src="/icon-share.png" alt="" width="16" height="16" decoding="async"></button>
-         <button class="ouvir" title="Ouvir" aria-label="Ouvir versículo">🔊</button>
+         <button class="ouvir" title="Ouvir" aria-label="Ouvir versículo"><img src="/icon-speaker.png" alt="" width="16" height="16" decoding="async"></button>
        </div>
      </div>
      <p class="versiculo"></p>
