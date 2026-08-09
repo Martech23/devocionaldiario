@@ -2512,10 +2512,7 @@ html[data-tema="escuro"] .painel-config header { background: #152238; }
 
     <div class="linha-fundo">
       <span class="nome-fundo" id="img-nome-fundo" aria-live="polite"></span>
-      <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <button class="btn claro" id="btn-modo-foto" type="button">📷 Foto real</button>
-        <button class="btn claro" id="btn-trocar-fundo" type="button">🎨 Trocar fundo</button>
-      </div>
+      <button class="btn claro" id="btn-trocar-fundo" type="button">Trocar fundo</button>
     </div>
     <p id="img-credito-foto" style="font-size:12px;color:var(--texto-3);margin:6px 0 0;line-height:1.4"></p>
 
@@ -5624,6 +5621,7 @@ async function abrirGeradorImagem(texto, ref, versao, tema){
   imgFotoLista = [];
   imgFotoIdx = 0;
   imgFotoObj = null;
+  imgModo = 'foto';
   const modal = $('modal-img');
   modal.classList.add('aberto');
   montarOpcoesImagem();
@@ -5650,15 +5648,6 @@ function montarOpcoesImagem(){
       b.onclick = async () => { imgFormato = f.id; marcarOpcoes(); await redesenharImagem(); };
       fmt.appendChild(b);
     });
-  }
-  const btnModo = $('btn-modo-foto');
-  if(btnModo){
-    btnModo.textContent = imgModo === 'foto' ? '🎨 Usar arte' : '📷 Foto real';
-    btnModo.onclick = async () => {
-      imgModo = imgModo === 'foto' ? 'arte' : 'foto';
-      btnModo.textContent = imgModo === 'foto' ? '🎨 Usar arte' : '📷 Foto real';
-      await redesenharImagem();
-    };
   }
   marcarOpcoes();
 }
@@ -5711,10 +5700,8 @@ async function redesenharImagem(){
       await desenharImagemFoto();
     } catch(e){
       console.info('Pexels:', e.message);
-      avisar(e.message || 'Foto indisponível — usando arte');
+      avisar('Buscando outro fundo…');
       imgModo = 'arte';
-      const btnModo = $('btn-modo-foto');
-      if(btnModo) btnModo.textContent = '📷 Foto real';
       desenharImagemArte();
     }
   } else {
