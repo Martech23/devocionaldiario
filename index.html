@@ -2512,8 +2512,12 @@ html[data-tema="escuro"] .painel-config header { background: #152238; }
 
     <div class="linha-fundo">
       <span class="nome-fundo" id="img-nome-fundo" aria-live="polite"></span>
-      <button class="btn claro" id="btn-trocar-fundo">🎨 Trocar fundo</button>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn claro" id="btn-modo-foto" type="button">📷 Foto real</button>
+        <button class="btn claro" id="btn-trocar-fundo" type="button">🎨 Trocar fundo</button>
+      </div>
     </div>
+    <p id="img-credito-foto" style="font-size:12px;color:var(--texto-3);margin:6px 0 0;line-height:1.4"></p>
 
     <p class="rotulo-img">Formato</p>
     <div class="chips-img" id="img-formatos" role="group" aria-label="Escolher o formato"></div>
@@ -4380,7 +4384,7 @@ function cartaoVersiculo(texto, nr, cap, verso, versao, extra, opcoes){
     this.classList.toggle('ativo', ativo);
     this.textContent = ativo ? '★ Favorito' : '☆ Favoritar';
   };
-  c.querySelector('.btn-img').onclick = () => abrirGeradorImagem(texto, ref, versao);
+  c.querySelector('.btn-img').onclick = () => abrirGeradorImagem(texto, ref, versao, typeof temaAtual !== 'undefined' ? temaAtual : '');
   if(extra) c.appendChild(extra);
   return c;
 }
@@ -5213,14 +5217,48 @@ async function descobrirTudo(){
 }
 
 /* ---------- gerador de imagem ---------- */
-let imgAtual = { texto: '', ref: '', versao: '' };
+let imgAtual = { texto: '', ref: '', versao: '', tema: '' };
+let imgModo = 'foto'; /* 'foto' | 'arte' */
+let imgFotoLista = [];
+let imgFotoIdx = 0;
+let imgFotoCache = {}; /* query -> photos[] */
+let imgFotoObj = null; /* Image carregada */
+
+/* Tema → busca visual (Pexels) */
+const TEMA_BUSCA_PEXELS = {
+  'Medo e ansiedade': 'calm ocean sunrise peaceful',
+  'Força': 'mountain peak sunrise strength',
+  'Provisão': 'golden wheat field harvest light',
+  'Cura e consolo': 'soft morning light forest mist',
+  'Direção': 'forest path sunlight journey',
+  'Perdão': 'sunrise new day open sky',
+  'Fé e esperança': 'lighthouse dawn ocean hope',
+  'Gratidão': 'golden hour nature gratitude',
+  'Família': 'warm sunset landscape home',
+  'Proteção': 'rocky cliff shelter storm light',
+  'Qualquer uma': 'peaceful nature sunrise'
+};
+
+function consultaFotoPorTema(tema, texto){
+  if(tema && TEMA_BUSCA_PEXELS[tema]) return TEMA_BUSCA_PEXELS[tema];
+  const t = ((texto || '') + ' ' + (tema || '')).toLowerCase();
+  if(/medo|ansie|paz|descanso/.test(t)) return 'calm lake sunrise peace';
+  if(/força|forte|poder/.test(t)) return 'mountain summit sunrise';
+  if(/cura|consolo|choro/.test(t)) return 'gentle rain green leaves soft light';
+  if(/caminho|direção|guia|pastor/.test(t)) return 'forest path light morning';
+  if(/perdão|misericórdia/.test(t)) return 'sunrise cloudy sky hope';
+  if(/esperança|fé|confia/.test(t)) return 'dawn horizon light sky';
+  if(/família|casa|filhos/.test(t)) return 'warm golden hour countryside';
+  if(/proteção|refúgio|escudo/.test(t)) return 'cliff ocean storm light';
+  if(/luz|lâmpada|lampe/.test(t)) return 'candle warm light dark';
+  if(/água|rio|mar/.test(t)) return 'still water reflection sunrise';
+  return 'peaceful nature soft light sunrise';
+}
 
 /* =========================================================
    GERADOR DE IMAGEM DO VERSÍCULO
-   Os fundos são desenhados aqui, no canvas — não são fotos.
-   Foto de banco exigiria licença e chave de API, e mataria o
-   funcionamento offline. Desenhado, o app continua estático,
-   sem dependência externa e sem risco de direito autoral.
+   Modo arte: fundos desenhados (offline).
+   Modo foto: imagens reais via Pexels (/api/pexels).
    ========================================================= */
 
 const FORMATOS = [
@@ -5548,18 +5586,51 @@ function fundoAtual(){
   return FUNDOS[Math.floor(r() * FUNDOS.length)];
 }
 
-function abrirGeradorImagem(texto, ref, versao){
-  imgAtual = { texto, ref, versao };
+async function buscarFotosPexels(query){
+  if(imgFotoCache[query]) return imgFotoCache[query];
+  const orient = imgFormato === 'quadrado' ? 'square' : 'portrait';
+  const r = await fetch('/api/pexels?q=' + encodeURIComponent(query) +
+    '&per_page=15&orientation=' + orient);
+  const d = await r.json().catch(() => ({}));
+  if(!r.ok) throw new Error(d.error || d.hint || ('Pexels ' + r.status));
+  const photos = d.photos || [];
+  if(!photos.length) throw new Error('Nenhuma foto encontrada para este tema');
+  imgFotoCache[query] = photos;
+  return photos;
+}
+
+function carregarImagemUrl(url){
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => resolve(img);
+    img.onerror = () => reject(new Error('Falha ao carregar a foto'));
+    img.src = url;
+  });
+}
+
+function desenharFotoCover(ctx, img, W, H){
+  const iw = img.naturalWidth || img.width;
+  const ih = img.naturalHeight || img.height;
+  const scale = Math.max(W / iw, H / ih);
+  const nw = iw * scale, nh = ih * scale;
+  const x = (W - nw) / 2, y = (H - nh) / 2;
+  ctx.drawImage(img, x, y, nw, nh);
+}
+
+async function abrirGeradorImagem(texto, ref, versao, tema){
+  imgAtual = { texto, ref, versao, tema: tema || '' };
   imgFundo = null;
+  imgFotoLista = [];
+  imgFotoIdx = 0;
+  imgFotoObj = null;
   const modal = $('modal-img');
   modal.classList.add('aberto');
   montarOpcoesImagem();
-  desenharImagem();
-  /* o canvas usa a fonte que estiver pronta no momento do fillText:
-     se as webfonts ainda estavam carregando, redesenha ao chegarem */
+  await redesenharImagem();
   if(document.fonts && document.fonts.ready){
     document.fonts.ready.then(() => {
-      if($('modal-img').classList.contains('aberto')) desenharImagem();
+      if($('modal-img').classList.contains('aberto')) redesenharImagem();
     });
   }
 }
@@ -5576,28 +5647,80 @@ function montarOpcoesImagem(){
       b.className = 'chip-img';
       b.textContent = f.nome;
       b.dataset.formato = f.id;
-      b.onclick = () => { imgFormato = f.id; marcarOpcoes(); desenharImagem(); };
+      b.onclick = async () => { imgFormato = f.id; marcarOpcoes(); await redesenharImagem(); };
       fmt.appendChild(b);
     });
+  }
+  const btnModo = $('btn-modo-foto');
+  if(btnModo){
+    btnModo.textContent = imgModo === 'foto' ? '🎨 Usar arte' : '📷 Foto real';
+    btnModo.onclick = async () => {
+      imgModo = imgModo === 'foto' ? 'arte' : 'foto';
+      btnModo.textContent = imgModo === 'foto' ? '🎨 Usar arte' : '📷 Foto real';
+      await redesenharImagem();
+    };
   }
   marcarOpcoes();
 }
 
 function marcarOpcoes(){
-  /* sem grade de fundos: o nome da cena diz onde a pessoa está
-     enquanto percorre com o botão Trocar fundo */
   const nome = $('img-nome-fundo');
-  if(nome) nome.textContent = fundoAtual().nome;
+  const cred = $('img-credito-foto');
+  if(imgModo === 'foto'){
+    const foto = imgFotoLista[imgFotoIdx];
+    if(nome) nome.textContent = foto ? ('Foto · ' + (imgAtual.tema || 'tema do dia')) : 'Buscando foto do tema…';
+    if(cred){
+      cred.textContent = foto
+        ? ('Foto: ' + foto.photographer + ' / Pexels')
+        : '';
+    }
+  } else {
+    if(nome) nome.textContent = fundoAtual().nome;
+    if(cred) cred.textContent = 'Fundo artístico (desenhado no app)';
+  }
   document.querySelectorAll('#img-formatos .chip-img').forEach(b =>
     b.classList.toggle('ativo', b.dataset.formato === imgFormato));
 }
 
-function trocarFundo(){
+async function trocarFundo(){
+  if(imgModo === 'foto'){
+    if(imgFotoLista.length > 1){
+      imgFotoIdx = (imgFotoIdx + 1) % imgFotoLista.length;
+      imgFotoObj = null;
+      await redesenharImagem();
+    } else {
+      // força nova busca ignorando cache da query atual
+      const q = consultaFotoPorTema(imgAtual.tema, imgAtual.texto);
+      delete imgFotoCache[q];
+      imgFotoLista = [];
+      imgFotoObj = null;
+      await redesenharImagem();
+    }
+    return;
+  }
   const atual = fundoAtual().id;
   const i = FUNDOS.findIndex(f => f.id === atual);
   imgFundo = FUNDOS[(i + 1) % FUNDOS.length].id;
   marcarOpcoes();
-  desenharImagem();
+  desenharImagemArte();
+}
+
+async function redesenharImagem(){
+  if(imgModo === 'foto'){
+    try {
+      await desenharImagemFoto();
+    } catch(e){
+      console.info('Pexels:', e.message);
+      avisar(e.message || 'Foto indisponível — usando arte');
+      imgModo = 'arte';
+      const btnModo = $('btn-modo-foto');
+      if(btnModo) btnModo.textContent = '📷 Foto real';
+      desenharImagemArte();
+    }
+  } else {
+    desenharImagemArte();
+  }
+  marcarOpcoes();
 }
 
 /* Quebra o texto em linhas e reduz a fonte até o bloco caber */
@@ -5618,21 +5741,7 @@ function ajustarTexto(ctx, texto, maxW, maxH, fonteMax, fonteMin){
   return null;
 }
 
-function desenharImagem(){
-  const canvas = $('canvas-verso');
-  const fmt = FORMATOS.find(f => f.id === imgFormato) || FORMATOS[0];
-  canvas.width = fmt.w;
-  canvas.height = fmt.h;
-  const ctx = canvas.getContext('2d');
-  const W = canvas.width, H = canvas.height;
-
-  const fundo = fundoAtual();
-  const r = semente((imgAtual.ref || '') + fundo.id);
-  fundo.desenhar(ctx, W, H, r);
-
-  /* Mede antes de desenhar: o texto, a referência e a versão formam um
-     bloco só, centrado como grupo. Centrar apenas o versículo deixava a
-     imagem pesada em cima e um terço vazio embaixo. */
+function desenharTextoSobreFundo(ctx, W, H, claro){
   const margem = W * 0.11;
   const ajuste = ajustarTexto(ctx, '\u201C' + imgAtual.texto + '\u201D',
                               W - margem * 2, H * 0.44,
@@ -5648,10 +5757,8 @@ function desenharImagem(){
   const grupoH  = hTexto + gapOrn + gapRef + gapVer;
   const topo    = H * 0.52 - grupoH / 2;
 
-  /* Véu ancorado no bloco de texto, e fraco: forte demais apagava o
-     sol e a lua, que passavam a parecer manchas cinzas. */
-  const base = fundo.claro ? '248,242,228' : '6,10,18';
-  const alfa = fundo.claro ? 0.34 : 0.44;
+  const base = claro ? '248,242,228' : '6,10,18';
+  const alfa = claro ? 0.42 : 0.52;
   const y0 = topo - H * 0.11, y1 = topo + grupoH + H * 0.11;
   const veu = ctx.createLinearGradient(0, y0, 0, y1);
   veu.addColorStop(0, 'rgba(' + base + ',0)');
@@ -5661,13 +5768,21 @@ function desenharImagem(){
   ctx.fillStyle = veu;
   ctx.fillRect(0, y0, W, y1 - y0);
 
-  const tinta   = fundo.claro ? '#2A2418' : '#FFFFFF';
-  const dourado = fundo.claro ? '#8A6A22' : '#FFD98A';
-  const suave   = fundo.claro ? 'rgba(42,36,24,0.58)' : 'rgba(255,255,255,0.66)';
+  // véu geral leve para legibilidade em fotos claras
+  if(!claro){
+    const g = ctx.createLinearGradient(0, 0, 0, H);
+    g.addColorStop(0, 'rgba(0,0,0,0.25)');
+    g.addColorStop(0.45, 'rgba(0,0,0,0.15)');
+    g.addColorStop(1, 'rgba(0,0,0,0.35)');
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, W, H);
+  }
+
+  const tinta   = claro ? '#2A2418' : '#FFFFFF';
+  const dourado = claro ? '#8A6A22' : '#FFD98A';
+  const suave   = claro ? 'rgba(42,36,24,0.58)' : 'rgba(255,255,255,0.66)';
 
   ctx.textAlign = 'center';
-
-  /* marca no topo */
   ctx.fillStyle = suave;
   ctx.font = '600 ' + Math.round(W * 0.026) + 'px "Source Sans 3", system-ui, sans-serif';
   ctx.fillText('BÍBLIA DEVOCIONAL', W / 2, H * 0.075);
@@ -5678,13 +5793,11 @@ function desenharImagem(){
   ctx.lineTo(W * 0.56, H * 0.092);
   ctx.stroke();
 
-  /* versículo */
   ctx.fillStyle = tinta;
   ctx.font = '500 ' + tam + 'px "Source Serif 4", Georgia, serif';
   let y = topo + alturaLinha * 0.78;
   linhas.forEach(l => { ctx.fillText(l, W / 2, y); y += alturaLinha; });
 
-  /* ornamento */
   const yOrn = topo + hTexto + gapOrn * 0.5;
   ctx.strokeStyle = dourado;
   ctx.lineWidth = 2;
@@ -5693,7 +5806,6 @@ function desenharImagem(){
   ctx.lineTo(W * 0.55, yOrn);
   ctx.stroke();
 
-  /* referência e versão */
   ctx.fillStyle = dourado;
   ctx.font = '700 ' + Math.round(W * 0.038) + 'px "Source Sans 3", system-ui, sans-serif';
   ctx.fillText(imgAtual.ref, W / 2, topo + hTexto + gapOrn + gapRef * 0.72);
@@ -5701,7 +5813,56 @@ function desenharImagem(){
   ctx.fillStyle = suave;
   ctx.font = '400 ' + Math.round(W * 0.023) + 'px "Source Sans 3", system-ui, sans-serif';
   ctx.fillText(imgAtual.versao, W / 2, topo + hTexto + gapOrn + gapRef + gapVer * 0.62);
+
+  // crédito Pexels no rodapé (modo foto)
+  if(imgModo === 'foto' && imgFotoLista[imgFotoIdx]){
+    const f = imgFotoLista[imgFotoIdx];
+    ctx.fillStyle = suave;
+    ctx.font = '400 ' + Math.round(W * 0.018) + 'px "Source Sans 3", system-ui, sans-serif';
+    ctx.fillText('Foto: ' + f.photographer + ' / Pexels', W / 2, H * 0.965);
+  }
 }
+
+async function desenharImagemFoto(){
+  const canvas = $('canvas-verso');
+  const fmt = FORMATOS.find(f => f.id === imgFormato) || FORMATOS[0];
+  canvas.width = fmt.w;
+  canvas.height = fmt.h;
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+
+  const q = consultaFotoPorTema(imgAtual.tema, imgAtual.texto);
+  if(!imgFotoLista.length){
+    const nome = $('img-nome-fundo');
+    if(nome) nome.textContent = 'Buscando foto do tema…';
+    imgFotoLista = await buscarFotosPexels(q);
+    imgFotoIdx = Math.floor(semente(imgAtual.ref + q)() * imgFotoLista.length) % imgFotoLista.length;
+  }
+  const foto = imgFotoLista[imgFotoIdx];
+  if(!imgFotoObj || imgFotoObj._url !== foto.url){
+    imgFotoObj = await carregarImagemUrl(foto.url);
+    imgFotoObj._url = foto.url;
+  }
+  desenharFotoCover(ctx, imgFotoObj, W, H);
+  desenharTextoSobreFundo(ctx, W, H, false);
+}
+
+function desenharImagemArte(){
+  const canvas = $('canvas-verso');
+  const fmt = FORMATOS.find(f => f.id === imgFormato) || FORMATOS[0];
+  canvas.width = fmt.w;
+  canvas.height = fmt.h;
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+
+  const fundo = fundoAtual();
+  const r = semente((imgAtual.ref || '') + fundo.id);
+  fundo.desenhar(ctx, W, H, r);
+  desenharTextoSobreFundo(ctx, W, H, !!fundo.claro);
+}
+
+/* compat: alguns pontos ainda chamam desenharImagem() */
+function desenharImagem(){ return redesenharImagem(); }
 
 function nomeArquivoImagem(){
   return 'biblia-devocional-' +
@@ -6112,7 +6273,7 @@ $('fa-imagem').onclick = () => {
   if(!versoAberto) return;
   const { nr, cap, verso, texto } = versoAberto;
   fecharFolha();
-  abrirGeradorImagem(texto, livroPorNr(nr).nome + ' ' + cap + ':' + verso, versaoAtual.nome);
+  abrirGeradorImagem(texto, livroPorNr(nr).nome + ' ' + cap + ':' + verso, versaoAtual.nome, '');
 };
 
 $('btn-nota-voz').onclick = function(){
