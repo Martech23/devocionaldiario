@@ -115,15 +115,24 @@ do topo; o **Instalar app** era o último elemento da página.
 
 São catálogos, não conteúdo diário. Ganharam abas próprias:
 
+A divisão entre **Hoje** e **Meu** é entre *fazer* e *ter feito*:
+
 | Aba | O que tem | Altura |
 |---|---|---:|
-| **Hoje** | devocional, jornada, dias anteriores, orações, promessas | 2.493 px |
+| **Hoje** | devocional, orações, caixa de promessas | 2.079 px |
 | **Bíblia** | busca, versão, lista de livros, leitura | 2.819 px |
 | **Planos** | os 12 planos | 2.797 px |
-| **Meu** | favoritos, diário, instalar app | 915 px |
+| **Meu** | jornada, dias anteriores, favoritos, diário, instalar | 1.525 px |
 
-A home caiu para **3,0 telas**. A aba escolhida fica guardada em
-`lampada-aba` e volta na próxima abertura.
+A home caiu de 8.004 px para **2,5 telas**. A aba escolhida fica guardada
+em `lampada-aba` e volta na próxima abertura.
+
+**Sua jornada** e **Dias anteriores** são registro do que se acumulou, não
+algo que se faça — e a sequência já aparece no fim do percurso guiado, no
+momento em que ela motiva. **Minhas orações** fica em Hoje mesmo sendo
+pessoal: o campo pergunta *"pelo que você quer orar hoje?"* e a tela de
+conclusão do devocional termina oferecendo registrar um pedido — mover a
+seção transformaria esse passo do ritual num salto de aba.
 
 Uma seção só é alcançada por `mostrarSecao(id)`, que troca de aba antes de
 rolar — sem isso a rolagem cairia num elemento escondido e a tela pareceria
