@@ -4,6 +4,7 @@ Site: https://devocionaldiario-eosin.vercel.app/
 
 ## Funcionalidades
 
+- **Quatro abas** — Hoje, Bíblia, Planos e Meu
 - **Percurso guiado** do devocional — um passo por vez, com estimativa de tempo
 - Devocional do dia **por tema**, com histórico dos últimos 30 dias
 - Caixa de promessas por tema e Bíblia completa
@@ -16,6 +17,49 @@ Site: https://devocionaldiario-eosin.vercel.app/
 - PWA instalável
 - **Web Push** — lembrete diário (~8h Brasília)
 - **Leitura em voz** e **ditado por voz** — para quem não lê nem escreve
+
+## Navegação em abas
+
+Tudo vivia numa página só, e a home tinha **8.004 px — 9,5 telas de
+rolagem**. A lista dos 66 livros (2.248 px) e o catálogo de 12 planos
+(2.456 px) somavam 59% dela e ficavam entre o devocional do dia e todo o
+resto. O que mais se revisita, **Favoritos e diário**, estava a 8,6 telas
+do topo; o **Instalar app** era o último elemento da página.
+
+São catálogos, não conteúdo diário. Ganharam abas próprias:
+
+| Aba | O que tem | Altura |
+|---|---|---:|
+| **Hoje** | devocional, jornada, dias anteriores, orações, promessas | 2.493 px |
+| **Bíblia** | busca, versão, lista de livros, leitura | 2.819 px |
+| **Planos** | os 12 planos | 2.797 px |
+| **Meu** | favoritos, diário, instalar app | 915 px |
+
+A home caiu para **3,0 telas**. A aba escolhida fica guardada em
+`lampada-aba` e volta na próxima abertura.
+
+Uma seção só é alcançada por `mostrarSecao(id)`, que troca de aba antes de
+rolar — sem isso a rolagem cairia num elemento escondido e a tela pareceria
+travada. É o que faz "Ler o capítulo completo" saltar do devocional para a
+Bíblia, e o chip do tema saltar para a caixa de promessas.
+
+Os ícones das abas são SVG com `currentColor`, não emoji: emoji trazem cor
+própria e ignorariam o azul do estado ativo.
+
+### Rodapé compartilhado
+
+A barra de áudio também é fixa no rodapé. As duas se empilham por uma
+medida só, `--rodape`, de que dependem o `bottom` da barra de áudio, o dos
+avisos e o `padding-bottom` do conteúdo — nada fica escondido atrás das
+abas, e o `env(safe-area-inset-bottom)` do iPhone entra em um lugar só.
+
+### Tamanho da letra
+
+Saiu dos controles da Bíblia e foi para o menu lateral, junto de "Leitura
+em voz": vale para o app inteiro, e preso à aba Bíblia ficaria inalcançável
+para quem está lendo o devocional. **Agora também é guardado**
+(`lampada-escala`) — antes voltava ao normal a cada abertura, justamente
+para quem mais depende dele.
 
 ## Conteúdo do devocional
 
