@@ -142,11 +142,26 @@ abas, e o `env(safe-area-inset-bottom)` do iPhone entra em um lugar só.
 
 ### Tamanho da letra
 
-Saiu dos controles da Bíblia e foi para o menu lateral, junto de "Leitura
-em voz": vale para o app inteiro, e preso à aba Bíblia ficaria inalcançável
-para quem está lendo o devocional. **Agora também é guardado**
-(`lampada-escala`) — antes voltava ao normal a cada abertura, justamente
-para quem mais depende dele.
+Saiu dos controles da Bíblia — vale para o app inteiro, e preso à aba
+Bíblia ficaria inalcançável para quem está lendo o devocional. Foi primeiro
+para o rodapé do menu, e daí para o **cabeçalho do menu**, porque no rodapé
+ele nascia atrás de nove itens:
+
+| Tela | Gaveta rola | Controle no rodapé | No cabeçalho |
+|---|---:|---|---|
+| 390×844 | 0 px | visível | visível |
+| 360×640 | 72 px | **86 px abaixo do fim** | visível |
+| 320×568 | 144 px | fora da tela | visível |
+
+São **dois botões de passo** (`A−` `A+`), não quatro de escolha direta: a
+gaveta tem 290 px e, descontado o padding e a palavra "Menu", sobram uns
+195 px — quatro alvos de 44 px não caberiam com folga. Além de caber,
+"aumentar a letra" é mais direto do que escolher entre quatro rótulos
+abstratos. Nos extremos o botão apaga, e um aviso diz o tamanho novo em
+palavras ("Letra grande"), também por voz no modo áudio.
+
+**É guardado** (`lampada-escala`) — antes voltava ao normal a cada
+abertura, justamente para quem mais depende dele.
 
 ## Conteúdo do devocional
 

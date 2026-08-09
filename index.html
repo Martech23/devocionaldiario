@@ -304,6 +304,35 @@ html[data-tema="escuro"] header.barra {
   font-weight: 700;
   letter-spacing: -0.01em;
 }
+/* A gaveta tem 290px. Descontado o padding e a palavra "Menu", sobram uns
+   195px — quatro botões de 44px não caberiam com folga, dois cabem sobrando.
+   Por isso o controle é de passo (diminuir/aumentar) e não de escolha
+   direta: além de caber, "aumentar a letra" é mais direto do que escolher
+   entre quatro rótulos abstratos. */
+.cabeca-gaveta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 14px 12px 20px !important;
+}
+.fonte-rapida { display: flex; gap: 6px; }
+.fonte-rapida button {
+  min-width: 44px;
+  min-height: 44px;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--trans);
+}
+.fonte-rapida button:hover { background: rgba(255, 255, 255, 0.26); }
+.fonte-rapida button:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+.fonte-rapida button[disabled] { opacity: 0.35; cursor: default; }
 html[data-tema="escuro"] .gaveta header { background: #152238; }
 
 .gaveta a {
@@ -493,43 +522,6 @@ button.copiar:hover img,
 }
 .ferramenta:hover { opacity: 0.75; text-decoration: underline; }
 .ferramenta:focus-visible { outline: 2px solid var(--azul); outline-offset: 2px; }
-
-/* o seletor de tamanho vive na gaveta, sempre à vista */
-.config-fonte {
-  display: flex;
-  align-items: center;
-  gap: 11px;
-  padding: 16px 20px;
-  font-size: 15.5px;
-  font-weight: 600;
-  color: var(--texto);
-  flex-wrap: wrap;
-}
-.tamanhos { display: flex; gap: 8px; width: 100%; }
-.tamanhos button.ativo {
-  background: var(--azul);
-  border-color: var(--azul);
-  color: #fff;
-}
-.tamanhos button {
-  font-family: inherit;
-  flex: 1;
-  background: var(--papel);
-  border: 1px solid var(--linha-forte);
-  border-radius: var(--radius-sm);
-  padding: 9px 8px;
-  cursor: pointer;
-  color: var(--texto);
-  font-weight: 600;
-  font-size: 14px;
-  transition: all var(--trans);
-  box-shadow: var(--sombra);
-}
-.tamanhos button:hover {
-  background: var(--azul-claro-bg);
-  border-color: var(--azul);
-  color: var(--azul);
-}
 
 /* ---------------- seções e cartões ---------------- */
 .secao {
@@ -2486,7 +2478,6 @@ html[data-tema="escuro"] .painel-config header { background: #152238; }
 .voltar,
 .alternar-modo,
 .acoes-verso .btn-acao,
-.tamanhos button,
 .ferramenta {
   min-height: 44px;
 }
@@ -2540,7 +2531,17 @@ html[data-tema="escuro"] .painel-config header { background: #152238; }
 
 <div class="veu" id="veu"></div>
 <aside class="gaveta" id="gaveta" role="dialog" aria-modal="true" aria-label="Menu" tabindex="-1">
-  <header>Menu</header>
+  <!-- O tamanho da letra ficava no rodapé da gaveta, atrás de nove itens:
+       numa tela de 360×640 ele nascia 86px abaixo do fim da tela, e quem
+       precisa aumentar a letra é justamente quem tem mais dificuldade de
+       achar e rolar até lá. No cabeçalho ele está sempre à vista. -->
+  <header class="cabeca-gaveta">
+    <span>Menu</span>
+    <div class="fonte-rapida" role="group" aria-label="Tamanho da letra">
+      <button type="button" id="fonte-menos" aria-label="Diminuir a letra">A−</button>
+      <button type="button" id="fonte-mais" aria-label="Aumentar a letra">A+</button>
+    </div>
+  </header>
   <a href="#sec-hoje" data-fecha>Devocional do dia</a>
   <a href="#sec-stats" data-fecha>Sua jornada</a>
   <a href="#sec-oracoes" data-fecha>Minhas orações</a>
@@ -2556,18 +2557,6 @@ html[data-tema="escuro"] .painel-config header { background: #152238; }
       <span>Leitura em voz</span>
       <span class="seta-config" aria-hidden="true">›</span>
     </button>
-    <!-- o tamanho da letra vale para o app inteiro, não só para a Bíblia:
-         por isso mora aqui, junto das outras configurações -->
-    <div class="config-fonte">
-      <span class="ico-config" aria-hidden="true">🔠</span>
-      <span>Tamanho da letra</span>
-      <div class="tamanhos" id="tamanhos" role="group" aria-label="Tamanho da letra">
-        <button data-esc="0.9" aria-label="Letra pequena">A−</button>
-        <button data-esc="1" aria-label="Letra normal">A</button>
-        <button data-esc="1.2" aria-label="Letra grande">A+</button>
-        <button data-esc="1.45" aria-label="Letra muito grande">A++</button>
-      </div>
-    </div>
   </div>
   <p class="nota">Somente versões de uso livre em português atual: Bíblia Livre (CC BY 3.0 Brasil) e Nova Bíblia Viva (Open).</p>
 </aside>
@@ -6539,15 +6528,35 @@ $('btn-livros').onclick = () => { mostrarNivel('livros'); mostrarSecao('sec-bibl
 /* O tamanho da letra não era guardado: voltava ao normal a cada abertura,
    justamente para quem mais precisa dele. Agora fica. */
 const CHAVE_ESC = 'lampada-escala';
+const ESCALAS = ['0.9', '1', '1.2', '1.45'];
+const NOME_ESCALA = { '0.9': 'pequena', '1': 'normal', '1.2': 'grande', '1.45': 'muito grande' };
+
 function aplicarEscala(esc){
+  esc = ESCALAS.includes(String(esc)) ? String(esc) : '1';
   document.documentElement.style.setProperty('--esc', esc);
   localStorage.setItem(CHAVE_ESC, esc);
-  document.querySelectorAll('#tamanhos button').forEach(b =>
-    b.classList.toggle('ativo', b.dataset.esc === String(esc)));
+  /* nos extremos o botão apaga: apertar sem efeito nenhum é pior do que
+     ver que não há para onde ir */
+  const i = ESCALAS.indexOf(esc);
+  const menos = $('fonte-menos'), mais = $('fonte-mais');
+  if(menos) menos.disabled = i === 0;
+  if(mais)  mais.disabled  = i === ESCALAS.length - 1;
+  return esc;
 }
-document.querySelectorAll('#tamanhos button').forEach(b => {
-  b.onclick = () => aplicarEscala(b.dataset.esc);
-});
+
+function passoEscala(dir){
+  const atual = localStorage.getItem(CHAVE_ESC) || '1';
+  const i = Math.max(0, ESCALAS.indexOf(atual));
+  const novo = ESCALAS[Math.min(ESCALAS.length - 1, Math.max(0, i + dir))];
+  if(novo === atual) return;
+  aplicarEscala(novo);
+  /* o texto muda na hora, mas dizer o nome ajuda quem não confia no que vê */
+  avisar('Letra ' + NOME_ESCALA[novo]);
+  if(Voz.prefs.modo) Voz.anunciar('Letra ' + NOME_ESCALA[novo]);
+}
+
+if($('fonte-menos')) $('fonte-menos').onclick = () => passoEscala(-1);
+if($('fonte-mais'))  $('fonte-mais').onclick  = () => passoEscala(1);
 aplicarEscala(localStorage.getItem(CHAVE_ESC) || '1');
 document.querySelectorAll('.voltar').forEach(b => b.onclick = () => mostrarNivel(b.dataset.volta));
 $('btn-tirar').onclick = tirarPromessa;
@@ -6631,7 +6640,12 @@ const Foco = (() => {
 function abrirMenu(estado){
   $('gaveta').classList.toggle('aberta', estado);
   $('veu').classList.toggle('aberto', estado);
-  if(estado) Foco.prender($('gaveta'), { volta: $('btn-menu') });
+  /* o foco entra no primeiro item do menu, não no A− do cabeçalho: quem
+     abriu a gaveta quer navegar, o tamanho da letra está ali de plantão */
+  if(estado) Foco.prender($('gaveta'), {
+    volta: $('btn-menu'),
+    focar: $('gaveta').querySelector('a[href^="#"]')
+  });
   else Foco.soltar($('gaveta'));
 }
 
