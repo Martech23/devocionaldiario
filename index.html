@@ -1864,6 +1864,62 @@ html[data-audio="1"] .acoes-verso { gap: 10px; }
   line-height: 1;
 }
 
+/* ---------------- conta ---------------- */
+.voz-campo input[type="email"],
+.voz-campo input[type="password"] {
+  width: 100%;
+  font-family: inherit;
+  font-size: 15px;
+  padding: 12px 14px;
+  min-height: 48px;
+  border: 1px solid var(--linha-forte);
+  border-radius: var(--radius-sm);
+  background: var(--papel);
+  color: var(--texto);
+}
+.voz-campo input:focus { outline: none; border-color: var(--azul-cla); }
+
+.consentimento {
+  display: flex;
+  gap: 11px;
+  align-items: flex-start;
+  padding: 14px;
+  margin-top: 6px;
+  background: var(--azul-suave);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--texto-2);
+  cursor: pointer;
+}
+.consentimento input { margin-top: 3px; flex: 0 0 auto; width: 18px; height: 18px; }
+.consentimento.faltando { box-shadow: 0 0 0 2px #C0392F; }
+
+.nota-conta {
+  margin-top: 14px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--texto-3);
+}
+.nota-conta.erro { color: #C0392F; font-weight: 600; }
+
+.btn-perigo {
+  width: 100%;
+  margin-top: 12px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  padding: 13px 16px;
+  min-height: 48px;
+  border-radius: 99px;
+  border: 1.5px solid #C0392F;
+  background: var(--papel);
+  color: #C0392F;
+  cursor: pointer;
+  transition: all var(--trans);
+}
+.btn-perigo:hover { background: #C0392F; color: #fff; }
+
 /* ---------------- painel de configuração deslizante ---------------- */
 .painel-config {
   position: fixed;
@@ -2029,7 +2085,7 @@ html[data-tema="escuro"] .painel-config header { background: #152238; }
     </div>
     <div class="acoes-direita">
       <button class="btn-tema" id="btn-tema" aria-label="Alternar tema" title="Alternar tema claro/escuro">◐</button>
-      <button class="icone-btn" aria-label="Conta"><span class="conta">✦</span></button>
+      <button class="icone-btn" id="btn-abrir-conta" aria-label="Sua conta" title="Sua conta"><span class="conta">✦</span></button>
     </div>
   </div>
 </header>
@@ -2322,6 +2378,77 @@ html[data-tema="escuro"] .painel-config header { background: #152238; }
 
 <div class="aviso" id="aviso" role="status" aria-live="polite"></div>
 
+<!-- Painel de conta — abre pelo ✦ do cabeçalho -->
+<aside class="painel-config" id="painel-conta" aria-label="Sua conta" aria-hidden="true">
+  <header>
+    <button class="voltar-painel" id="btn-fechar-conta" type="button" aria-label="Fechar">‹</button>
+    <span>Sua conta</span>
+  </header>
+  <div class="painel-corpo">
+
+    <div id="conta-deslogado">
+      <p class="painel-intro">
+        Sem conta, tudo funciona igual — seus favoritos, notas, orações e
+        progresso ficam guardados neste aparelho. A conta serve para que
+        nada disso se perca se você trocar de celular.
+      </p>
+
+      <div class="voz-campo">
+        <label for="conta-email">E-mail</label>
+        <input id="conta-email" type="email" autocomplete="email" inputmode="email" placeholder="voce@exemplo.com">
+      </div>
+      <div class="voz-campo">
+        <label for="conta-senha">Senha</label>
+        <input id="conta-senha" type="password" autocomplete="current-password" placeholder="Pelo menos 8 caracteres">
+      </div>
+
+      <label class="consentimento" id="linha-consentimento">
+        <input type="checkbox" id="conta-consentimento">
+        <span>
+          Autorizo guardar no servidor o meu histórico devocional — versículos
+          favoritos, notas, orações e leitura. <b>Esses dados revelam convicção
+          religiosa</b>, e você pode apagar tudo a qualquer momento, aqui mesmo.
+        </span>
+      </label>
+
+      <div class="linha-ouvir" style="margin-top:18px">
+        <button class="btn-ouvir" id="btn-criar-conta" type="button">Criar conta</button>
+        <button class="btn-ouvir claro" id="btn-entrar-conta" type="button">Já tenho conta</button>
+      </div>
+      <p class="nota-conta" id="conta-erro" role="alert"></p>
+    </div>
+
+    <div id="conta-logado" class="oculto">
+      <p class="painel-intro">
+        Conectado como <b id="conta-quem"></b>. Seu histórico é enviado para o
+        servidor sozinho, poucos segundos depois de cada mudança.
+      </p>
+      <p class="nota-conta" id="conta-estado"></p>
+
+      <div class="linha-ouvir" style="margin-top:18px">
+        <button class="btn-ouvir" id="btn-sincronizar" type="button">
+          <span class="ico" aria-hidden="true">⟳</span> Sincronizar agora
+        </button>
+        <button class="btn-ouvir claro" id="btn-sair-conta" type="button">Sair</button>
+      </div>
+
+      <div class="voz-troca" style="margin-top:26px;border-top:1px solid var(--linha)">
+        <div class="voz-troca-txt">
+          <b>Excluir conta e dados</b>
+          <small>Apaga do servidor a conta e todo o histórico guardado. O que está
+          neste aparelho continua aqui. Não dá para desfazer.</small>
+        </div>
+      </div>
+      <div class="voz-campo" style="margin-top:10px">
+        <label for="conta-senha-excluir">Confirme sua senha para excluir</label>
+        <input id="conta-senha-excluir" type="password" autocomplete="current-password" placeholder="Sua senha">
+      </div>
+      <button class="btn-perigo" id="btn-excluir-conta" type="button">Excluir minha conta</button>
+    </div>
+
+  </div>
+</aside>
+
 <!-- Folha de ações do versículo — abre ao tocar num versículo do capítulo -->
 <div class="fundo-folha" id="fundo-folha"></div>
 <div class="folha-verso" id="folha-verso" role="dialog" aria-label="Ações do versículo" aria-hidden="true">
@@ -2481,6 +2608,7 @@ function carregarFavs(){
 }
 function salvarFavs(lista){
   localStorage.setItem(CHAVE_FAVS, JSON.stringify(lista));
+  Conta.marcarSujo();
 }
 function chaveVerso(nr, cap, verso){ return nr + ':' + cap + ':' + verso; }
 function estaFavorito(nr, cap, verso){
@@ -2966,9 +3094,9 @@ const lerJSON = (chave, padrao) => {
   catch { return JSON.parse(padrao); }
 };
 const carregarMarcas = () => lerJSON(CHAVE_MARCAS, '{}');
-const salvarMarcas   = m => localStorage.setItem(CHAVE_MARCAS, JSON.stringify(m));
+const salvarMarcas   = m => { localStorage.setItem(CHAVE_MARCAS, JSON.stringify(m)); Conta.marcarSujo(); };
 const carregarNotas  = () => lerJSON(CHAVE_NOTAS, '{}');
-const salvarNotas    = n => localStorage.setItem(CHAVE_NOTAS, JSON.stringify(n));
+const salvarNotas    = n => { localStorage.setItem(CHAVE_NOTAS, JSON.stringify(n)); Conta.marcarSujo(); };
 
 /* As notas viviam presas a um favorito. Agora vale para qualquer versículo,
    então trazemos as antigas na primeira abertura — sem apagar nada. */
@@ -3159,7 +3287,7 @@ function montarHistorico(){
    ========================================================= */
 const CHAVE_ORACOES = 'lampada-oracoes';
 const carregarOracoes = () => lerJSON(CHAVE_ORACOES, '[]');
-const salvarOracoes   = l => localStorage.setItem(CHAVE_ORACOES, JSON.stringify(l));
+const salvarOracoes   = l => { localStorage.setItem(CHAVE_ORACOES, JSON.stringify(l)); Conta.marcarSujo(); };
 
 function adicionarOracao(){
   const campo = $('campo-oracao');
@@ -3357,6 +3485,215 @@ function arrumarReferenciaFalada(txt){
   if(m) return m[1] + ' ' + m[2] + ':' + m[3];
   return t;
 }
+
+/* =========================================================
+   CONTA E SINCRONIZAÇÃO
+   O app continua inteiro sem conta: tudo vive no aparelho.
+   A conta só acrescenta uma cópia no servidor, para o histórico
+   sobreviver à troca de celular.
+   ========================================================= */
+const Conta = (function(){
+  let usuario = null;
+  let sujo = false;
+  let enviando = false;
+  let ultimaSync = null;
+  let temporizador = null;
+
+  const api = async (caminho, opcoes) => {
+    const r = await fetch(caminho, Object.assign({
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'same-origin'
+    }, opcoes || {}));
+    let corpo = {};
+    try { corpo = await r.json(); } catch {}
+    if(!r.ok) throw new Error(corpo.erro || ('Erro ' + r.status));
+    return corpo;
+  };
+
+  /* ---------- o que sai e entra do aparelho ---------- */
+  function coletarLocal(){
+    return {
+      favoritos:      lerJSON(CHAVE_FAVS, '[]'),
+      notas:          lerJSON(CHAVE_NOTAS, '{}'),
+      destaques:      lerJSON(CHAVE_MARCAS, '{}'),
+      oracoes:        lerJSON(CHAVE_ORACOES, '[]'),
+      capitulosLidos: lerJSON(CHAVE_LIDOS, '{}'),
+      atividade:      lerJSON(CHAVE_ATIVIDADE, '[]'),
+      planos:         lerJSON(CHAVE_PLANOS, '{}')
+    };
+  }
+
+  function aplicarLocal(d){
+    if(!d) return;
+    const grava = (chave, valor) => localStorage.setItem(chave, JSON.stringify(valor));
+    if(d.favoritos)      grava(CHAVE_FAVS, d.favoritos);
+    if(d.notas)          grava(CHAVE_NOTAS, d.notas);
+    if(d.destaques)      grava(CHAVE_MARCAS, d.destaques);
+    if(d.oracoes)        grava(CHAVE_ORACOES, d.oracoes);
+    if(d.capitulosLidos) grava(CHAVE_LIDOS, d.capitulosLidos);
+    if(d.atividade)      grava(CHAVE_ATIVIDADE, d.atividade);
+    if(d.planos)         grava(CHAVE_PLANOS, d.planos);
+    renderFavoritos();
+    renderOracoes();
+    atualizarStats();
+    atualizarProgressoBiblia();
+    montarPlanos();
+  }
+
+  /* ---------- mesclagem ----------
+     Sempre por união. Entrar numa conta nunca deve apagar o que já
+     existia no aparelho, e sincronizar nunca deve apagar o que já
+     estava no servidor: sem histórico de exclusões, não há como
+     distinguir "apagado lá" de "ainda não chegou aqui". */
+  const maisNovo = (a, b) => (String(a || '') >= String(b || '') ? a : b);
+
+  function unirPorChave(listaA, listaB, campo){
+    const mapa = new Map();
+    (listaA || []).forEach(x => { if(x && x[campo] != null) mapa.set(x[campo], x); });
+    (listaB || []).forEach(x => {
+      if(!x || x[campo] == null) return;
+      const atual = mapa.get(x[campo]);
+      if(!atual) return mapa.set(x[campo], x);
+      /* mesmo item nos dois lados: fica o que foi mexido por último */
+      mapa.set(x[campo], String(x.data || '') > String(atual.data || '') ? x : atual);
+    });
+    return [...mapa.values()];
+  }
+
+  function unirObjetos(a, b, aoColidir){
+    const saida = Object.assign({}, b || {});
+    Object.keys(a || {}).forEach(k => {
+      saida[k] = (k in saida && aoColidir) ? aoColidir(a[k], saida[k]) : a[k];
+    });
+    return saida;
+  }
+
+  function mesclarDados(local, remoto){
+    if(!remoto) return local;
+    if(!local) return remoto;
+    return {
+      favoritos: unirPorChave(local.favoritos, remoto.favoritos, 'chave'),
+      oracoes:   unirPorChave(local.oracoes, remoto.oracoes, 'id'),
+      notas:     unirObjetos(local.notas, remoto.notas,
+                   (l, r) => (String(l && l.data) >= String(r && r.data) ? l : r)),
+      /* cor é escolha visual: vale a do aparelho em uso */
+      destaques: unirObjetos(local.destaques, remoto.destaques, (l) => l),
+      capitulosLidos: unirObjetos(local.capitulosLidos, remoto.capitulosLidos, (l, r) => l || r),
+      atividade: [...new Set([...(local.atividade || []), ...(remoto.atividade || [])])].sort().slice(-400),
+      planos: unirObjetos(local.planos, remoto.planos,
+                (l, r) => [...new Set([...(l || []), ...(r || [])])].sort((x, y) => x - y))
+    };
+  }
+
+  /* ---------- ciclo de sincronização ---------- */
+  async function sincronizar(silencioso){
+    if(!usuario) return;
+    try{
+      const { dados: remoto } = await api('/api/sincronizar');
+      const mesclado = mesclarDados(coletarLocal(), remoto);
+      aplicarLocal(mesclado);
+      const r = await api('/api/sincronizar', {
+        method: 'PUT',
+        body: JSON.stringify({ dados: mesclado })
+      });
+      sujo = false;
+      ultimaSync = r.atualizadoEm || new Date().toISOString();
+      pintarPainel();
+      if(!silencioso) avisar('Tudo sincronizado');
+    }catch(e){
+      if(!silencioso) avisar(e.message || 'Não deu para sincronizar');
+    }
+  }
+
+  async function enviarSePendente(){
+    if(!usuario || !sujo || enviando) return;
+    enviando = true;
+    try{
+      const r = await api('/api/sincronizar', {
+        method: 'PUT',
+        body: JSON.stringify({ dados: coletarLocal() })
+      });
+      sujo = false;
+      ultimaSync = r.atualizadoEm || new Date().toISOString();
+      pintarPainel();
+    }catch{ /* segue offline; tenta de novo depois */ }
+    finally{ enviando = false; }
+  }
+
+  function marcarSujo(){
+    if(!usuario) return;
+    sujo = true;
+    clearTimeout(temporizador);
+    temporizador = setTimeout(enviarSePendente, 4000);
+    pintarPainel();
+  }
+
+  /* ---------- entrar, cadastrar, sair, excluir ---------- */
+  async function entrar(email, senha){
+    const r = await api('/api/conta', {
+      method: 'POST',
+      body: JSON.stringify({ acao: 'entrar', email, senha })
+    });
+    usuario = r.usuario;
+    pintarPainel();
+    await sincronizar(true);
+    avisar('Bem-vindo de volta');
+  }
+
+  async function registrar(email, senha, consentimento){
+    const r = await api('/api/conta', {
+      method: 'POST',
+      body: JSON.stringify({ acao: 'registrar', email, senha, consentimento })
+    });
+    usuario = r.usuario;
+    pintarPainel();
+    await sincronizar(true);
+    avisar('Conta criada');
+  }
+
+  async function sair(){
+    try{ await enviarSePendente(); }catch{}
+    try{ await api('/api/conta', { method: 'POST', body: JSON.stringify({ acao: 'sair' }) }); }catch{}
+    usuario = null;
+    ultimaSync = null;
+    sujo = false;
+    pintarPainel();
+    /* os dados continuam no aparelho: sair não é apagar */
+    avisar('Você saiu da conta');
+  }
+
+  async function excluir(senha){
+    await api('/api/conta', {
+      method: 'POST',
+      body: JSON.stringify({ acao: 'excluir', senha })
+    });
+    usuario = null;
+    ultimaSync = null;
+    pintarPainel();
+    avisar('Conta e dados do servidor excluídos');
+  }
+
+  async function verificarSessao(){
+    try{
+      const r = await api('/api/conta', { method: 'POST', body: JSON.stringify({ acao: 'eu' }) });
+      usuario = r.usuario || null;
+      pintarPainel();
+      if(usuario) sincronizar(true);
+    }catch{
+      usuario = null;
+      pintarPainel();
+    }
+  }
+
+  return {
+    get usuario(){ return usuario; },
+    get sujo(){ return sujo; },
+    get ultimaSync(){ return ultimaSync; },
+    coletarLocal, aplicarLocal, mesclarDados,
+    sincronizar, marcarSujo, enviarSePendente,
+    entrar, registrar, sair, excluir, verificarSessao
+  };
+})();
 
 /* ---------- botões de ouvir ---------- */
 
@@ -3667,7 +4004,7 @@ function carregarLidos(){
   try { return JSON.parse(localStorage.getItem(CHAVE_LIDOS) || '{}'); }
   catch { return {}; }
 }
-function salvarLidos(map){ localStorage.setItem(CHAVE_LIDOS, JSON.stringify(map)); }
+function salvarLidos(map){ localStorage.setItem(CHAVE_LIDOS, JSON.stringify(map)); Conta.marcarSujo(); }
 function chaveCap(nr, cap){ return nr + ':' + cap; }
 function marcouLido(nr, cap){
   const map = carregarLidos();
@@ -3857,6 +4194,7 @@ function registrarAtividade(){
   // manter no máximo 400 dias
   const trim = lista.slice(-400);
   localStorage.setItem(CHAVE_ATIVIDADE, JSON.stringify(trim));
+  Conta.marcarSujo();
   atualizarStats();
 }
 function calcularStreak(){
@@ -4814,7 +5152,7 @@ function alternarTema(){
 
 $('btn-tema').onclick = alternarTema;
 $('btn-menu').onclick = () => abrirMenu(true);
-$('veu').onclick = () => { abrirPainelVoz(false); abrirMenu(false); };
+$('veu').onclick = () => { abrirPainelVoz(false); abrirPainelConta(false); abrirMenu(false); };
 document.querySelectorAll('[data-fecha]').forEach(a => a.onclick = () => abrirMenu(false));
 $('btn-busca').onclick = buscarReferencia;
 $('busca').onkeydown = e => { if(e.key === 'Enter') buscarReferencia(); };
@@ -4877,8 +5215,114 @@ document.addEventListener('keydown', e => {
   if(e.key !== 'Escape') return;
   if($('folha-verso').classList.contains('ver')) fecharFolha();
   else if($('painel-voz').classList.contains('aberto')) abrirPainelVoz(false);
+  else if($('painel-conta').classList.contains('aberto')) abrirPainelConta(false);
   else abrirMenu(false);
 });
+
+/* =========================================================
+   Conta
+   ========================================================= */
+function abrirPainelConta(estado){
+  const p = $('painel-conta');
+  if(!p) return;
+  p.classList.toggle('aberto', estado);
+  p.setAttribute('aria-hidden', estado ? 'false' : 'true');
+  $('veu').classList.toggle('aberto', estado);
+  $('gaveta').classList.remove('aberta');
+  if(estado){
+    p.querySelector('.painel-corpo').scrollTop = 0;
+    pintarPainel();
+    if(Voz.prefs.modo) Voz.anunciar('Sua conta');
+  }
+}
+
+function pintarPainel(){
+  const u = Conta.usuario;
+  const fora = $('conta-deslogado'), dentro = $('conta-logado');
+  if(!fora || !dentro) return;
+  fora.classList.toggle('oculto', !!u);
+  dentro.classList.toggle('oculto', !u);
+
+  const marca = $('btn-abrir-conta');
+  if(marca) marca.classList.toggle('conectado', !!u);
+
+  if(!u) return;
+  $('conta-quem').textContent = u.email;
+  const estado = $('conta-estado');
+  if(Conta.sujo) estado.textContent = 'Há mudanças ainda não enviadas.';
+  else if(Conta.ultimaSync)
+    estado.textContent = 'Última sincronização: ' +
+      new Date(Conta.ultimaSync).toLocaleString('pt-BR');
+  else estado.textContent = 'Ainda não sincronizado neste aparelho.';
+}
+
+function erroConta(msg){
+  const el = $('conta-erro');
+  if(!el) return;
+  el.textContent = msg || '';
+  el.classList.toggle('erro', !!msg);
+}
+
+$('btn-abrir-conta').onclick  = () => abrirPainelConta(true);
+$('btn-fechar-conta').onclick = () => abrirPainelConta(false);
+
+function dadosDoFormulario(){
+  return {
+    email: $('conta-email').value.trim(),
+    senha: $('conta-senha').value
+  };
+}
+
+$('btn-criar-conta').onclick = async function(){
+  const { email, senha } = dadosDoFormulario();
+  const aceitou = $('conta-consentimento').checked;
+  $('linha-consentimento').classList.toggle('faltando', !aceitou);
+  if(!aceitou) return erroConta('Marque a autorização para criar a conta.');
+  erroConta('');
+  this.disabled = true;
+  try{ await Conta.registrar(email, senha, true); }
+  catch(e){ erroConta(e.message); }
+  finally{ this.disabled = false; }
+};
+
+$('btn-entrar-conta').onclick = async function(){
+  const { email, senha } = dadosDoFormulario();
+  erroConta('');
+  this.disabled = true;
+  try{ await Conta.entrar(email, senha); }
+  catch(e){ erroConta(e.message); }
+  finally{ this.disabled = false; }
+};
+
+$('conta-senha').onkeydown = e => { if(e.key === 'Enter') $('btn-entrar-conta').click(); };
+
+$('btn-sincronizar').onclick = function(){
+  this.disabled = true;
+  Conta.sincronizar().finally(() => { this.disabled = false; });
+};
+
+$('btn-sair-conta').onclick = () => Conta.sair();
+
+$('btn-excluir-conta').onclick = async function(){
+  const senha = $('conta-senha-excluir').value;
+  if(!senha) return avisar('Digite a senha para confirmar');
+  if(!confirm('Isto apaga sua conta e todo o histórico guardado no servidor. Não dá para desfazer. Continuar?')) return;
+  this.disabled = true;
+  try{
+    await Conta.excluir(senha);
+    $('conta-senha-excluir').value = '';
+    abrirPainelConta(false);
+  }catch(e){ avisar(e.message); }
+  finally{ this.disabled = false; }
+};
+
+/* envia o que estiver pendente antes de a aba fechar */
+window.addEventListener('pagehide', () => { Conta.enviarSePendente(); });
+document.addEventListener('visibilitychange', () => {
+  if(document.visibilityState === 'hidden') Conta.enviarSePendente();
+});
+
+Conta.verificarSessao();
 
 /* =========================================================
    Folha de ações do versículo
@@ -5355,7 +5799,7 @@ function carregarProgPlanos(){
   try { return JSON.parse(localStorage.getItem(CHAVE_PLANOS) || '{}'); }
   catch { return {}; }
 }
-function salvarProgPlanos(p){ localStorage.setItem(CHAVE_PLANOS, JSON.stringify(p)); }
+function salvarProgPlanos(p){ localStorage.setItem(CHAVE_PLANOS, JSON.stringify(p)); Conta.marcarSujo(); }
 
 function montarPlanos(){
   const grid = $('grid-planos');
