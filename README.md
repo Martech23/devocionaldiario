@@ -18,6 +18,36 @@ Site: https://devocionaldiario-eosin.vercel.app/
 - **Web Push** — lembrete diário (~8h Brasília)
 - **Leitura em voz** e **ditado por voz** — para quem não lê nem escreve
 
+## Busca por palavra
+
+A busca pedia **um capítulo por vez**: 929 idas e voltas para varrer o
+Antigo Testamento, 1.189 para a Bíblia inteira, quatro em paralelo. O
+gargalo nunca foi o texto — foi a viagem.
+
+| | Antes | Agora |
+|---|---:|---:|
+| Pedidos para varrer o AT | 929 | **39** |
+| Pedidos para varrer o NT | 260 | **27** |
+| Em paralelo | 4 | 6 livros / 8 capítulos |
+| Resultados aparecem | no fim | **conforme saem** |
+
+O getBible serve o livro inteiro numa resposta só. Como não dá para
+confiar que todas as fontes tenham esse endereço, **a primeira chamada
+vale como prova**: se falhar, o atalho é desligado para o resto da sessão
+e tudo volta a funcionar capítulo a capítulo. As outras chamadas esperam
+por essa prova em vez de saírem juntas — senão uma fonte sem o endereço
+custaria um pedido perdido por livro em voo, não um só.
+
+O livro baixado alimenta o mesmo cache que a leitura consulta, então abrir
+um capítulo depois de uma busca não custa pedido nenhum.
+
+### Nome de livro não é palavra
+
+Digitar `genesis` varria os 929 capítulos do Antigo Testamento atrás de
+versículos que contivessem a palavra "gênesis". A referência só era
+reconhecida com número junto (`Gênesis 1`). Agora o nome sozinho abre o
+livro, com ou sem acento.
+
 ## Acessibilidade estrutural
 
 Um app cuja premissa é servir quem tem dificuldade de ler tinha três
