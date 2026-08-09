@@ -4,6 +4,7 @@ Site: https://devocionaldiario-eosin.vercel.app/
 
 ## Funcionalidades
 
+- **Percurso guiado** do devocional — um passo por vez, com estimativa de tempo
 - Devocional do dia, com histórico dos últimos 30 dias
 - Caixa de promessas por tema e Bíblia completa
 - **Destaques coloridos** e **notas** em qualquer versículo
@@ -15,6 +16,30 @@ Site: https://devocionaldiario-eosin.vercel.app/
 - PWA instalável
 - **Web Push** — lembrete diário (~8h Brasília)
 - **Leitura em voz** e **ditado por voz** — para quem não lê nem escreve
+
+## Percurso guiado
+
+O devocional era um cartão para rolar. Virou um caminho com começo, meio e
+fim: **Versículo do dia → Reflexão → Para meditar → Oração**, um passo por
+vez, com a trilha de progresso e o tempo estimado no topo.
+
+Ler uma página e ser conduzido por ela são experiências diferentes, e a
+segunda serve melhor justamente quem tem dificuldade com a primeira — o
+mesmo público que motivou a leitura em voz.
+
+**Ouvir e seguir** lê do passo atual até o fim e a tela vira de passo
+sozinha, acompanhando a voz. No último passo, o botão é **Concluir ✓**, e a
+tela final registra o dia, mostra a sequência ("7 dias seguidos com a
+Palavra") e oferece registrar um pedido de oração ou percorrer de novo.
+
+A estimativa é honesta: conta as palavras e usa duas velocidades — 200
+palavras por minuto para quem lê pelos olhos e 155 × a velocidade
+configurada para quem ouve. Quando as duas divergem, aparece a faixa
+("3–5 min") em vez de um número inventado.
+
+Quem prefere o formato antigo tem **Ver tudo de uma vez** no rodapé do
+cartão; a escolha fica guardada em `lampada-devo-modo` e vale nas próximas
+aberturas.
 
 ## Toque num versículo
 
@@ -113,8 +138,8 @@ trata como **dado pessoal sensível**. Por isso o cadastro exige consentimento
 explícito e destacado, e o painel tem exclusão da conta com todos os dados,
 pedindo a senha de novo — o cookie sozinho não basta para apagar tudo.
 
-**Falta publicar uma política de privacidade** antes de abrir o cadastro ao
-público.
+A política de privacidade está em `privacidade.html`, ligada no rodapé, no
+menu lateral e no próprio formulário de cadastro.
 
 ### Ainda não existe
 

@@ -1314,6 +1314,121 @@ html[data-tema="escuro"] .aviso {
   border-radius: 2px;
 }
 
+/* ---------------- percurso guiado do devocional ---------------- */
+.cabeca-percurso {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+/* trilha de passos: bolinha cheia no atual, contorno nos que faltam */
+.trilha { display: flex; align-items: center; gap: 0; }
+.trilha .ponto {
+  width: 11px; height: 11px;
+  border-radius: 50%;
+  border: 2px solid var(--linha-forte);
+  background: transparent;
+  flex: 0 0 auto;
+  transition: all var(--trans);
+}
+.trilha .ponto.feito { background: var(--azul); border-color: var(--azul); }
+.trilha .ponto.atual {
+  background: var(--azul);
+  border-color: var(--azul);
+  box-shadow: 0 0 0 4px var(--azul-suave);
+  transform: scale(1.15);
+}
+.trilha .traco {
+  width: 20px; height: 2px;
+  background: var(--linha-forte);
+  flex: 0 0 auto;
+  transition: background var(--trans);
+}
+.trilha .traco.feito { background: var(--azul); }
+
+.tempo-percurso {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--texto-3);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+}
+
+.passo { animation: fadeUp 0.32s ease both; }
+.rotulo-passo {
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--azul);
+  margin-bottom: 10px;
+}
+.passo .texto-passo {
+  font-family: "Source Serif 4", serif;
+  font-size: calc(17.5px * var(--esc));
+  line-height: 1.62;
+  color: var(--texto);
+}
+.passo .texto-passo.oracao { font-style: italic; }
+
+.navega-passo {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-top: 22px;
+  padding-top: 18px;
+  border-top: 1px solid var(--linha);
+}
+.navega-passo .voltar-passo {
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  background: none;
+  border: 0;
+  color: var(--texto-3);
+  cursor: pointer;
+  padding: 12px 10px;
+  border-radius: var(--radius-sm);
+  transition: color var(--trans);
+}
+.navega-passo .voltar-passo:hover { color: var(--azul); }
+.navega-passo .btn-ouvir { margin-left: auto; }
+
+/* fim do percurso */
+.fim-percurso { text-align: center; padding: 8px 0 4px; }
+.fim-percurso .selo {
+  width: 62px; height: 62px;
+  border-radius: 50%;
+  background: var(--azul-suave);
+  color: var(--azul);
+  font-size: 30px;
+  display: grid;
+  place-items: center;
+  margin: 0 auto 16px;
+  animation: popSuave 0.5s cubic-bezier(0.22, 1.2, 0.36, 1) both;
+}
+.fim-percurso h3 { font-size: 19px; margin-bottom: 6px; letter-spacing: -.01em; }
+.fim-percurso p { font-size: 14.5px; color: var(--texto-2); line-height: 1.55; margin-bottom: 18px; }
+.fim-percurso .acoes-fim { display: flex; flex-direction: column; gap: 8px; }
+
+.alternar-modo {
+  background: none;
+  border: 0;
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--texto-3);
+  cursor: pointer;
+  padding: 10px 0 0;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.alternar-modo:hover { color: var(--azul); }
+
 /* ---------------- destaques coloridos no texto ---------------- */
 :root {
   --mc-amarelo: #FFF1B8;
@@ -2716,6 +2831,7 @@ const Voz = (function(){
   let estado = 'parado';  // parado | tocando | pausado
   let titulo = '';
   let aoTerminar = null;
+  let aoTrocarParte = null;
   let ignorarFim = false;
   let watchdog = null;
   let elDestacado = null;
@@ -2888,6 +3004,9 @@ const Voz = (function(){
         parteAtual = tr.parte;
         const p = partes[parteAtual];
         destacar(p && p.el);
+        /* quem chamou pode acompanhar a leitura — é o que faz o percurso
+           guiado virar de passo sozinho enquanto a voz avança */
+        if(aoTrocarParte) { try { aoTrocarParte(parteAtual, p); } catch {} }
       }
       atualizarBarra();
     };
@@ -2943,6 +3062,7 @@ const Voz = (function(){
     parteAtual = -1;
     titulo = op.titulo || '';
     aoTerminar = op.aoTerminar || null;
+    aoTrocarParte = op.aoTrocarParte || null;
     estado = 'tocando';
     limparDestaque();
     marcarBotao(op.botao);
@@ -2958,6 +3078,7 @@ const Voz = (function(){
     ignorarFim = false;
     estado = 'parado';
     aoTerminar = null;
+    aoTrocarParte = null;
     trechos = [];
     partes = [];
     idx = 0;
@@ -3890,6 +4011,250 @@ function cartaoVersiculo(texto, nr, cap, verso, versao, extra, opcoes){
 }
 
 /* ---------- devocional do dia ---------- */
+/* =========================================================
+   PERCURSO GUIADO DO DEVOCIONAL
+   O devocional era um cartão para rolar. Virou um caminho com
+   começo, meio e fim — um passo por vez, com a trilha de
+   progresso à vista. Ler uma página e ser conduzido por algo
+   são experiências diferentes, e a segunda serve melhor quem
+   tem dificuldade com a primeira.
+   ========================================================= */
+
+const CHAVE_MODO_DEVO = 'lampada-devo-modo';   // 'percurso' | 'tudo'
+const modoDevocional = () => localStorage.getItem(CHAVE_MODO_DEVO) || 'percurso';
+
+/* Estimativa honesta: conta as palavras e usa duas velocidades —
+   quem lê rápido pelos olhos e quem ouve na voz configurada. */
+function estimarMinutos(textos){
+  const palavras = textos.join(' ').trim().split(/\s+/).filter(Boolean).length;
+  const lendo   = palavras / 200;
+  const ouvindo = palavras / (155 * (Voz.prefs.vel || 1));
+  const min = Math.max(1, Math.round(lendo));
+  const max = Math.max(min, Math.round(ouvindo));
+  return min === max ? min + ' min' : min + '–' + max + ' min';
+}
+
+let percursoAtual = null;
+
+function montarPercurso(dados){
+  const alvo = $('cartao-hoje');
+  const { nr, cap, verso, texto, versao, reflexao, meditacao, oracao } = dados;
+  const ref = livroPorNr(nr).nome + ' ' + cap + ':' + verso;
+
+  const passos = [
+    { rotulo: 'Versículo do dia',  titulo: ref, texto, fala: refFalada(nr, cap, verso) + '. ' + texto },
+    { rotulo: 'Reflexão',      texto: reflexao,  fala: 'Reflexão. ' + reflexao },
+    { rotulo: 'Para meditar',  texto: meditacao, fala: 'Para meditar. ' + meditacao },
+    { rotulo: 'Oração',        texto: oracao,    fala: 'Oração. ' + oracao, italico: true }
+  ];
+  const total = passos.length;
+  let i = 0;
+
+  percursoAtual = { passos, ir: (n) => { i = n; desenhar(); } };
+
+  const cartao = document.createElement('div');
+  cartao.className = 'cartao';
+  alvo.innerHTML = '';
+  alvo.appendChild(cartao);
+
+  function trilha(){
+    const t = document.createElement('div');
+    t.className = 'trilha';
+    t.setAttribute('role', 'progressbar');
+    t.setAttribute('aria-valuemin', '1');
+    t.setAttribute('aria-valuemax', String(total));
+    t.setAttribute('aria-valuenow', String(Math.min(i + 1, total)));
+    t.setAttribute('aria-label', 'Passo ' + Math.min(i + 1, total) + ' de ' + total);
+    for(let k = 0; k < total; k++){
+      if(k) {
+        const tr = document.createElement('span');
+        tr.className = 'traco' + (k <= i ? ' feito' : '');
+        t.appendChild(tr);
+      }
+      const p = document.createElement('span');
+      p.className = 'ponto' + (k < i ? ' feito' : k === i ? ' atual' : '');
+      t.appendChild(p);
+    }
+    return t;
+  }
+
+  function desenhar(){
+    cartao.innerHTML = '';
+
+    /* passo final: o dia se fecha aqui */
+    if(i >= total){
+      registrarAtividade();
+      const fim = document.createElement('div');
+      fim.className = 'fim-percurso';
+      const streak = calcularStreak();
+      fim.innerHTML =
+        `<div class="selo" aria-hidden="true">✓</div>
+         <h3>Devocional de hoje concluído</h3>
+         <p></p>
+         <div class="acoes-fim"></div>`;
+      fim.querySelector('p').textContent = streak > 1
+        ? streak + ' dias seguidos com a Palavra. Que isso siga te sustentando.'
+        : 'Que a Palavra de hoje te acompanhe pelo dia.';
+
+      const acoes = fim.querySelector('.acoes-fim');
+      const botao = (rotulo, ico, classe, aoTocar) => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'btn-ouvir' + (classe ? ' ' + classe : '');
+        b.style.justifyContent = 'center';
+        const s = document.createElement('span');
+        s.className = 'ico';
+        s.setAttribute('aria-hidden', 'true');
+        s.textContent = ico;
+        b.appendChild(s);
+        b.appendChild(document.createTextNode(rotulo));
+        b.onclick = aoTocar;
+        return b;
+      };
+      acoes.appendChild(botao('Registrar um pedido de oração', '✝', '', () => {
+        $('sec-oracoes').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        setTimeout(() => { const c = $('campo-oracao'); if(c) c.focus(); }, 500);
+      }));
+      acoes.appendChild(botao('Percorrer de novo', '↺', 'claro', () => {
+        Voz.parar(true); i = 0; desenhar();
+      }));
+
+      cartao.appendChild(fim);
+      cartao.appendChild(botaoAlternar());
+      atualizarStats();
+      return;
+    }
+
+    const passo = passos[i];
+
+    const cabeca = document.createElement('div');
+    cabeca.className = 'cabeca-percurso';
+    cabeca.appendChild(trilha());
+    const tempo = document.createElement('span');
+    tempo.className = 'tempo-percurso';
+    tempo.textContent = '🕐 ' + estimarMinutos(passos.map(p => p.texto));
+    cabeca.appendChild(tempo);
+    cartao.appendChild(cabeca);
+
+    const corpo = document.createElement('div');
+    corpo.className = 'passo';
+
+    const rot = document.createElement('p');
+    rot.className = 'rotulo-passo';
+    rot.textContent = passo.rotulo;
+    corpo.appendChild(rot);
+
+    /* o primeiro passo mantém o cartão de versículo inteiro, com
+       favoritar, imagem e link para o capítulo */
+    if(i === 0){
+      const c = cartaoVersiculo(texto, nr, cap, verso, versao, null, { titulo: ref });
+      c.style.border = '0'; c.style.padding = '0'; c.style.boxShadow = 'none';
+      corpo.appendChild(c);
+    } else {
+      const t = document.createElement('p');
+      t.className = 'texto-passo' + (passo.italico ? ' oracao' : '');
+      t.textContent = passo.texto;
+      corpo.appendChild(t);
+    }
+    cartao.appendChild(corpo);
+
+    const nav = document.createElement('div');
+    nav.className = 'navega-passo';
+    if(i > 0){
+      const volta = document.createElement('button');
+      volta.type = 'button';
+      volta.className = 'voltar-passo';
+      volta.textContent = '‹ Voltar';
+      volta.onclick = () => { Voz.parar(true); i--; desenhar(); };
+      nav.appendChild(volta);
+    }
+
+    /* Ouvir e seguir: a voz lê do passo atual até o fim e a tela
+       acompanha sozinha, virando de passo a cada bloco.
+       "inicio" fica congelado nesta renderização — usar o i, que muda
+       durante a leitura, faria a conta escorregar a cada troca. */
+    const inicio = i;
+    const ouvir = criarBotaoOuvir('Ouvir e seguir',
+      () => passos.slice(inicio).map(p => ({ texto: p.fala, rotulo: p.rotulo })),
+      { voz: {
+          titulo: 'Devocional do dia',
+          aoTrocarParte: (idx) => {
+            const alvo = inicio + idx;
+            if(alvo !== i){ i = alvo; desenhar(); }
+          },
+          aoTerminar: () => { i = total; desenhar(); }
+        } });
+    nav.appendChild(ouvir);
+
+    const seguir = document.createElement('button');
+    seguir.type = 'button';
+    seguir.className = 'btn';
+    seguir.textContent = i === total - 1 ? 'Concluir ✓' : 'Continuar ›';
+    seguir.onclick = () => { Voz.parar(true); i++; desenhar(); };
+    nav.appendChild(seguir);
+
+    cartao.appendChild(nav);
+    cartao.appendChild(botaoAlternar());
+  }
+
+  function botaoAlternar(){
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'alternar-modo';
+    b.textContent = 'Ver tudo de uma vez';
+    b.onclick = () => {
+      Voz.parar(true);
+      localStorage.setItem(CHAVE_MODO_DEVO, 'tudo');
+      montarTudoDeUmaVez(dados);
+    };
+    return b;
+  }
+
+  desenhar();
+}
+
+/* O formato antigo continua disponível: quem prefere rolar não perde nada */
+function montarTudoDeUmaVez(dados){
+  const alvo = $('cartao-hoje');
+  const { nr, cap, verso, texto, versao, reflexao, meditacao, oracao } = dados;
+
+  const extra = document.createElement('div');
+  extra.innerHTML =
+    `<div class="bloco-devo"><span class="rotulo-bloco">Reflexão</span><p></p></div>
+     <div class="bloco-devo"><span class="rotulo-bloco">Para meditar</span><p></p></div>
+     <div class="bloco-devo oracao"><span class="rotulo-bloco">Oração</span><p></p></div>`;
+  const ps = extra.querySelectorAll('p');
+  ps[0].textContent = reflexao;
+  ps[1].textContent = meditacao;
+  ps[2].textContent = oracao;
+
+  const blocos = extra.querySelectorAll('.bloco-devo');
+  const partesExtra = [
+    { texto: 'Reflexão. ' + reflexao,      rotulo: 'Reflexão',     el: blocos[0] },
+    { texto: 'Para meditar. ' + meditacao, rotulo: 'Para meditar', el: blocos[1] },
+    { texto: 'Oração. ' + oracao,          rotulo: 'Oração',       el: blocos[2] }
+  ];
+
+  alvo.innerHTML = '';
+  alvo.appendChild(cartaoVersiculo(texto, nr, cap, verso, versao, extra, {
+    partesExtra,
+    titulo: 'Devocional do dia',
+    rotuloBotao: 'Ouvir devocional completo'
+  }));
+
+  const b = document.createElement('button');
+  b.type = 'button';
+  b.className = 'alternar-modo';
+  b.textContent = 'Voltar ao percurso guiado';
+  b.onclick = () => {
+    Voz.parar(true);
+    localStorage.setItem(CHAVE_MODO_DEVO, 'percurso');
+    montarPercurso(dados);
+  };
+  alvo.querySelector('.cartao').appendChild(b);
+  registrarAtividade();
+}
+
 async function versiculoDoDia(){
   const alvo = $('cartao-hoje');
   alvo.innerHTML = `<div class="cartao">
@@ -3899,46 +4264,18 @@ async function versiculoDoDia(){
     <div class="skeleton skeleton-linha" style="width:75%"></div>
   </div>`;
 
-  const hoje = new Date();
-  const dia = diaDoAno(hoje);
-  const [nr,cap,verso] = TODAS[dia % TODAS.length];
+  const dia = diaDoAno(new Date());
+  const [nr, cap, verso] = TODAS[dia % TODAS.length];
   try{
-    const {texto,versao} = await buscarVerso(nr,cap,verso);
-    const extra = document.createElement('div');
-    extra.innerHTML =
-      `<div class="bloco-devo">
-         <span class="rotulo-bloco">Reflexão</span>
-         <p></p>
-       </div>
-       <div class="bloco-devo">
-         <span class="rotulo-bloco">Para meditar</span>
-         <p></p>
-       </div>
-       <div class="bloco-devo oracao">
-         <span class="rotulo-bloco">Oração</span>
-         <p></p>
-       </div>`;
-    const ps = extra.querySelectorAll('p');
-    ps[0].textContent = REFLEXOES[dia % REFLEXOES.length];
-    ps[1].textContent = MEDITACOES[dia % MEDITACOES.length];
-    ps[2].textContent = ORACOES[dia % ORACOES.length];
-
-    /* O devocional é lido inteiro: versículo, reflexão, meditação e oração,
-       cada bloco destacado na tela enquanto é falado. */
-    const blocos = extra.querySelectorAll('.bloco-devo');
-    const partesExtra = [
-      { texto: 'Reflexão. '   + ps[0].textContent, rotulo: 'Reflexão',    el: blocos[0] },
-      { texto: 'Para meditar. ' + ps[1].textContent, rotulo: 'Para meditar', el: blocos[1] },
-      { texto: 'Oração. '     + ps[2].textContent, rotulo: 'Oração',      el: blocos[2] }
-    ];
-
-    alvo.innerHTML = '';
-    alvo.appendChild(cartaoVersiculo(texto, nr, cap, verso, versao, extra, {
-      partesExtra,
-      titulo: 'Devocional do dia',
-      rotuloBotao: 'Ouvir devocional completo'
-    }));
-    registrarAtividade();
+    const { texto, versao } = await buscarVerso(nr, cap, verso);
+    const dados = {
+      nr, cap, verso, texto, versao,
+      reflexao:  REFLEXOES[dia % REFLEXOES.length],
+      meditacao: MEDITACOES[dia % MEDITACOES.length],
+      oracao:    ORACOES[dia % ORACOES.length]
+    };
+    if(modoDevocional() === 'tudo') montarTudoDeUmaVez(dados);
+    else montarPercurso(dados);
   }catch(e){
     alvo.innerHTML = '';
     const w = document.createElement('div');
