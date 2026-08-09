@@ -6461,11 +6461,15 @@ $('btn-tema').onclick = alternarTema;
    e tudo o que vem depois dele. São catálogos: passaram a viver em
    abas próprias, e a home caiu para o que se usa todo dia.
    ========================================================= */
+/* A divisão é entre fazer e ter feito. Hoje guarda o que se faz no dia —
+   o devocional, tirar uma promessa, registrar uma oração, e o campo dela
+   pergunta "pelo que você quer orar hoje?". Meu guarda o que se acumulou:
+   a jornada, os dias anteriores, os favoritos, o diário. */
 const ABAS = {
-  hoje:   ['sec-hoje', 'sec-stats', 'sec-hist', 'sec-oracoes', 'sec-promessas'],
+  hoje:   ['sec-hoje', 'sec-oracoes', 'sec-promessas'],
   biblia: ['controles', 'sec-busca', 'sec-biblia'],
   planos: ['sec-planos'],
-  meu:    ['sec-favoritos', 'sec-app']
+  meu:    ['sec-stats', 'sec-hist', 'sec-favoritos', 'sec-app']
 };
 const CHAVE_ABA = 'lampada-aba';
 let abaAtual = null;
