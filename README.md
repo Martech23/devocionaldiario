@@ -74,6 +74,54 @@ Onde o navegador não implementa a API, os microfones somem em vez de
 oferecer um botão que só sabe avisar que não funciona — os mesmos campos
 continuam editáveis por escrito.
 
+## Conta e sincronização
+
+O app funciona inteiro **sem conta** — favoritos, notas, orações e progresso
+ficam no aparelho. A conta só acrescenta uma cópia no servidor, para o
+histórico sobreviver à troca de celular.
+
+Usa o mesmo Upstash Redis do Web Push, sem serviço novo:
+
+| Chave | Guarda |
+|---|---|
+| `bd:usuario:<email>` | id, senha (scrypt), sal, datas e consentimento |
+| `bd:email:<id>` | e-mail, para achar a conta a partir da sessão |
+| `bd:sessao:<hashToken>` | id do usuário, com validade de 30 dias |
+| `bd:dados:<id>` | o histórico devocional, em JSON |
+| `bd:tentativas:<email>` | senha errada, para travar após 10 em 15 min |
+
+**O token de sessão nunca é gravado** — guardamos só o SHA-256 dele, num
+cookie `HttpOnly; Secure; SameSite=Lax`. Um vazamento do banco não entrega
+sessões ativas. A senha vai por `scrypt` com sal próprio por conta, e a
+comparação é em tempo constante.
+
+Entrar com e-mail inexistente e errar a senha devolvem a **mesma mensagem**:
+distinguir os dois entregaria quem tem conta no site.
+
+### Mesclagem
+
+Sempre por união, nos dois sentidos. Entrar numa conta não apaga o que já
+existia no aparelho, e sincronizar não apaga o que já estava no servidor —
+sem um histórico de exclusões, não há como distinguir "apagado lá" de "ainda
+não chegou aqui". Em conflito, nota fica a mais recente e destaque fica o do
+aparelho em uso.
+
+### Dado sensível
+
+Histórico devocional revela convicção religiosa, que a LGPD (Art. 5º, II)
+trata como **dado pessoal sensível**. Por isso o cadastro exige consentimento
+explícito e destacado, e o painel tem exclusão da conta com todos os dados,
+pedindo a senha de novo — o cookie sozinho não basta para apagar tudo.
+
+**Falta publicar uma política de privacidade** antes de abrir o cadastro ao
+público.
+
+### Ainda não existe
+
+Recuperação de senha, que precisa de um provedor de e-mail. Hoje, quem
+esquecer a senha perde o acesso à cópia no servidor — os dados no aparelho
+continuam intactos.
+
 ## Web Push — configuração na Vercel
 
 1. Crie um Redis grátis em [Upstash](https://console.upstash.com) → **REST API**
