@@ -2459,6 +2459,55 @@ html[data-tema="escuro"] .painel-config header { background: #152238; }
 .chave.ativo::after { transform: translateX(22px); }
 
 /* Respeitar preferência de redução de movimento */
+/* =========================================================
+   ALVOS DE TOQUE
+   41 controles ficavam abaixo dos 44px da WCAG 2.5.5 — o ☰
+   tinha 18px de altura. Quem tem tremor, artrite ou dedo
+   grosso erra o alvo e não sabe por quê.
+   O tamanho visual do ícone não muda: cresce só a área que
+   recebe o toque.
+   ========================================================= */
+.icone-btn,
+.btn-tema,
+.voltar-painel,
+#folha-cores button,
+#audio-ant, #audio-prox, #audio-parar {
+  min-width: 44px;
+  min-height: 44px;
+}
+.btn,
+.btn-ouvir,
+.tema,
+.chip-img,
+.audio-vel,
+.chave,
+.tab-fav,
+.link-cap,
+.voltar,
+.alternar-modo,
+.acoes-verso .btn-acao,
+.tamanhos button,
+.ferramenta {
+  min-height: 44px;
+}
+/* os ícones redondos do cartão do versículo continuam do mesmo tamanho:
+   a área que recebe o toque é que cresce por baixo deles */
+.ouvir-mini, .copiar { min-width: 44px; min-height: 44px; }
+
+/* O chip do tema é pequeno de propósito — ao lado do rótulo do passo, com
+   44px de altura ele pesaria mais que o próprio título. Aqui a área de
+   toque cresce por fora, invisível, e o desenho fica como está. */
+.tema-devo { position: relative; }
+.tema-devo::after {
+  content: '';
+  position: absolute;
+  inset: -12px -8px;
+}
+/* o rodapé tem links soltos, não links no meio de uma frase.
+   Um link dentro de um parágrafo — o do consentimento, por exemplo — é
+   dispensado pela WCAG 2.5.8 e continua inline, senão quebra a frase. */
+.rodape a { display: inline-block; padding: 12px 4px; }
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -2476,10 +2525,12 @@ html[data-tema="escuro"] .painel-config header { background: #152238; }
 <header class="barra">
   <div class="barra-int">
     <button class="icone-btn" id="btn-menu" aria-label="Abrir menu"><span class="hamb"></span></button>
-    <div class="logo">
+    <!-- h1 de verdade: quem usa leitor de tela navega por cabeçalhos, e sem
+         ele a hierarquia da página começava no h3 -->
+    <h1 class="logo">
       <img class="marca" src="/favicon.svg" alt="" width="28" height="28" decoding="async">
       <span>Bíblia <i>Devocional</i></span>
-    </div>
+    </h1>
     <div class="acoes-direita">
       <button class="btn-tema" id="btn-tema" aria-label="Alternar tema" title="Alternar tema claro/escuro">◐</button>
       <button class="icone-btn" id="btn-abrir-conta" aria-label="Sua conta" title="Sua conta"><span class="conta">✦</span></button>
@@ -2488,7 +2539,7 @@ html[data-tema="escuro"] .painel-config header { background: #152238; }
 </header>
 
 <div class="veu" id="veu"></div>
-<aside class="gaveta" id="gaveta" aria-label="Menu">
+<aside class="gaveta" id="gaveta" role="dialog" aria-modal="true" aria-label="Menu" tabindex="-1">
   <header>Menu</header>
   <a href="#sec-hoje" data-fecha>Devocional do dia</a>
   <a href="#sec-stats" data-fecha>Sua jornada</a>
@@ -2522,7 +2573,7 @@ html[data-tema="escuro"] .painel-config header { background: #152238; }
 </aside>
 
 <!-- Painel de configuração da leitura em voz — abre pelo menu lateral -->
-<aside class="painel-config" id="painel-voz" aria-label="Configurações de leitura em voz" aria-hidden="true">
+<aside class="painel-config" id="painel-voz" role="dialog" aria-modal="true" aria-label="Configurações de leitura em voz" aria-hidden="true" tabindex="-1">
   <header>
     <button class="voltar-painel" id="btn-fechar-voz" type="button" aria-label="Voltar ao menu">‹</button>
     <span>Leitura em voz</span>
@@ -2609,7 +2660,7 @@ html[data-tema="escuro"] .painel-config header { background: #152238; }
 
   <!-- Resultados da busca por palavra -->
   <section class="secao oculto" id="sec-busca">
-    <p class="rotulo-secao">Resultados da busca</p>
+    <h2 class="rotulo-secao">Resultados da busca</h2>
     <div class="cartao">
       <div id="status-busca" style="font-size:13.5px;color:var(--texto-3);margin-bottom:12px"></div>
       <div id="lista-busca"></div>
@@ -2618,7 +2669,7 @@ html[data-tema="escuro"] .painel-config header { background: #152238; }
 
   <!-- ============ DEVOCIONAL DO DIA ============ -->
   <section class="secao" id="sec-hoje">
-    <p class="rotulo-secao">Devocional do dia</p>
+    <h2 class="rotulo-secao">Devocional do dia</h2>
     <div id="cartao-hoje">
       <div class="cartao">
         <div class="skeleton skeleton-titulo"></div>
@@ -2631,7 +2682,7 @@ html[data-tema="escuro"] .painel-config header { background: #152238; }
 
   <!-- ============ ESTATÍSTICAS / STREAK ============ -->
   <section class="secao" id="sec-stats">
-    <p class="rotulo-secao">Sua jornada</p>
+    <h2 class="rotulo-secao">Sua jornada</h2>
     <div class="cartao">
       <div class="grid-stats" id="grid-stats">
         <div class="stat-card"><div class="stat-num" id="stat-streak">0</div><div class="stat-label">dias seguidos</div></div>
@@ -2646,7 +2697,7 @@ html[data-tema="escuro"] .painel-config header { background: #152238; }
 
   <!-- ============ HISTÓRICO DO VERSÍCULO DO DIA ============ -->
   <section class="secao" id="sec-hist">
-    <p class="rotulo-secao">Dias anteriores</p>
+    <h2 class="rotulo-secao">Dias anteriores</h2>
     <div class="cartao">
       <div class="linha-ouvir" style="margin-bottom:0">
         <button class="btn-ouvir claro" id="btn-hist" type="button">
@@ -2659,7 +2710,7 @@ html[data-tema="escuro"] .painel-config header { background: #152238; }
 
   <!-- ============ ORAÇÕES ============ -->
   <section class="secao" id="sec-oracoes">
-    <p class="rotulo-secao">Minhas orações</p>
+    <h2 class="rotulo-secao">Minhas orações</h2>
     <div class="cartao">
       <div class="form-oracao">
         <textarea id="campo-oracao" rows="2" placeholder="Pelo que você quer orar hoje?" aria-label="Novo pedido de oração"></textarea>
@@ -2679,7 +2730,7 @@ html[data-tema="escuro"] .painel-config header { background: #152238; }
 
   <!-- ============ CAIXA DE PROMESSAS ============ -->
   <section class="secao" id="sec-promessas">
-    <p class="rotulo-secao">Caixa de promessas</p>
+    <h2 class="rotulo-secao">Caixa de promessas</h2>
     <div class="cartao">
       <div class="temas" id="temas"></div>
       <div id="area-promessa">
@@ -2693,7 +2744,7 @@ html[data-tema="escuro"] .painel-config header { background: #152238; }
 
   <!-- ============ BÍBLIA ============ -->
   <section class="secao" id="sec-biblia">
-    <p class="rotulo-secao">Bíblia Sagrada completa</p>
+    <h2 class="rotulo-secao">Bíblia Sagrada completa</h2>
     <div class="cartao">
       <div class="barra-progresso-wrap" id="wrap-progresso-biblia">
         <div class="barra-progresso-label">
@@ -2719,7 +2770,7 @@ html[data-tema="escuro"] .painel-config header { background: #152238; }
 
   <!-- ============ PLANOS DE LEITURA ============ -->
   <section class="secao" id="sec-planos">
-    <p class="rotulo-secao">Planos de leitura</p>
+    <h2 class="rotulo-secao">Planos de leitura</h2>
     <div class="cartao">
       <div class="grid-planos" id="grid-planos"></div>
       <div id="area-plano-ativo" class="oculto" style="margin-top:18px"></div>
@@ -2728,7 +2779,7 @@ html[data-tema="escuro"] .painel-config header { background: #152238; }
 
   <!-- ============ FAVORITOS E DIÁRIO ============ -->
   <section class="secao" id="sec-favoritos">
-    <p class="rotulo-secao">Favoritos e diário</p>
+    <h2 class="rotulo-secao">Favoritos e diário</h2>
     <div class="cartao">
       <div class="tabs-fav">
         <button class="tab-fav ativo" data-tab="favs">Favoritos</button>
@@ -2740,7 +2791,7 @@ html[data-tema="escuro"] .painel-config header { background: #152238; }
 
   <!-- ============ INSTALAR APP / PWA ============ -->
   <section class="secao" id="sec-app">
-    <p class="rotulo-secao">Instalar app</p>
+    <h2 class="rotulo-secao">Instalar app</h2>
     <div class="cartao">
       <div class="pwa-box">
         <p>Instale a Bíblia Devocional na tela inicial e receba um lembrete diário.</p>
@@ -2784,7 +2835,7 @@ html[data-tema="escuro"] .painel-config header { background: #152238; }
 </nav>
 
 <!-- Modal gerador de imagem -->
-<div class="modal-fundo" id="modal-img">
+<div class="modal-fundo" id="modal-img" role="dialog" aria-modal="true" aria-label="Imagem para compartilhar" tabindex="-1">
   <div class="modal-caixa">
     <h3>Imagem para compartilhar</h3>
     <div class="palco-img"><canvas id="canvas-verso" width="1080" height="1350"></canvas></div>
@@ -2810,7 +2861,7 @@ html[data-tema="escuro"] .painel-config header { background: #152238; }
 <div class="aviso" id="aviso" role="status" aria-live="polite"></div>
 
 <!-- Painel de conta — abre pelo ✦ do cabeçalho -->
-<aside class="painel-config" id="painel-conta" aria-label="Sua conta" aria-hidden="true">
+<aside class="painel-config" id="painel-conta" role="dialog" aria-modal="true" aria-label="Sua conta" aria-hidden="true" tabindex="-1">
   <header>
     <button class="voltar-painel" id="btn-fechar-conta" type="button" aria-label="Fechar">‹</button>
     <span>Sua conta</span>
@@ -2883,7 +2934,7 @@ html[data-tema="escuro"] .painel-config header { background: #152238; }
 
 <!-- Folha de ações do versículo — abre ao tocar num versículo do capítulo -->
 <div class="fundo-folha" id="fundo-folha"></div>
-<div class="folha-verso" id="folha-verso" role="dialog" aria-label="Ações do versículo" aria-hidden="true">
+<div class="folha-verso" id="folha-verso" role="dialog" aria-modal="true" aria-label="Ações do versículo" aria-hidden="true" tabindex="-1">
   <div class="puxador" aria-hidden="true"></div>
   <div class="folha-ref" id="folha-ref"></div>
   <div class="folha-txt" id="folha-txt"></div>
@@ -3936,6 +3987,7 @@ function abrirFolhaVerso(nr, cap, verso, texto){
   $('folha-verso').classList.add('ver');
   $('folha-verso').setAttribute('aria-hidden', 'false');
   $('fundo-folha').classList.add('ver');
+  Foco.prender($('folha-verso'));
   if(Voz.prefs.modo) Voz.anunciar(ref);
 }
 
@@ -3943,6 +3995,7 @@ function fecharFolha(){
   $('folha-verso').classList.remove('ver');
   $('folha-verso').setAttribute('aria-hidden', 'true');
   $('fundo-folha').classList.remove('ver');
+  Foco.soltar($('folha-verso'));
   versoAberto = null;
 }
 
@@ -5147,12 +5200,21 @@ function desenharCapitulo(dados, nr, cap, destacar){
     }
     const p = document.createElement('span');
     p.className = 'v' + (destacar === item.numero ? ' destaque' : '');
+    /* o versículo abre a folha de ações ao ser tocado; sem isto ele era um
+       span com onclick, invisível para o teclado e mudo no leitor de tela */
+    p.tabIndex = 0;
+    p.setAttribute('role', 'button');
+    p.setAttribute('aria-haspopup', 'dialog');
     const s = document.createElement('sup');
     s.textContent = item.numero;
     p.appendChild(s);
     p.appendChild(document.createTextNode(item.texto));
     pintarVerso(p, nr, cap, item.numero);
-    p.onclick = () => abrirFolhaVerso(nr, cap, item.numero, item.texto);
+    const abrir = () => abrirFolhaVerso(nr, cap, item.numero, item.texto);
+    p.onclick = abrir;
+    p.onkeydown = e => {
+      if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); abrir(); }
+    };
     frag.appendChild(p);
     partesVoz.push({
       texto: (Voz.prefs.num ? 'Versículo ' + item.numero + '. ' : '') + item.texto,
@@ -5910,6 +5972,7 @@ async function abrirGeradorImagem(texto, ref, versao, tema){
   imgModo = 'foto';
   const modal = $('modal-img');
   modal.classList.add('aberto');
+  Foco.prender(modal);
   montarOpcoesImagem();
   await redesenharImagem();
   if(document.fonts && document.fonts.ready){
@@ -5920,6 +5983,7 @@ async function abrirGeradorImagem(texto, ref, versao, tema){
 }
 function fecharModalImg(){
   $('modal-img').classList.remove('aberto');
+  Foco.soltar($('modal-img'));
 }
 
 function montarOpcoesImagem(){
@@ -6438,9 +6502,61 @@ document.addEventListener('pointerdown', e => {
   btn.style.setProperty('--y', ((e.clientY - rect.top) / rect.height * 100) + '%');
 });
 
+/* =========================================================
+   FOCO NOS PAINÉIS
+   Abrir a gaveta não mexia no foco: ele ficava no ☰ atrás do
+   painel, e o Tab seguinte caía em botões cobertos. Quem
+   enxerga fecha no olho; quem usa teclado ou leitor de tela se
+   perde sem perceber que se perdeu.
+   A pilha existe porque o painel de voz abre por cima da
+   gaveta — o Tab tem de respeitar só o de cima.
+   ========================================================= */
+const Foco = (() => {
+  const pilha = [];
+  const FOCAVEIS = 'a[href], button:not([disabled]), input:not([disabled]),' +
+    'select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+  const dentroDe = el => [...el.querySelectorAll(FOCAVEIS)].filter(e => e.offsetParent !== null);
+
+  function prender(painel, op = {}){
+    if(!painel || pilha.some(p => p.painel === painel)) return;
+    pilha.push({ painel, volta: op.volta || document.activeElement });
+    const alvos = dentroDe(painel);
+    (op.focar || alvos[0] || painel).focus();
+  }
+
+  function soltar(painel){
+    const i = pilha.findIndex(p => p.painel === painel);
+    if(i < 0) return;
+    const [saiu] = pilha.splice(i, 1);
+    /* devolver o foco a um elemento escondido joga a pessoa para o começo
+       da página no Tab seguinte; nesse caso vale mais deixar como está */
+    const v = saiu.volta;
+    if(v && document.contains(v) && v.offsetParent !== null) v.focus();
+  }
+
+  document.addEventListener('keydown', e => {
+    if(e.key !== 'Tab' || !pilha.length) return;
+    const { painel } = pilha[pilha.length - 1];
+    const alvos = dentroDe(painel);
+    if(!alvos.length){ e.preventDefault(); painel.focus(); return; }
+    const primeiro = alvos[0], ultimo = alvos[alvos.length - 1];
+    const dentro = painel.contains(document.activeElement);
+    if(e.shiftKey && (!dentro || document.activeElement === primeiro)){
+      e.preventDefault(); ultimo.focus();
+    } else if(!e.shiftKey && (!dentro || document.activeElement === ultimo)){
+      e.preventDefault(); primeiro.focus();
+    }
+  }, true);
+
+  return { prender, soltar };
+})();
+
 function abrirMenu(estado){
   $('gaveta').classList.toggle('aberta', estado);
   $('veu').classList.toggle('aberto', estado);
+  if(estado) Foco.prender($('gaveta'), { volta: $('btn-menu') });
+  else Foco.soltar($('gaveta'));
 }
 
 /* painel de configuração da leitura em voz (abre por cima da gaveta) */
@@ -6451,10 +6567,13 @@ function abrirPainelVoz(estado){
   p.setAttribute('aria-hidden', estado ? 'false' : 'true');
   $('veu').classList.toggle('aberto', estado);
   $('gaveta').classList.remove('aberta');
+  Foco.soltar($('gaveta'));      /* a gaveta some por baixo; o Tab não pode segui-la */
   if(estado){
     p.querySelector('.painel-corpo').scrollTop = 0;
+    /* volta para o ☰ e não para o item da gaveta, que estará escondido */
+    Foco.prender(p, { volta: $('btn-menu') });
     if(Voz.prefs.modo) Voz.anunciar('Leitura em voz');
-  }
+  } else Foco.soltar(p);
 }
 $('btn-abrir-voz').onclick  = () => abrirPainelVoz(true);
 $('btn-fechar-voz').onclick = () => abrirPainelVoz(false);
@@ -6477,11 +6596,13 @@ function abrirPainelConta(estado){
   p.setAttribute('aria-hidden', estado ? 'false' : 'true');
   $('veu').classList.toggle('aberto', estado);
   $('gaveta').classList.remove('aberta');
+  Foco.soltar($('gaveta'));
   if(estado){
     p.querySelector('.painel-corpo').scrollTop = 0;
     pintarPainel();
+    Foco.prender(p, { volta: $('btn-abrir-conta') });
     if(Voz.prefs.modo) Voz.anunciar('Sua conta');
-  }
+  } else Foco.soltar(p);
 }
 
 function pintarPainel(){
