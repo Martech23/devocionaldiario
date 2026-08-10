@@ -4136,6 +4136,9 @@ const Voz = (function(){
   let aoTerminar = null;
   let aoTrocarParte = null;
   let ignorarFim = false;
+  /* a troca de emergência de voz vale uma vez por leitura, senão duas
+     vozes quebradas mandariam falarAtual chamar a si mesmo sem fim */
+  let trocouVozPorFalha = false;
   let watchdog = null;
   let elDestacado = null;
   let botaoAtivo = null;
@@ -4152,16 +4155,46 @@ const Voz = (function(){
     document.dispatchEvent(new CustomEvent('vozes-prontas'));
   }
 
-  function melhorVoz(){
-    const br = listaVozes.filter(v => /pt[-_]?BR/i.test(v.lang));
-    const pool = br.length ? br : listaVozes;
-    // vozes neurais soam bem melhor para leitura longa
-    const preferidas = ['google', 'natural', 'neural', 'luciana', 'francisca', 'microsoft'];
-    for(const p of preferidas){
-      const v = pool.find(x => (x.name || '').toLowerCase().includes(p));
-      if(v) return v;
-    }
-    return pool[0] || null;
+  /* =========================================================
+     QUAL VOZ USAR
+
+     Antes era o primeiro nome da lista que casasse: bastava haver
+     uma "Google" qualquer para ela ganhar de uma "Luciana (Premium)",
+     porque "google" vinha antes na fila. Agora cada sinal vale pontos
+     e a voz soma — assim quem junta dois sinais passa na frente.
+
+     "Premium" e "Enhanced" faltavam, e são justamente os nomes que o
+     iPhone dá à voz boa que a pessoa baixou de propósito. O iOS ainda
+     traduz esse nome para o idioma do aparelho, daí "aprimorad" e
+     "melhorad" também entrarem.
+     ========================================================= */
+  const SINAIS_VOZ = [
+    [/premium|enhanced|aprimorad|melhorad/i, 30],
+    [/natural|neural|siri/i, 25],
+    [/google|microsoft/i, 12],
+    [/luciana|francisca|camila|vit[óo]ria|fernanda|joana|in[êe]s|thalita|helo[íi]sa/i, 8]
+  ];
+
+  function pontuarVoz(v){
+    /* O sotaque vem antes do polimento, e por isso é degrau e não
+       bônus: uma voz Premium de Portugal lendo um devocional brasileiro
+       soa estrangeira, e nenhum somatório de qualidade deveria passar
+       na frente de uma voz comum daqui. Os degraus são largos o
+       bastante para os sinais de nome nunca os cruzarem. */
+    let p = /pt[-_]?BR/i.test(v.lang) ? 1000
+          : /^pt/i.test(v.lang)       ? 500
+          : 0;
+    for(const [re, n] of SINAIS_VOZ) if(re.test(v.name || '')) p += n;
+    /* voz de rede costuma soar melhor, mas depende de internet — e este
+       app é feito para funcionar sem. Vale pouco: desempata para a voz
+       de dentro do aparelho sem derrubar uma Premium de verdade. */
+    if(v.localService) p += 6;
+    return p;
+  }
+
+  function melhorVoz(pool){
+    return (pool || listaVozes).slice()
+      .sort((a, b) => pontuarVoz(b) - pontuarVoz(a))[0] || null;
   }
 
   if(suporta){
@@ -4323,6 +4356,19 @@ const Voz = (function(){
       if(ignorarFim) return;
       const motivo = e && e.error;
       if(motivo === 'interrupted' || motivo === 'canceled') return;
+      /* Voz de rede sem internet falha em todo trecho, um por um, e a
+         leitura inteira terminava em silêncio sem ninguém entender por
+         quê — o pior jeito de falhar num app que existe também para
+         quem não lê. Na primeira falha troca para a melhor voz de
+         dentro do aparelho e repete o trecho, uma vez só. */
+      if(!trocouVozPorFalha && vozAtual && vozAtual.localService === false){
+        const local = melhorVoz(listaVozes.filter(v => v.localService));
+        if(local){
+          trocouVozPorFalha = true;
+          vozAtual = local;
+          return falarAtual();
+        }
+      }
       idx++;
       falarAtual();
     };
@@ -4363,6 +4409,7 @@ const Voz = (function(){
 
     idx = 0;
     parteAtual = -1;
+    trocouVozPorFalha = false;
     titulo = op.titulo || '';
     aoTerminar = op.aoTerminar || null;
     aoTrocarParte = op.aoTrocarParte || null;
@@ -4503,6 +4550,9 @@ const Voz = (function(){
     definirVoz,
     get vozes(){ return listaVozes; },
     get vozAtual(){ return vozAtual; },
+    /* expostos para poder testar a escolha com listas de voz inventadas,
+       já que as vozes reais dependem do aparelho de quem abre */
+    pontuarVoz, melhorVoz,
     get estado(){ return estado; },
     tocando: () => estado !== 'parado'
   };

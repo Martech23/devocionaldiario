@@ -558,6 +558,53 @@ A qualidade da voz vem do aparelho. No Android, instalar a "Fala do Google"
 melhora bastante; no iPhone, Ajustes → Acessibilidade → Conteúdo Falado →
 Vozes → Português (Brasil).
 
+### Qual voz o app escolhe sozinho
+
+Escolher a primeira da lista que casasse com um nome conhecido tinha um
+defeito silencioso: a ordem da lista decidia tudo. Bastava existir uma
+"Google" qualquer para ela ganhar de uma **"Luciana (Premium)"** — a voz
+boa que a pessoa baixou de propósito — só porque `google` vinha antes na
+fila de preferências.
+
+Agora cada sinal vale pontos e a voz soma:
+
+| Sinal | Pontos |
+|---|---:|
+| `pt-BR` | **1000** |
+| outro português | 500 |
+| Premium, Enhanced, Aprimorada, Melhorada | 30 |
+| Natural, Neural, Siri | 25 |
+| Google, Microsoft | 12 |
+| nome conhecido de voz brasileira | 8 |
+| não depende de internet | 6 |
+
+O idioma é **degrau, não bônus**: uma voz Premium de Portugal lendo um
+devocional brasileiro soa estrangeira, e nenhum somatório de qualidade
+deveria passar na frente de uma voz comum daqui. Os degraus são largos o
+bastante para os sinais de nome nunca os cruzarem.
+
+`Premium` e `Enhanced` faltavam na lista antiga, e são exatamente os nomes
+que o iPhone dá à voz boa. O iOS ainda traduz esse nome para o idioma do
+aparelho, daí `aprimorad` e `melhorad` também entrarem.
+
+A escolha só vale enquanto a pessoa não escolher a dela no menu lateral —
+essa fica guardada e ganha de tudo.
+
+### Quando a voz falha por falta de internet
+
+As vozes que soam melhor costumam ser de rede. Sem internet elas falham em
+**todo** trecho, um por um, e o `onerror` simplesmente pulava para o
+seguinte: a leitura inteira terminava em silêncio, sem nada na tela
+explicando por quê. Num app que existe também para quem não lê, é o pior
+jeito possível de falhar.
+
+Na primeira falha o app troca para a melhor voz **de dentro do aparelho** e
+repete o trecho. A troca vale uma vez por leitura — duas vozes quebradas
+fariam a função chamar a si mesma sem fim.
+
+Por isso também o pequeno bônus para voz local: ele não derruba uma
+Premium de verdade, só desempata para a que funciona sem rede.
+
 ## Ditado por voz
 
 Quem não lê também não escreve. O microfone aparece na busca, na nota do
