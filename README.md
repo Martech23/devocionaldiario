@@ -93,6 +93,69 @@ próprio repositório. O conjunto de referências cruzadas é outro arquivo e
 merece a mesma conferência antes de entrar — mas agora se sabe onde olhar,
 e o gerador do mapa serve de molde para o que faltar.
 
+## Tipografia
+
+O app tem **três vozes**, e a regra é qual delas fala:
+
+| Variável | Onde | Família |
+|---|---|---|
+| `--fonte-interface` | botões, rótulos, listas | Source Sans 3 |
+| `--fonte-leitura` | a Escritura e o devocional | Source Serif 4 |
+| `--fonte-titulo` | os títulos | Source Serif 4 |
+
+A regra de origem — **interface em sans, Palavra em serif** — já existia e
+continua. O que mudou é que **o título entrou no serif junto da Palavra**,
+porque o que ele anuncia é ela, não a interface. Antes todo título era
+sans e o app parecia um painel de configurações com um versículo dentro.
+
+O que **não** virou serif: o rótulo de seção. O `h2` deste app é uma
+etiqueta de 12px em maiúsculas — é chrome, não título. Serif ali seria
+enfeite em cima de etiqueta, e há teste que exige que ele continue sans.
+
+As três estão em variável para trocar de família ser **uma linha e não
+dezesseis**. Querendo Lora, Merriweather ou Playfair Display: baixe o
+woff2 para `/fonts`, some o `@font-face` e mude `--fonte-titulo`. Um teste
+percorre a folha de estilo inteira e reprova se alguma regra voltar a
+escrever a pilha de fontes na mão.
+
+### Legibilidade
+
+| | Antes | Agora |
+|---|---:|---:|
+| Corpo | 16px / 1,55 | **17px / 1,65** |
+| Devocional (reflexão, meditação, oração) | 15,5px / 1,6 | **17px / 1,7** |
+| Saudação | 22px sans | **26px serif** |
+
+O devocional estava **menor que a interface**: 15,5px para o que se lê e
+16px para o rótulo de um botão era a hierarquia ao contrário. É o texto
+mais longo do app e agora é o mais confortável.
+
+### Respiro
+
+| | Antes | Agora |
+|---|---:|---:|
+| Margem lateral (celular) | 16px | **20px** |
+| Margem lateral (≥560px) | 16px | **28px** |
+| Recheio do cartão | 24/22/26 | **28/24/30** |
+| Entre seções | 28px | **34px** |
+
+16px é a margem de uma lista de sistema; um app de leitura pede mais. O
+teto de 880px continua, senão a linha fica longa demais no tablet.
+
+### O canvas não entende variável de CSS
+
+Trocar as famílias por variável quebrou o gerador de imagem, e em
+silêncio. `ctx.font` passa pelo parser de fonte do canvas, que rejeita
+`var(--fonte-leitura)` **sem erro** e deixa valendo a fonte anterior —
+10px sans-serif. Com isso `measureText` media na fonte errada, tudo
+"cabia" no tamanho máximo, e o versículo longo sairia estourando a
+imagem em vez de encolher.
+
+Quem pegou foi a asserção `a fonte foi reduzida para caber`, escrita
+muito antes e sem relação aparente com tipografia. A pilha do canvas vai
+escrita numa constante `FONTE_CANVAS`, e agora há teste conferindo que
+ela é aceita pelo navegador e que não contém `var(`.
+
 ## Prévia ao compartilhar
 
 Mandar o link no WhatsApp mostrava título e descrição, e nenhuma imagem.
