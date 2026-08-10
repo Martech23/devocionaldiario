@@ -82,6 +82,32 @@ No topo da aba Hoje há uma **saudação por horário** — bom dia, boa tarde,
 boa noite, boa madrugada. Sem nome: a conta guarda só o e-mail, e deduzir
 um nome do que vem antes do arroba erra feio na maioria das vezes.
 
+## Ícones
+
+Um mesmo botão aparecia diferente no Android, no iPhone e no computador,
+porque parte dos ícones era emoji — que vem com cor própria, ignora o tema
+e é desenhado pelo sistema, não pelo app.
+
+Os que de fato renderizavam coloridos (🔍 🎤 🕐, e no celular também 🖼 🗓)
+viraram **SVG num sprite**, com `currentColor`: herdam a cor do texto ao
+redor e são idênticos em todo lugar. Os glifos que já eram monocromáticos
+— setas, ‹ ›, ✓, ★ ☆ — ficaram, porque nunca foram o problema.
+
+Os quatro microfones do app usavam desenhos diferentes entre si: o da busca
+era PNG, os outros três eram emoji. Agora são o mesmo arquivo.
+
+## Um "Ouvir" só no devocional
+
+O cartão do percurso trazia **"Ouvir"** e **"Ouvir e seguir"** lado a lado,
+com o mesmo ícone e a um dedo de distância — um lê só o versículo, o outro
+lê o devocional inteiro e vira de passo sozinho. Não havia como adivinhar a
+diferença.
+
+O botão grande sai do primeiro passo (`semBotaoOuvir`), porque
+"Ouvir e seguir" já começa lendo aquele versículo. O alto-falante discreto
+do cabeçalho continua ali para quem quer só o versículo, e o cartão avulso
+— em promessas, favoritos, resultados de busca — mantém o botão de sempre.
+
 ## Fontes no próprio site
 
 As duas famílias vinham de `fonts.googleapis.com` por um `<link rel="stylesheet">`.

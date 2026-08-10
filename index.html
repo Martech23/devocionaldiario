@@ -1447,6 +1447,7 @@ html[data-tema="escuro"] .btn-ouvir .ico img {
    precisa vir junto porque a regra dele tem id e venceria por
    especificidade. */
 html[data-tema="escuro"] img[src$="icon-share.png"],
+html[data-tema="escuro"] img[src$="icon-mic.png"],
 html[data-tema="escuro"] #fa-copiar img {
   filter: brightness(0) invert(1);
 }
@@ -1581,6 +1582,20 @@ body.modo-foco #sec-biblia .voltar {
   color: inherit;
   padding: 0 2px;
   border-radius: 2px;
+}
+
+/* Ícone de interface: acompanha o tamanho e a cor do texto ao redor,
+   diferente do emoji, que traz cor própria e ignora o tema. */
+.i {
+  width: 1.15em;
+  height: 1.15em;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vertical-align: -0.22em;
+  flex: 0 0 auto;
 }
 
 /* ---------------- saudação e primeira visita ---------------- */
@@ -2612,6 +2627,33 @@ html[data-tema="escuro"] .painel-config header { background: #152238; }
 </head>
 <body>
 
+<!-- Ícones da interface em SVG. Antes eram emoji, que vêm com cor própria,
+     ignoram o tema e mudam de desenho conforme o aparelho — o mesmo botão
+     ficava diferente no Android, no iPhone e no computador. Aqui herdam a
+     cor do texto e são idênticos em todo lugar. -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <symbol id="i-busca" viewBox="0 0 24 24">
+    <circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.4 15.4L21 21"/>
+  </symbol>
+  <symbol id="i-imagem" viewBox="0 0 24 24">
+    <rect x="3" y="5" width="18" height="14" rx="2.5"/>
+    <circle cx="8.5" cy="10" r="1.6"/><path d="M4 17l4.5-4.5 3.5 3.5 3-3L20 17"/>
+  </symbol>
+  <symbol id="i-calendario" viewBox="0 0 24 24">
+    <rect x="3.5" y="5.5" width="17" height="15" rx="2.5"/>
+    <path d="M3.5 10h17M8 3.5v4M16 3.5v4"/>
+  </symbol>
+  <symbol id="i-relogio" viewBox="0 0 24 24">
+    <circle cx="12" cy="12" r="8.5"/><path d="M12 7v5.2l3.4 2"/>
+  </symbol>
+  <symbol id="i-paleta" viewBox="0 0 24 24">
+    <path d="M12 3.5a8.5 8.5 0 100 17c1.2 0 1.9-.8 1.9-1.7 0-.5-.2-.9-.5-1.2-.3-.3-.5-.7-.5-1.2 0-.9.8-1.7 1.7-1.7h1.6a4.8 4.8 0 004.3-4.8C20.5 6.4 16.6 3.5 12 3.5z"/>
+    <circle cx="7.5" cy="11" r="1.1" fill="currentColor" stroke="none"/>
+    <circle cx="10.5" cy="7.5" r="1.1" fill="currentColor" stroke="none"/>
+    <circle cx="15" cy="8" r="1.1" fill="currentColor" stroke="none"/>
+  </symbol>
+</svg>
+
 <header class="barra">
   <div class="barra-int">
     <button class="icone-btn" id="btn-menu" aria-label="Abrir menu"><span class="hamb"></span></button>
@@ -2728,7 +2770,7 @@ html[data-tema="escuro"] .painel-config header { background: #152238; }
     <div class="linha-busca">
       <input id="busca" type="search" placeholder="Passagem (João 3:16) ou palavra (amor, fé…)" aria-label="Buscar passagem ou palavra">
       <button id="btn-busca-voz" aria-label="Buscar falando" title="Buscar falando"><img src="/icon-mic.png" alt="" width="18" height="18" decoding="async"></button>
-      <button id="btn-busca" aria-label="Buscar">🔍</button>
+      <button id="btn-busca" aria-label="Buscar"><svg class="i" aria-hidden="true"><use href="#i-busca"/></svg></button>
     </div>
     <div class="seletor-versao" style="margin-bottom:8px">
       <select id="sel-escopo-busca" aria-label="Escopo da busca por palavra">
@@ -2808,7 +2850,7 @@ html[data-tema="escuro"] .painel-config header { background: #152238; }
     <div class="cartao">
       <div class="linha-ouvir" style="margin-bottom:0">
         <button class="btn-ouvir claro" id="btn-hist" type="button">
-          <span class="ico" aria-hidden="true">🗓</span> Ver os últimos 30 dias
+          <span class="ico" aria-hidden="true"><svg class="i" aria-hidden="true"><use href="#i-calendario"/></svg></span> Ver os últimos 30 dias
         </button>
       </div>
       <div id="lista-hist" class="oculto" style="margin-top:16px"></div>
@@ -2821,7 +2863,7 @@ html[data-tema="escuro"] .painel-config header { background: #152238; }
     <div class="cartao">
       <div class="form-oracao">
         <textarea id="campo-oracao" rows="2" placeholder="Pelo que você quer orar hoje?" aria-label="Novo pedido de oração"></textarea>
-        <button class="btn-mic" id="btn-oracao-voz" type="button" aria-label="Ditar o pedido" title="Ditar">🎤</button>
+        <button class="btn-mic" id="btn-oracao-voz" type="button" aria-label="Ditar o pedido" title="Ditar"><img src="/icon-mic.png" alt="" width="18" height="18" decoding="async"></button>
       </div>
       <div class="linha-ouvir">
         <button class="btn-ouvir" id="btn-add-oracao" type="button">
@@ -3060,14 +3102,14 @@ html[data-tema="escuro"] .painel-config header { background: #152238; }
       <button type="button" id="fa-nota">✎ Nota</button>
       <button type="button" id="fa-comparar">⇄ Comparar</button>
       <button type="button" id="fa-copiar"><img src="/icon-share.png" alt="" width="16" height="16" decoding="async"> Compartilhar</button>
-      <button type="button" id="fa-imagem">🖼 Imagem</button>
+      <button type="button" id="fa-imagem"><svg class="i" aria-hidden="true"><use href="#i-imagem"/></svg> Imagem</button>
     </div>
   </div>
 
   <div id="folha-nota" class="folha-nota oculto">
     <textarea id="campo-nota-verso" placeholder="Escreva o que este versículo falou com você…" aria-label="Nota do versículo"></textarea>
     <div class="linha-nota">
-      <button class="btn-mic" id="btn-nota-voz" type="button" aria-label="Ditar a nota" title="Ditar">🎤</button>
+      <button class="btn-mic" id="btn-nota-voz" type="button" aria-label="Ditar a nota" title="Ditar"><img src="/icon-mic.png" alt="" width="18" height="18" decoding="async"></button>
       <button class="btn-ouvir" id="btn-salvar-nota" type="button" style="flex:1 1 auto;justify-content:center">Salvar nota</button>
       <button class="btn-ouvir claro" id="btn-voltar-folha" type="button">Voltar</button>
     </div>
@@ -4851,7 +4893,7 @@ function cartaoVersiculo(texto, nr, cap, verso, versao, extra, opcoes){
      <a href="#sec-biblia" class="link-cap">Ler o capítulo completo →</a>
      <div class="acoes-verso">
        <button class="btn-acao btn-fav ${favAtivo ? 'ativo' : ''}" type="button">${favAtivo ? '★ Favorito' : '☆ Favoritar'}</button>
-       <button class="btn-acao btn-img" type="button">🖼 Gerar imagem</button>
+       <button class="btn-acao btn-img" type="button"><svg class="i" aria-hidden="true"><use href="#i-imagem"/></svg> Gerar imagem</button>
      </div>`;
   c.querySelector('.versiculo').textContent = texto;
   c.querySelector('.link-cap').onclick = e => { e.preventDefault(); abrirLeitura(nr, cap, verso); };
@@ -4875,8 +4917,15 @@ function cartaoVersiculo(texto, nr, cap, verso, versao, extra, opcoes){
     Voz.falar(montarPartes(), Object.assign({ botao: btnOuvirTopo }, opVoz));
   };
 
-  const btnOuvir = criarBotaoOuvir(op.rotuloBotao || 'Ouvir', montarPartes, { voz: opVoz });
-  c.querySelector('.acoes-verso').prepend(btnOuvir);
+  /* No percurso guiado o cartão já vem acompanhado de "Ouvir e seguir", que
+     começa lendo justamente este versículo. Os dois botões grandes, com o
+     mesmo ícone e a um dedo de distância, não davam para diferenciar — quem
+     chama pede para omitir este, e o alto-falante do cabeçalho continua ali
+     para ouvir só o versículo. */
+  if(!op.semBotaoOuvir){
+    const btnOuvir = criarBotaoOuvir(op.rotuloBotao || 'Ouvir', montarPartes, { voz: opVoz });
+    c.querySelector('.acoes-verso').prepend(btnOuvir);
+  }
   c.querySelector('.btn-fav').onclick = function(){
     const ativo = alternarFavorito({nr, cap, verso, texto, versao, ref});
     this.classList.toggle('ativo', ativo);
@@ -5009,7 +5058,8 @@ function montarPercurso(dados){
     cabeca.appendChild(trilha());
     const tempo = document.createElement('span');
     tempo.className = 'tempo-percurso';
-    tempo.textContent = '🕐 ' + estimarMinutos(passos.map(p => p.texto));
+    tempo.innerHTML = '<svg class="i" aria-hidden="true"><use href="#i-relogio"/></svg> ';
+    tempo.append(estimarMinutos(passos.map(p => p.texto)));
     cabeca.appendChild(tempo);
     cartao.appendChild(cabeca);
 
@@ -5025,7 +5075,8 @@ function montarPercurso(dados){
     /* o primeiro passo mantém o cartão de versículo inteiro, com
        favoritar, imagem e link para o capítulo */
     if(i === 0){
-      const c = cartaoVersiculo(texto, nr, cap, verso, versao, null, { titulo: ref });
+      const c = cartaoVersiculo(texto, nr, cap, verso, versao, null,
+        { titulo: ref, semBotaoOuvir: true });
       c.style.border = '0'; c.style.padding = '0'; c.style.boxShadow = 'none';
       corpo.appendChild(c);
     } else {
@@ -6520,7 +6571,7 @@ function renderFavoritos(){
            <div class="txt-fav"></div>
            <textarea class="campo-nota" placeholder="Escreva uma reflexão ou oração…"></textarea>
            <div class="linha-ditar">
-             <button class="btn-mic btn-mic-sm" type="button" aria-label="Ditar esta nota" title="Ditar">🎤</button>
+             <button class="btn-mic btn-mic-sm" type="button" aria-label="Ditar esta nota" title="Ditar"><img src="/icon-mic.png" alt="" width="16" height="16" decoding="async"></button>
              <span class="dica-ditar">Toque para ditar em vez de escrever</span>
            </div>
            <div class="meta-fav" style="margin-top:8px">
