@@ -48,6 +48,47 @@ versículos que contivessem a palavra "gênesis". A referência só era
 reconhecida com número junto (`Gênesis 1`). Agora o nome sozinho abre o
 livro, com ou sem acento.
 
+## Fontes no próprio site
+
+As duas famílias vinham de `fonts.googleapis.com` por um `<link rel="stylesheet">`.
+Isso tem três problemas, e o terceiro é o que decide:
+
+1. É **bloqueante de renderização** — nada aparece na tela até aquele host
+   responder. Em rede boa é invisível; em rede ruim, em portal cativo ou com
+   DNS lento, é tela branca.
+2. Manda o IP de quem abre o app para um terceiro, a cada carregamento.
+3. **O service worker só guarda o próprio domínio**, então a folha externa
+   nunca entrava no cache. Um app que promete funcionar offline dependia de
+   um servidor de fora para pintar a primeira tela.
+
+Agora são dois arquivos locais, no precache:
+
+| Arquivo | Tamanho |
+|---|---:|
+| `fonts/source-sans-3.woff2` | 28,7 KB |
+| `fonts/source-serif-4.woff2` | 122,4 KB |
+
+São **fontes variáveis** — um arquivo por família cobre todos os pesos, em
+vez de um por peso. O `unicode-range` limita ao latim; fora dele o sistema
+assume. O Google saiu da tabela de terceiros da política de privacidade,
+porque continuar listado ali seria falso.
+
+## Contraste
+
+`--texto-3` é a cor dos títulos de seção, dos rótulos das abas inativas
+(11 px), das datas do histórico — 35 usos. Ela aparece sobre o papel dos
+cartões **e** sobre o fundo da página, e o pior dos dois é que decide.
+
+| Tema | Antes | Agora | Mínimo AA |
+|---|---:|---:|---:|
+| Claro | 3,41 | **4,95** | 4,5 |
+| Escuro | 4,00 | **4,72** | 4,5 |
+
+No tema escuro, o ícone de compartilhar também ficava **preto sobre fundo
+escuro** nos três lugares onde aparece. A regra de inversão pega agora pelo
+nome do arquivo, e traz o `#fa-copiar` junto porque a regra dele tem id e
+venceria por especificidade.
+
 ## Acessibilidade estrutural
 
 Um app cuja premissa é servir quem tem dificuldade de ler tinha três
