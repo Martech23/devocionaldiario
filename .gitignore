@@ -1,0 +1,17 @@
+# dependências instaladas — a Vercel resolve pelo package-lock.json
+node_modules/
+
+# variáveis locais; as de verdade ficam no painel da Vercel
+.env
+.env.local
+.env*.local
+
+# saída de build e cache da Vercel
+.vercel
+.next
+dist/
+
+# lixo de sistema
+.DS_Store
+Thumbs.db
+*.log
