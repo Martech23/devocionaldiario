@@ -6665,6 +6665,13 @@ const ABAS = {
   meu:    ['sec-stats', 'sec-hist', 'sec-favoritos', 'sec-app']
 };
 const CHAVE_ABA = 'lampada-aba';
+const CHAVE_ABA_DIA = 'lampada-aba-dia';
+
+/* O navegador guarda a rolagem e devolve a pessoa onde ela parou. Num site
+   comum isso ajuda; aqui atrapalha, porque quem abre o app de manhã caía
+   na caixa de promessas, onde tinha parado ontem, em vez de no devocional
+   do dia. Desligamos a restauração e abrimos sempre no começo. */
+if('scrollRestoration' in history) history.scrollRestoration = 'manual';
 let abaAtual = null;
 
 const abaDe = id => Object.keys(ABAS).find(a => ABAS[a].includes(id));
@@ -6687,6 +6694,7 @@ function irParaAba(nome, op = {}){
     b.setAttribute('aria-current', ativo ? 'page' : 'false');
   });
   localStorage.setItem(CHAVE_ABA, nome);
+  localStorage.setItem(CHAVE_ABA_DIA, hojeISO());
   if(!op.semRolar) window.scrollTo({ top: 0, behavior: op.suave === false ? 'auto' : 'smooth' });
   /* quem está no modo áudio não vê para onde foi */
   if(Voz.prefs.modo && !op.silencioso){
@@ -6716,7 +6724,14 @@ document.querySelectorAll('.gaveta a[href^="#"]').forEach(a => {
   a.addEventListener('click', e => { e.preventDefault(); mostrarSecao(a.getAttribute('href').slice(1)); });
 });
 
-irParaAba(localStorage.getItem(CHAVE_ABA) || 'hoje', { semRolar: true, silencioso: true });
+/* A aba escolhida só vale enquanto o dia é o mesmo: quem estava na Bíblia
+   há dez minutos volta para lá, mas quem abre o app amanhã de manhã
+   encontra o devocional do dia, que é o motivo de o app existir. */
+const abaGuardada = localStorage.getItem(CHAVE_ABA_DIA) === hojeISO()
+  ? localStorage.getItem(CHAVE_ABA)
+  : 'hoje';
+irParaAba(abaGuardada || 'hoje', { semRolar: true, silencioso: true });
+window.scrollTo(0, 0);
 
 $('btn-menu').onclick = () => abrirMenu(true);
 $('veu').onclick = () => { abrirPainelVoz(false); abrirPainelConta(false); abrirMenu(false); };
