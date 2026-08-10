@@ -225,8 +225,19 @@ A divisão entre **Hoje** e **Meu** é entre *fazer* e *ter feito*:
 | **Planos** | os 12 planos | 2.797 px |
 | **Meu** | jornada, dias anteriores, favoritos, diário, instalar | 1.525 px |
 
-A home caiu de 8.004 px para **2,5 telas**. A aba escolhida fica guardada
-em `lampada-aba` e volta na próxima abertura.
+A home caiu de 8.004 px para **2,5 telas**.
+
+### Abrir o app é chegar no devocional
+
+O navegador guarda a rolagem e devolve a pessoa onde ela parou. Num site
+comum isso ajuda; aqui atrapalhava — quem tinha parado na caixa de
+promessas reabria lá no dia seguinte, em vez de no devocional do dia, que
+é o motivo de o app existir. A restauração automática fica desligada
+(`history.scrollRestoration = 'manual'`) e a abertura é sempre no começo.
+
+A aba escolhida (`lampada-aba`) **só vale enquanto o dia é o mesmo**: quem
+estava na Bíblia há dez minutos volta para lá, quem abre amanhã de manhã
+encontra o devocional.
 
 **Sua jornada** e **Dias anteriores** são registro do que se acumulou, não
 algo que se faça — e a sequência já aparece no fim do percurso guiado, no
