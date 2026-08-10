@@ -48,6 +48,40 @@ versículos que contivessem a palavra "gênesis". A referência só era
 reconhecida com número junto (`Gênesis 1`). Agora o nome sozinho abre o
 livro, com ou sem acento.
 
+## Continuar de onde parou
+
+Quem estava no dia 12 de um plano não via isso em lugar nenhum na tela
+Hoje: tinha de ir na aba Planos, achar o plano e achar o dia. O cartão
+mora logo abaixo do devocional, com o nome do plano, a barra de progresso,
+a leitura do próximo dia e três botões — ler, ouvir e ver o plano.
+
+Só aparece com um plano **em andamento**: quem não começou nenhum não
+precisa de um cartão vazio dizendo isso, e um plano concluído sai da lista.
+
+Dois detalhes que o código explica:
+
+- **O próximo dia é o primeiro que falta**, não o seguinte ao último
+  marcado — dá para marcar os dias fora de ordem, e `[1,2,5,6]` oferece o 3.
+- Com **mais de um plano em andamento**, ganha o último aberto
+  (`lampada-plano-atual`). Sem essa marca — em outro aparelho, por exemplo —
+  vale o mais adiantado, que é onde há mais a perder parando. A marca é
+  preferência de aparelho e não sincroniza; o progresso em si sincroniza.
+
+## Primeira visita
+
+O novo usuário era recebido por `0 dias seguidos · 0 capítulos lidos ·
+0 favoritos · 0 dias de planos`. Começar do zero é normal; ser recebido
+por um placar disso, não.
+
+Enquanto não há atividade nenhuma, o placar dá lugar a uma mensagem de
+boas-vindas que diz o que vai aparecer ali e leva ao devocional do dia. O
+botão **Ouvir meu resumo** some junto — ele leria os quatro zeros em voz
+alta, contradizendo a mensagem logo acima.
+
+No topo da aba Hoje há uma **saudação por horário** — bom dia, boa tarde,
+boa noite, boa madrugada. Sem nome: a conta guarda só o e-mail, e deduzir
+um nome do que vem antes do arroba erra feio na maioria das vezes.
+
 ## Fontes no próprio site
 
 As duas famílias vinham de `fonts.googleapis.com` por um `<link rel="stylesheet">`.
@@ -160,7 +194,7 @@ A divisão entre **Hoje** e **Meu** é entre *fazer* e *ter feito*:
 
 | Aba | O que tem | Altura |
 |---|---|---:|
-| **Hoje** | devocional, orações, caixa de promessas | 2.079 px |
+| **Hoje** | saudação, devocional, continuar de onde parou, orações, promessas | 2.079 px |
 | **Bíblia** | busca, versão, lista de livros, leitura | 2.819 px |
 | **Planos** | os 12 planos | 2.797 px |
 | **Meu** | jornada, dias anteriores, favoritos, diário, instalar | 1.525 px |
