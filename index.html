@@ -1621,12 +1621,19 @@ body.modo-foco #sec-biblia .voltar {
 /* a área de toque fica por cima, transparente: o desenho é pequeno
    demais para servir de alvo, mas não precisa crescer por isso */
 .m-alvo { fill: transparent; stroke: none; }
+/* linha de chamada: fina e apagada, para ligar sem competir com o nome */
+.m-chamada { stroke: var(--linha-forte); stroke-width: 1; opacity: .55; }
+.m-lugar:hover .m-chamada, .m-lugar:focus-visible .m-chamada,
+.m-lugar.ativo .m-chamada { stroke: var(--azul); opacity: 1; }
 .m-t-monte circle { fill: var(--azul); }
 .m-lugar.m-t-agua text { fill: var(--azul-cla); font-style: italic; stroke: var(--azul-claro-bg); }
 .m-lugar:hover circle, .m-lugar:focus-visible circle { fill: var(--azul); }
 .m-lugar:hover text, .m-lugar:focus-visible text { fill: var(--azul); }
 .m-lugar.ativo circle { fill: var(--azul); r: 8; }
-.m-lugar.ativo text { fill: var(--azul); font-weight: 700; }
+/* No aperto da Judeia alguns nomes não cabem e o desenho os esconde.
+   Tocado, o nome reaparece: ponto sem nome não deixa ninguém saber o
+   que acabou de abrir. `display` como atributo perde para o CSS. */
+.m-lugar.ativo text, .m-lugar:focus-visible text { display: inline; fill: var(--azul); font-weight: 700; }
 .m-lugar:focus-visible { outline: none; }
 .m-lugar:focus-visible circle { stroke: var(--azul-esc); stroke-width: 4; }
 
@@ -1644,6 +1651,7 @@ body.modo-foco #sec-biblia .voltar {
   line-height: 1.55;
   margin-bottom: 12px;
 }
+.lugar-mencoes { font-size: 13px; color: var(--texto-3); margin-bottom: 12px; }
 .lugar-refs { display: flex; flex-wrap: wrap; gap: 8px; }
 
 /* ---------------- veja também ---------------- */
@@ -3017,7 +3025,10 @@ html[data-tema="escuro"] .painel-config header { background: #152238; }
     <h2 class="rotulo-secao">Mapa da Terra Santa</h2>
     <div class="cartao">
       <div id="palco-mapa"></div>
-      <p class="mapa-aviso">Desenho nosso, com as posições em latitude e longitude reais. Toque num lugar.</p>
+      <p class="mapa-aviso">Desenho nosso. Toque num lugar.<br>
+        Coordenadas do <a href="https://github.com/openbibleinfo/Bible-Geocoding-Data" target="_blank" rel="noopener">Bible Geocoding Data</a>,
+        de OpenBible.info, sob <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>.
+        Escolhemos os lugares, traduzimos os nomes e escrevemos as notas.</p>
       <div id="ficha-lugar" class="oculto"></div>
     </div>
   </section>
@@ -3334,79 +3345,134 @@ const MAR_MORTO = [
 ];
 
 /* Lugares. As passagens são as que a pessoa pode abrir dali. */
+/* Lugares — gerados por ferramentas/gerar-lugares.mjs.
+   Latitude, longitude e a contagem de menções vêm do Bible Geocoding
+   Data do OpenBible.info (CC BY 4.0). O nome em português, a nota e as
+   passagens são nossos. Não edite à mão: mexa no gerador e rode de novo. */
 const LUGARES = [
-  { nome: 'Jerusalém', lat: 31.78, lon: 35.23, tipo: 'cidade', lado: 'e', dy: -4,
-    nota: 'A cidade do templo. Cenário da Páscoa, da cruz e da ressurreição.',
+  { nome: "Jerusalém", lat: 31.7767, lon: 35.2342, tipo: 'cidade', mencoes: 955,
+    nota: "A cidade do templo. Cenário da Páscoa, da cruz e da ressurreição.",
     refs: [[19,122,6],[42,19,41],[44,2,1]] },
-  { nome: 'Belém', lat: 31.70, lon: 35.20, tipo: 'cidade', lado: 'e', dy: 14,
-    nota: 'Onde Rute colheu, Davi nasceu e Jesus nasceu.',
-    refs: [[33,5,2],[42,2,4],[8,1,22]] },
-  { nome: 'Nazaré', lat: 32.70, lon: 35.30, tipo: 'cidade', lado: 'e', dy: 10,
-    nota: 'Onde Jesus cresceu, e de onde diziam que nada de bom podia vir.',
-    refs: [[42,2,51],[43,1,46]] },
-  { nome: 'Cafarnaum', lat: 32.88, lon: 35.57, tipo: 'cidade', lado: 'd', dy: -8,
-    nota: 'Base do ministério de Jesus na Galileia.',
-    refs: [[40,4,13],[41,2,1]] },
-  { nome: 'Caná', lat: 32.75, lon: 35.34, tipo: 'vila', lado: 'd', dy: -2,
-    nota: 'O primeiro sinal: a água que virou vinho.',
-    refs: [[43,2,11]] },
-  { nome: 'Jericó', lat: 31.87, lon: 35.44, tipo: 'cidade', lado: 'd', dy: -2,
-    nota: 'A cidade das muralhas, e onde Zaqueu subiu na árvore.',
-    refs: [[6,6,20],[42,19,5]] },
-  { nome: 'Betel', lat: 31.93, lon: 35.22, tipo: 'vila', lado: 'e', dy: -6,
-    nota: 'Onde Jacó sonhou com a escada que subia ao céu.',
-    refs: [[1,28,19]] },
-  { nome: 'Siquém', lat: 32.21, lon: 35.28, tipo: 'cidade', lado: 'd', dy: 8,
-    nota: 'Onde Josué reuniu o povo para escolher a quem servir.',
-    refs: [[6,24,15]] },
-  { nome: 'Samaria', lat: 32.28, lon: 35.20, tipo: 'cidade', lado: 'e', dy: -4,
-    nota: 'Capital do reino do norte; terra da mulher do poço.',
+  { nome: "Samaria", lat: 32.2761, lon: 35.195, tipo: 'cidade', mencoes: 126,
+    nota: "Capital do reino do norte; terra da mulher do poço.",
     refs: [[43,4,5],[44,8,5]] },
-  { nome: 'Hebrom', lat: 31.53, lon: 35.10, tipo: 'cidade',
-    nota: 'Onde Abraão morou e foi sepultado. Primeira capital de Davi.',
-    refs: [[1,23,19],[10,2,4]] },
-  { nome: 'Berseba', lat: 31.25, lon: 34.79, tipo: 'cidade',
-    nota: 'O extremo sul da terra: "de Dã a Berseba".',
-    refs: [[1,21,33],[9,3,20]] },
-  { nome: 'Jope', lat: 32.05, lon: 34.75, tipo: 'porto',
-    nota: 'De onde Jonas fugiu de navio; onde Pedro teve a visão.',
-    refs: [[32,1,3],[44,10,9]] },
-  { nome: 'Cesareia', lat: 32.50, lon: 34.89, tipo: 'porto',
-    nota: 'Porto romano. Casa de Cornélio e prisão de Paulo.',
-    refs: [[44,10,1],[44,23,33]] },
-  { nome: 'Monte Carmelo', lat: 32.73, lon: 35.05, tipo: 'monte', lado: 'e', dy: -8,
-    nota: 'Onde Elias desafiou os profetas de Baal.',
-    refs: [[11,18,20]] },
-  { nome: 'Meguido', lat: 32.58, lon: 35.18, tipo: 'cidade',
-    nota: 'Passagem de exércitos por séculos.',
-    refs: [[12,23,29]] },
-  { nome: 'Tiro', lat: 33.27, lon: 35.19, tipo: 'porto',
-    nota: 'Cidade fenícia. Jesus esteve nos seus arredores.',
+  { nome: "Betel", lat: 31.9228, lon: 35.2414, tipo: 'vila', mencoes: 69,
+    nota: "Onde Jacó sonhou com a escada que subia ao céu.",
+    refs: [[1,28,19]] },
+  { nome: "Jericó", lat: 31.8717, lon: 35.4446, tipo: 'cidade', mencoes: 68,
+    nota: "A cidade das muralhas, e onde Zaqueu subiu na árvore.",
+    refs: [[6,6,20],[42,19,5]] },
+  { nome: "Tiro", lat: 33.2708, lon: 35.1961, tipo: 'porto', mencoes: 64,
+    nota: "Cidade fenícia. Jesus esteve nos seus arredores.",
     refs: [[41,7,24]] },
-  { nome: 'Sidom', lat: 33.56, lon: 35.37, tipo: 'porto',
-    nota: 'A viúva de Sarepta, entre Tiro e Sidom, sustentou Elias.',
-    refs: [[11,17,9],[42,4,26]] },
-  { nome: 'Damasco', lat: 33.51, lon: 36.29, tipo: 'cidade',
-    nota: 'No caminho para lá, Saulo viu a luz e virou Paulo.',
+  { nome: "Hebrom", lat: 31.5251, lon: 35.1022, tipo: 'cidade', mencoes: 62,
+    nota: "Onde Abraão morou e foi sepultado. Primeira capital de Davi.",
+    refs: [[1,23,19],[10,2,4]] },
+  { nome: "Damasco", lat: 33.5111, lon: 36.3064, tipo: 'cidade', mencoes: 58,
+    nota: "No caminho para lá, Saulo viu a luz e virou Paulo.",
     refs: [[44,9,3]] },
-  { nome: 'Betânia', lat: 31.77, lon: 35.29, tipo: 'vila', lado: 'd', dy: 4,
-    nota: 'Casa de Marta, Maria e Lázaro.',
-    refs: [[43,11,1],[42,10,38]] },
-  { nome: 'Silo', lat: 32.06, lon: 35.29, tipo: 'vila',
-    nota: 'Onde ficou o tabernáculo, e onde Ana orou por um filho.',
+  { nome: "Belém", lat: 31.7043, lon: 35.2076, tipo: 'cidade', mencoes: 52,
+    nota: "Onde Rute colheu, Davi nasceu e Jesus nasceu.",
+    refs: [[33,5,2],[42,2,4],[8,1,22]] },
+  { nome: "Sodoma", lat: 31.2085, lon: 35.4492, tipo: 'cidade', mencoes: 50,
+    nota: "A cidade que Ló escolheu olhando para a planície bem regada.",
+    refs: [[1,13,12],[1,19,24]] },
+  { nome: "Siquém", lat: 32.2136, lon: 35.2819, tipo: 'cidade', mencoes: 45,
+    nota: "Onde Josué reuniu o povo para escolher a quem servir.",
+    refs: [[6,24,15]] },
+  { nome: "Gibeão", lat: 31.8475, lon: 35.1834, tipo: 'cidade', mencoes: 39,
+    nota: "Os gibeonitas enganaram Josué com pão velho e sandálias gastas.",
+    refs: [[6,9,3],[11,3,5]] },
+  { nome: "Gate", lat: 31.6997, lon: 34.8469, tipo: 'cidade', mencoes: 38,
+    nota: "Cidade de Golias, o filisteu que Davi enfrentou com a funda.",
+    refs: [[9,17,4],[10,1,20]] },
+  { nome: "Sidom", lat: 33.561, lon: 35.3719, tipo: 'porto', mencoes: 37,
+    nota: "A viúva de Sarepta, entre Tiro e Sidom, sustentou Elias.",
+    refs: [[11,17,9],[42,4,26]] },
+  { nome: "Silo", lat: 32.0557, lon: 35.2895, tipo: 'vila', mencoes: 37,
+    nota: "Onde ficou o tabernáculo, e onde Ana orou por um filho.",
     refs: [[9,1,9]] },
-  { nome: 'Gaza', lat: 31.52, lon: 34.45, tipo: 'cidade',
-    nota: 'Cidade filisteia; onde Sansão derrubou as colunas.',
+  { nome: "Hesbom", lat: 31.8008, lon: 35.8091, tipo: 'cidade', mencoes: 37,
+    nota: "Capital de Seom, tomada por Israel a caminho da terra prometida.",
+    refs: [[4,21,25]] },
+  { nome: "Berseba", lat: 31.2447, lon: 34.8408, tipo: 'cidade', mencoes: 33,
+    nota: "O extremo sul da terra: \"de Dã a Berseba\".",
+    refs: [[1,21,33],[9,3,20]] },
+  { nome: "Nazaré", lat: 32.7021, lon: 35.2977, tipo: 'cidade', mencoes: 32,
+    nota: "Onde Jesus cresceu, e de onde diziam que nada de bom podia vir.",
+    refs: [[42,2,51],[43,1,46]] },
+  { nome: "Jezreel", lat: 32.5579, lon: 35.328, tipo: 'cidade', mencoes: 29,
+    nota: "Onde ficava o palácio de Acabe e a vinha que Nabote não vendeu.",
+    refs: [[11,21,1],[12,9,30]] },
+  { nome: "Dã", lat: 33.249, lon: 35.652, tipo: 'cidade', mencoes: 25,
+    nota: "O extremo norte da terra: \"de Dã a Berseba\".",
+    refs: [[7,20,1],[11,12,29]] },
+  { nome: "Gaza", lat: 31.504, lon: 34.4644, tipo: 'cidade', mencoes: 22,
+    nota: "Cidade filisteia; onde Sansão derrubou as colunas.",
     refs: [[7,16,21]] },
-  { nome: 'Monte Nebo', lat: 31.77, lon: 35.73, tipo: 'monte', lado: 'd', dy: 16,
-    nota: 'De onde Moisés viu a terra que não pisaria.',
-    refs: [[5,34,1]] },
-  { nome: 'Lago da Galileia', lat: 32.82, lon: 35.59, tipo: 'agua', lado: 'd', dy: 12,
-    nota: 'Onde Jesus chamou pescadores e acalmou a tempestade.',
+  { nome: "Laquis", lat: 31.5653, lon: 34.8492, tipo: 'cidade', mencoes: 22,
+    nota: "Cidade fortificada, sitiada pelos assírios nos dias de Ezequias.",
+    refs: [[6,10,31],[12,18,14]] },
+  { nome: "Mar Morto", lat: 31.5, lon: 35.5, tipo: 'agua', mencoes: 21,
+    nota: "O ponto mais baixo da terra firme. O vale de Sidim, perto de Sodoma.",
+    refs: [[1,14,3],[6,3,16]] },
+  { nome: "Asdode", lat: 31.7572, lon: 34.6578, tipo: 'cidade', mencoes: 21,
+    nota: "Para onde levaram a arca — e onde Dagom caiu de cara no chão.",
+    refs: [[9,5,1]] },
+  { nome: "Ecrom", lat: 31.7775, lon: 34.8519, tipo: 'cidade', mencoes: 20,
+    nota: "A última das cinco cidades filisteias por onde a arca passou.",
+    refs: [[9,5,10]] },
+  { nome: "Jabes-Gileade", lat: 32.4024, lon: 35.6823, tipo: 'cidade', mencoes: 20,
+    nota: "Saul salvou a cidade, e ela não esqueceu: buscou o corpo dele.",
+    refs: [[9,11,1],[9,31,11]] },
+  { nome: "Ramote-Gileade", lat: 32.4999, lon: 36.015, tipo: 'cidade', mencoes: 20,
+    nota: "Onde Acabe foi ferido pela flecha atirada a esmo.",
+    refs: [[11,22,3]] },
+  { nome: "Quiriate-Jearim", lat: 31.809, lon: 35.1038, tipo: 'vila', mencoes: 19,
+    nota: "A arca ficou ali vinte anos, até Davi ir buscá-la.",
+    refs: [[9,7,1],[13,13,5]] },
+  { nome: "Cafarnaum", lat: 32.8811, lon: 35.575, tipo: 'cidade', mencoes: 18,
+    nota: "Base do ministério de Jesus na Galileia.",
+    refs: [[40,4,13],[41,2,1]] },
+  { nome: "Cesareia", lat: 32.5, lon: 34.8917, tipo: 'porto', mencoes: 18,
+    nota: "Porto romano. Casa de Cornélio e prisão de Paulo.",
+    refs: [[44,10,1],[44,23,33]] },
+  { nome: "Monte Carmelo", lat: 32.6725, lon: 35.0233, tipo: 'monte', mencoes: 18,
+    nota: "Onde Elias desafiou os profetas de Baal.",
+    refs: [[11,18,20]] },
+  { nome: "Bete-Semes", lat: 31.7506, lon: 34.9747, tipo: 'vila', mencoes: 17,
+    nota: "Para onde as vacas levaram a arca sozinhas, sem se desviar.",
+    refs: [[9,6,12]] },
+  { nome: "Rabá", lat: 31.9547, lon: 35.9343, tipo: 'cidade', mencoes: 17,
+    nota: "A cidade que Joabe sitiava enquanto Davi ficava em casa.",
+    refs: [[10,11,1],[10,12,26]] },
+  { nome: "Maanaim", lat: 32.1857, lon: 35.6867, tipo: 'vila', mencoes: 16,
+    nota: "Onde Jacó viu os anjos de Deus, e onde Davi se abrigou.",
+    refs: [[1,32,2],[10,17,24]] },
+  { nome: "Monte Hermom", lat: 33.4, lon: 35.85, tipo: 'monte', mencoes: 16,
+    nota: "A montanha alta do norte, e o orvalho que desce dela.",
+    refs: [[5,3,8],[19,133,3]] },
+  { nome: "Queila", lat: 31.6137, lon: 35.0036, tipo: 'vila', mencoes: 15,
+    nota: "Davi livrou a cidade dos filisteus — e ela o teria entregado.",
+    refs: [[9,23,5]] },
+  { nome: "Jope", lat: 32.0545, lon: 34.753, tipo: 'porto', mencoes: 14,
+    nota: "De onde Jonas fugiu de navio; onde Pedro teve a visão.",
+    refs: [[32,1,3],[44,10,9]] },
+  { nome: "Meguido", lat: 32.5853, lon: 35.1844, tipo: 'cidade', mencoes: 12,
+    nota: "Passagem de exércitos por séculos.",
+    refs: [[12,23,29]] },
+  { nome: "Betânia", lat: 31.7717, lon: 35.2559, tipo: 'vila', mencoes: 12,
+    nota: "Casa de Marta, Maria e Lázaro.",
+    refs: [[43,11,1],[42,10,38]] },
+  { nome: "Lago da Galileia", lat: 32.8189, lon: 35.59, tipo: 'agua', mencoes: 10,
+    nota: "Onde Jesus chamou pescadores e acalmou a tempestade.",
     refs: [[41,4,39],[40,4,18]] },
-  { nome: 'Mar Morto', lat: 31.45, lon: 35.48, tipo: 'agua', lado: 'e', dy: 0,
-    nota: 'O ponto mais baixo da terra firme. Perto de Sodoma e Gomorra.',
-    refs: [[1,19,24]] }
+  { nome: "Caná", lat: 32.8222, lon: 35.3027, tipo: 'vila', mencoes: 4,
+    nota: "O primeiro sinal: a água que virou vinho.",
+    refs: [[43,2,11]] },
+  { nome: "Monte Nebo", lat: 31.7667, lon: 35.75, tipo: 'monte', mencoes: 2,
+    nota: "De onde Moisés viu a terra que não pisaria.",
+    refs: [[5,34,1]] }
 ];
 
 /* =========================================================
@@ -4590,25 +4656,21 @@ function desenharMapa(){
   svg.appendChild(criar('polygon', { points: traco(MAR_MORTO), class: 'm-agua' }));
   svg.appendChild(criar('polyline', { points: traco(JORDAO), class: 'm-rio' }));
 
-  /* rótulo à direita de quem está à oeste e vice-versa: reduz encavalamento */
-  const meio = (MAPA.oesteLon + MAPA.lesteLon) / 2;
+  const pontos = [];
+  const textos = [];
   LUGARES.forEach((l, i) => {
     const x = projX(l.lon), y = projY(l.lat);
     const g = criar('g', { class: 'm-lugar m-t-' + l.tipo, tabindex: '0', role: 'button' });
     g.setAttribute('aria-label', l.nome + '. ' + l.nota);
     g.dataset.i = i;
-    if(l.tipo !== 'agua')
+    if(l.tipo !== 'agua'){
       g.appendChild(criar('circle', { cx: x.toFixed(1), cy: y.toFixed(1), r: 6 }));
-    /* onde os lugares se amontoam — Jerusalém e vizinhos, a Galileia — o
-       rótulo ganha deslocamento próprio, senão um cobre o outro */
-    const paraDireita = l.lado ? l.lado === 'd' : l.lon < meio;
-    const t = criar('text', {
-      x: ((paraDireita ? x + 11 : x - 11) + (l.dx || 0)).toFixed(1),
-      y: (y + 5 + (l.dy || 0)).toFixed(1),
-      'text-anchor': paraDireita ? 'start' : 'end'
-    });
+      pontos.push({ e: x - 8, d: x + 8, c: y - 8, b: y + 8 });
+    }
+    const t = criar('text', { x: x.toFixed(1), y: y.toFixed(1) });
     t.textContent = l.nome;
     g.appendChild(t);
+    textos.push({ t, x, y, peso: l.mencoes || 0 });
     /* alvo de toque generoso por cima do desenho, que é pequeno */
     g.appendChild(criar('rect', {
       x: (x - 22).toFixed(1), y: (y - 22).toFixed(1),
@@ -4622,7 +4684,102 @@ function desenharMapa(){
 
   palco.innerHTML = '';
   palco.appendChild(svg);
+  acomodarRotulos(textos, pontos);
   palco.dataset.pronto = '1';
+}
+
+/* Posições candidatas em volta do ponto, na ordem de preferência:
+   primeiro os lados, que são os que se leem melhor, depois acima e
+   abaixo, depois as diagonais — e só então tudo de novo em anéis mais
+   afastados, para os lugares que se amontoam em volta de Jerusalém.
+   Nome que vai para um anel de longe ganha linha de chamada; sem ela
+   ninguém sabe de qual ponto o nome é. */
+const POSICOES = [];
+for(const raio of [1, 1.7, 2.6]){
+  POSICOES.push(
+    { dx:  11 * raio, dy:   5, anc: 'start',  raio },
+    { dx: -11 * raio, dy:   5, anc: 'end',    raio },
+    { dx:   0, dy: -11 * raio, anc: 'middle', raio },
+    { dx:   0, dy:  19 * raio, anc: 'middle', raio },
+    { dx:  10 * raio, dy:  -7 * raio, anc: 'start',  raio },
+    { dx: -10 * raio, dy:  -7 * raio, anc: 'end',    raio },
+    { dx:  10 * raio, dy:  16 * raio, anc: 'start',  raio },
+    { dx: -10 * raio, dy:  16 * raio, anc: 'end',    raio }
+  );
+}
+
+/* =========================================================
+   ONDE CADA NOME CABE
+   Com 41 nomes num mapa de 583 unidades de largura, escolher
+   posição de rótulo à mão não escala — e foi assim que a versão
+   anterior precisou de deslocamento próprio em 14 lugares.
+   Aqui cada nome experimenta as oito posições e fica na primeira
+   que não encosta em rótulo já posto, em ponto de lugar nenhum,
+   nem na borda. Quem é mais mencionado escolhe primeiro, então,
+   quando sobra um lugar só, é Jerusalém que fica com ele.
+   Nome que não cabe em posição nenhuma some: o ponto continua
+   lá, clicável, e o leitor de tela continua anunciando o nome.
+   ========================================================= */
+function acomodarRotulos(textos, pontos){
+  const bate = (a, b) => !(a.d < b.e || b.d < a.e || a.b < b.c || b.b < a.c);
+  const postos = [];
+  const ordem = textos.slice().sort((a, b) => b.peso - a.peso);
+  /* o traço branco por trás da letra engorda o que se vê para além da
+     caixa geométrica; a folga cobre isso */
+  const FOLGA = 2.5;
+
+  for(const item of ordem){
+    /* medido na origem e com âncora conhecida: assim `cima` sai da fonte
+       que o navegador de fato usou, em vez de uma altura chutada — foi
+       chutando que quatro rótulos passaram por cima uns dos outros */
+    item.t.setAttribute('x', 0);
+    item.t.setAttribute('y', 0);
+    item.t.setAttribute('text-anchor', 'start');
+    const cx = item.t.getBBox();
+    const larg = cx.width || item.t.textContent.length * 8;
+    const alt = cx.height || 15;
+    const cima = cx.height ? cx.y : -11;
+
+    const tentar = p => {
+      const x = item.x + p.dx, y = item.y + p.dy;
+      const e = (p.anc === 'start' ? x : p.anc === 'end' ? x - larg : x - larg / 2) - FOLGA;
+      const c = y + cima - FOLGA;
+      const caixa = { e, d: e + larg + FOLGA * 2, c, b: c + alt + FOLGA * 2 };
+      if(caixa.e < 2 || caixa.d > MAPA_W - 2 || caixa.c < 2 || caixa.b > MAPA_H - 2) return null;
+      if(postos.some(q => bate(caixa, q))) return null;
+      /* nunca por cima de um ponto: numa versão anterior o "G" de
+         Gibeão ficava escondido atrás do círculo do vizinho */
+      if(pontos.some(q => bate(caixa, q))) return null;
+      return { p, x, y, caixa };
+    };
+
+    let posto = null;
+    for(const p of POSICOES) if((posto = tentar(p))) break;
+
+    if(!posto){ item.t.setAttribute('display', 'none'); continue; }
+    item.t.setAttribute('x', posto.x.toFixed(1));
+    item.t.setAttribute('y', posto.y.toFixed(1));
+    item.t.setAttribute('text-anchor', posto.p.anc);
+    postos.push(posto.caixa);
+    if(posto.p.raio > 1) chamar(item, posto);
+  }
+}
+
+/* Linha do ponto até a borda do rótulo que ficou longe. Vai atrás do
+   texto, no mesmo grupo, para acender junto no toque e no foco. */
+function chamar(item, posto){
+  const alvoX = posto.p.anc === 'start' ? posto.caixa.e
+    : posto.p.anc === 'end' ? posto.caixa.d
+    : (posto.caixa.e + posto.caixa.d) / 2;
+  const alvoY = (posto.caixa.c + posto.caixa.b) / 2;
+  const ang = Math.atan2(alvoY - item.y, alvoX - item.x);
+  const linha = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+  linha.setAttribute('x1', (item.x + Math.cos(ang) * 7).toFixed(1));
+  linha.setAttribute('y1', (item.y + Math.sin(ang) * 7).toFixed(1));
+  linha.setAttribute('x2', alvoX.toFixed(1));
+  linha.setAttribute('y2', alvoY.toFixed(1));
+  linha.setAttribute('class', 'm-chamada');
+  item.t.parentNode.insertBefore(linha, item.t);
 }
 
 function mostrarLugar(i){
@@ -4634,9 +4791,14 @@ function mostrarLugar(i){
 
   const ficha = $('ficha-lugar');
   ficha.classList.remove('oculto');
-  ficha.innerHTML = '<h3></h3><p class="lugar-nota"></p><div class="lugar-refs"></div>';
+  ficha.innerHTML = '<h3></h3><p class="lugar-nota"></p>' +
+    '<p class="lugar-mencoes"></p><div class="lugar-refs"></div>';
   ficha.querySelector('h3').textContent = l.nome;
   ficha.querySelector('.lugar-nota').textContent = l.nota;
+  /* a contagem é do OpenBible: dá a medida de quanto a Bíblia fala
+     do lugar, que nenhuma nota nossa transmitiria */
+  ficha.querySelector('.lugar-mencoes').textContent =
+    l.mencoes === 1 ? 'Citado em 1 versículo.' : 'Citado em ' + l.mencoes + ' versículos.';
 
   const caixa = ficha.querySelector('.lugar-refs');
   l.refs.forEach(([nr, cap, verso]) => {
@@ -7268,7 +7430,9 @@ $('btn-livros').onclick = () => { mostrarNivel('livros'); mostrarSecao('sec-bibl
 $('btn-mapa').onclick = function(){
   const sec = $('sec-mapa');
   const abrindo = sec.classList.contains('oculto');
-  if(abrindo){ desenharMapa(); sec.classList.remove('oculto'); mostrarSecao('sec-mapa'); }
+  /* a seção sai do escondido antes do desenho: getBBox só mede rótulo
+     que o navegador já tenha disposto na tela */
+  if(abrindo){ sec.classList.remove('oculto'); desenharMapa(); mostrarSecao('sec-mapa'); }
   else sec.classList.add('oculto');
   this.textContent = abrindo ? 'Mapa ⌃' : 'Mapa ⌄';
 };

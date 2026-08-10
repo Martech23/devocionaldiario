@@ -15,7 +15,7 @@ Site: https://devocionaldiario-eosin.vercel.app/
 - 12 planos de leitura, incluindo Bíblia em 1 ano
 - Busca por referência ou palavra
 - **Veja também** — referências cruzadas entre passagens
-- **Mapa da Terra Santa** — 24 lugares, cada um abrindo as passagens dali
+- **Mapa da Terra Santa** — 41 lugares, cada um abrindo as passagens dali
 - PWA instalável
 - **Web Push** — lembrete diário (~8h Brasília)
 - **Leitura em voz** e **ditado por voz** — para quem não lê nem escreve
@@ -83,73 +83,116 @@ não depende de rede; só o texto é buscado.
 ### Para crescer
 
 O *Treasury of Scripture Knowledge* (1830, domínio público) tem ~500 mil
-ligações, e o openbible.info publica um conjunto moderno em CC BY. Qualquer
-um dos dois entra no lugar de `GRUPOS_REF` sem mexer no resto — a licença
-precisa ser confirmada antes.
+ligações, e o OpenBible.info publica um conjunto moderno. Qualquer um dos
+dois entra no lugar de `GRUPOS_REF` sem mexer no resto.
+
+O caminho já está aberto: o mapa passou a usar dados do OpenBible.info e a
+licença deles, **CC BY 4.0**, foi conferida no arquivo `license.txt` do
+próprio repositório. O conjunto de referências cruzadas é outro arquivo e
+merece a mesma conferência antes de entrar — mas agora se sabe onde olhar,
+e o gerador do mapa serve de molde para o que faltar.
 
 ## Mapa da Terra Santa
 
 Ler "desceu a Jericó" ou "atravessou para a outra margem" sem saber onde
 fica nada é ler metade. O mapa fica na aba **Bíblia**, atrás de um botão, e
-cada lugar abre uma ficha com o que aconteceu ali e as passagens para ler.
+cada lugar abre uma ficha com o que aconteceu ali, quantos versículos o
+citam e as passagens para ler.
 
 | | |
 |---|---:|
-| Lugares | 24 |
-| Passagens ligadas a eles | 39 |
-| Cidades / vilas / portos / montes / águas | 12 / 4 / 4 / 2 / 2 |
+| Lugares | 41 |
+| Passagens ligadas a eles | 68 |
+| Nomes que cabem no desenho | 37 |
 
-**O desenho é nosso, em SVG.** Pela mesma razão que os fundos do gerador de
-imagem são desenhados e não fotografados: sem licença de terceiro, sem
-chave de API, sem tile server — e funciona offline, que é o ponto de um app
-que se instala no celular. Um mapa de imagem pronta traria a licença junto;
-um mapa de tiles traria fronteiras modernas e uma dependência de rede.
+### As coordenadas são do OpenBible.info
 
-O que **não** é invenção são as coordenadas: latitude e longitude reais,
-projetadas por código na hora de desenhar.
+O mapa usa o [Bible Geocoding
+Data](https://github.com/openbibleinfo/Bible-Geocoding-Data) do
+OpenBible.info, publicado sob **Creative Commons Attribution 4.0**. Deles
+vêm a latitude, a longitude e a contagem de quantos versículos citam cada
+lugar. Nossos são a escolha dos lugares, o nome em português, a nota e as
+passagens que abrem no leitor. A CC BY exige crédito, e ele está **na tela
+do mapa**, não só aqui.
 
-```js
-const COS_MEDIO = Math.cos((MAPA.sulLat + MAPA.norteLat) / 2 * Math.PI / 180);
-const projX = lon => (lon - MAPA.oesteLon) * COS_MEDIO * MAPA.k;
-const projY = lat => (MAPA.norteLat - lat) * MAPA.k;
+O desenho continua sendo nosso, em SVG: sem imagem de terceiro, sem tile
+server, sem pedido de rede — o mapa funciona offline, que é o ponto de um
+app que se instala no celular. O que a base aberta substituiu foi o dado,
+não o traço. Foi para isso que os dois estavam separados desde o começo.
+
+Antes as 24 coordenadas eram digitadas à mão, de memória. Comparadas com a
+base, erravam **1,8 km em média e 8,8 km no pior caso** — Caná, porque há
+dois sítios candidatos e eu tinha escolhido o tradicional sem saber que
+havia disputa.
+
+`ferramentas/gerar-lugares.mjs` baixa a base, resolve cada lugar e imprime
+o bloco `LUGARES` que vai para o `index.html`. Rodar de novo é como se
+atualiza; editar as coordenadas à mão é o que não se faz.
+
+```
+node ferramentas/gerar-lugares.mjs            gera o bloco LUGARES
+node ferramentas/gerar-lugares.mjs --ranking  lista candidatos a entrar
 ```
 
-Sem o `COS_MEDIO` a região sairia esticada no sentido leste-oeste — a
-longitude encolhe conforme se afasta do equador. Guardar grau e projetar em
-código, em vez de guardar pixel, deixa as posições relativas honestas: o
-teste confere que Belém cai ao sul de Jerusalém, Sidom ao norte de todos,
-Damasco a leste e Jope a oeste, sem olhar para o traço.
+### O gerador confere o que escrevemos
 
-Só o litoral, o Jordão, a Galileia e o Mar Morto são simplificados — são
-polilinhas de pontos reais da costa, não o contorno cartográfico.
+Cada passagem que escolhemos é conferida contra a lista de menções da
+base: se dissermos que Rute 1:22 fala de Belém e ela discordar, o gerador
+avisa. A conferência é **por capítulo, não por versículo**, de propósito —
+a passagem que abre no leitor é a do acontecimento, não a que soletra o
+nome. Atos 2:1 é o Pentecostes; quem diz "Jerusalém" é Atos 2:5.
 
-### Sobre atlas de código aberto
+Isso pegou três coisas que eu não sabia:
 
-Existem, e nenhum resolve melhor este caso:
+| | |
+|---|---|
+| Jericó | a do Antigo Testamento e a do Novo são sítios a 2,3 km um do outro |
+| Berseba, Samaria | aparecem duas vezes no mesmo ponto — a cidade e a região |
+| Mar Morto | Gênesis 19 fala de Sodoma, não do mar; a passagem virou Gênesis 14:3 |
 
-| Fonte | Licença | Por que não |
-|---|---|---|
-| openbible.info (geocoding) | CC BY | são **coordenadas**, não desenho — entra no lugar de `LUGARES`, não do mapa |
-| Atlas escaneados no Commons | domínio público (pré-1930) | imagem de 1900 em tela de celular: texto ilegível, sem toque, sem tema escuro |
-| Tiles do OpenStreetMap | ODbL | precisa de rede, mostra fronteiras modernas, e a atribuição viaja junto |
+Um pino cobre os dois sítios de Jericó e as duas entradas de Berseba e
+Samaria; o campo `tambem` declara isso, e as menções somam. As duas
+passagens que abrimos sem o nome aparecer no capítulo — Lucas 10 para
+Betânia, Marcos 4 para o lago — estão declaradas em `contexto`, e o
+gerador reclama se a exceção deixar de ser necessária.
 
-Se um dia entrar um conjunto de lugares com licença aberta, ele **substitui
-`LUGARES` e nada mais** — o desenho, a projeção e a ficha continuam iguais.
-Foi por isso que os dados ficaram separados do desenho. Coordenada de
-Belém é fato; ninguém detém direito sobre ela.
+### Quem escolhe onde cada nome fica
+
+Com 24 lugares, 14 rótulos precisavam de deslocamento escrito à mão. Com
+41 isso não escala. Agora cada nome experimenta 24 posições em volta do
+ponto — três anéis por oito direções — e fica na primeira que não encosta
+em nome já posto, em ponto nenhum e nem na borda. Quem é mais citado
+escolhe primeiro, então, quando sobra uma vaga só, é Jerusalém que fica
+com ela.
+
+A caixa de cada nome é medida com `getBBox()`, não estimada por número de
+letras: foi estimando que quatro rótulos passaram por cima uns dos outros
+na primeira tentativa. Por isso o desenho acontece com a seção já visível
+— `getBBox` não mede o que o navegador ainda não dispôs.
+
+Nome que sai para um anel de longe ganha **linha de chamada**. Sem ela o
+mapa ficava com nomes soltos no meio do nada, sem dar para saber de qual
+ponto eram — troca ruim. Nome que não cabe em posição nenhuma some, e são
+quatro, todos no aperto da Judeia: o ponto continua clicável, o leitor de
+tela continua anunciando, e **tocar no ponto faz o nome reaparecer**, para
+não existir ponto anônimo.
 
 ### Alvo de toque invisível
 
 Cada lugar é um grupo com ponto, rótulo e um retângulo transparente de
-44×44 por cima, que é quem recebe o toque — um ponto de 4px de raio é
+44×44 por cima, que é quem recebe o toque — um ponto de 6px de raio é
 impossível de acertar com o dedo. O retângulo herdava o traço do grupo e
 desenhava uma caixa em volta de cada cidade; o teste confere que ele
 continua sem preenchimento e sem traço.
 
-Os rótulos de 14 lugares levam deslocamento próprio (`lado`, `dx`, `dy`),
-porque Jerusalém, Belém e Betânia ficam a poucos quilômetros e os nomes se
-sobrepunham. Há teste que compara os retângulos de todos os rótulos entre
-si e falha se dois se tocarem.
+### Por que não um atlas pronto
+
+| Fonte | Licença | Por que não |
+|---|---|---|
+| Atlas escaneados no Commons | domínio público (pré-1930) | imagem de 1900 em tela de celular: texto ilegível, sem toque, sem tema escuro |
+| Tiles do OpenStreetMap | ODbL | precisa de rede, mostra fronteiras modernas, e a atribuição viaja junto |
+
+O OpenBible.info não é um atlas: é a tabela de coordenadas. Por isso serve.
 
 ## Continuar de onde parou
 
