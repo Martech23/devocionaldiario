@@ -1,6 +1,19 @@
 const crypto = require('crypto');
 const webpush = require('web-push');
 
+/**
+ * O web-push exige que o subject seja mailto: ou uma URL, e recusa um
+ * e-mail solto. Escrever só o endereço no painel é o erro mais fácil de
+ * cometer e o mais difícil de enxergar, então normalizamos aqui.
+ */
+function arrumarSubject(bruto) {
+  const s = String(bruto || '').trim();
+  if (!s) return 'mailto:devocional@example.com';
+  if (/^(mailto:|https?:\/\/)/i.test(s)) return s;
+  if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s)) return 'mailto:' + s;
+  return s;
+}
+
 /** Comparação em tempo constante, como já se faz com as senhas das contas. */
 function iguais(a, b) {
   if (!a || !b) return false;
@@ -115,7 +128,7 @@ async function enviar(req, res) {
 
   const publicKey = process.env.VAPID_PUBLIC_KEY;
   const privateKey = process.env.VAPID_PRIVATE_KEY;
-  const subject = process.env.VAPID_SUBJECT || 'mailto:devocional@example.com';
+  const subject = arrumarSubject(process.env.VAPID_SUBJECT);
 
   if (!publicKey || !privateKey) {
     return res.status(503).json({ error: 'VAPID keys não configuradas' });
