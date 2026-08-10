@@ -75,6 +75,26 @@
 }
 
 :root {
+  /* =========================================================
+     AS TRÊS VOZES DA TIPOGRAFIA
+
+     --fonte-interface  botões, rótulos, listas: some, não se lê
+     --fonte-leitura    a Escritura e o devocional: é o que se lê
+     --fonte-titulo     os títulos, que anunciam o que vem
+
+     A regra que já existia e continua: **interface em sans,
+     Palavra em serif**. O título entrou no serif junto da Palavra,
+     porque o que ele anuncia é ela — e não a interface.
+
+     Estão como variável para a troca de família ser uma linha e não
+     dezesseis. Querendo Lora, Merriweather ou Playfair Display no
+     lugar do Source Serif 4, é só baixar o woff2 para /fonts, somar
+     o @font-face e mudar --fonte-titulo aqui.
+     ========================================================= */
+  --fonte-interface: "Source Sans 3", -apple-system, system-ui, sans-serif;
+  --fonte-leitura: "Source Serif 4", Georgia, "Times New Roman", serif;
+  --fonte-titulo: "Source Serif 4", Georgia, "Times New Roman", serif;
+
   /* Paleta premium — luz */
   --azul: #1A4A82;
   --azul-esc: #123665;
@@ -130,14 +150,19 @@ html {
 body {
   background: var(--fundo);
   color: var(--texto);
-  font-family: "Source Sans 3", -apple-system, system-ui, sans-serif;
-  font-size: 16px;
-  line-height: 1.55;
+  font-family: var(--fonte-interface);
+  font-size: 17px;
+  /* 1,55 era aperto de tela de sistema, não de app de leitura */
+  line-height: 1.65;
   -webkit-font-smoothing: antialiased;
   transition: background 0.35s ease, color 0.35s ease;
 }
 
-.envolve { max-width: 880px; margin: 0 auto; padding: 0 16px calc(var(--rodape) + 24px); }
+/* Respiro lateral: 16px é a margem de uma lista de sistema; um app de
+   leitura pede mais. Fica em 20px no celular e abre para 28px assim que
+   a tela permite, que é onde a linha ficaria longa demais. */
+.envolve { max-width: 880px; margin: 0 auto; padding: 0 20px calc(var(--rodape) + 32px); }
+@media (min-width: 560px) { .envolve { padding-left: 28px; padding-right: 28px; } }
 
 /* Altura reservada no rodapé pela barra de abas. Tudo que era fixo em
    bottom:0 — a barra de áudio, os avisos — passa a se apoiar nela, para
@@ -581,7 +606,7 @@ button.copiar:hover img,
 
 /* ---------------- seções e cartões ---------------- */
 .secao {
-  margin-top: 28px;
+  margin-top: 34px;
   scroll-margin-top: 74px;
   animation: fadeUp 0.45s ease both;
 }
@@ -602,7 +627,9 @@ button.copiar:hover img,
   background: var(--papel);
   border: 1px solid var(--linha);
   border-radius: var(--radius);
-  padding: 24px 22px 26px;
+  /* o texto encosta menos na borda do cartão: é o que separa um cartão
+     de conteúdo de uma célula de tabela */
+  padding: 28px 24px 30px;
   box-shadow: var(--sombra);
   transition: box-shadow var(--trans-soft), border-color var(--trans), background var(--trans), transform var(--trans-soft);
 }
@@ -659,7 +686,7 @@ button.copiar:hover img,
 }
 
 .versiculo {
-  font-family: "Source Serif 4", Georgia, serif;
+  font-family: var(--fonte-leitura);
   font-size: calc(22px * var(--esc));
   line-height: 1.5;
   color: var(--texto);
@@ -695,10 +722,13 @@ button.copiar:hover img,
   font-weight: 700;
 }
 .bloco-devo p {
-  font-family: "Source Serif 4", serif;
-  font-size: calc(15.5px * var(--esc));
+  font-family: var(--fonte-leitura);
+  /* a reflexão, a meditação e a oração são o texto mais longo do app,
+     e estavam menores que o corpo da interface — 15,5px para o que se
+     lê e 16px para o rótulo de um botão era a hierarquia ao contrário */
+  font-size: calc(17px * var(--esc));
   color: var(--texto-2);
-  line-height: 1.6;
+  line-height: 1.7;
   margin: 0;
 }
 .bloco-devo.oracao {
@@ -774,7 +804,7 @@ button.copiar:hover img,
   transition: transform 0.32s cubic-bezier(0.22, 1.2, 0.36, 1);
 }
 .modal-fundo.aberto .modal-caixa { transform: scale(1) translateY(0); }
-.modal-caixa h3 { font-size: 16px; margin-bottom: 14px; font-weight: 700; }
+.modal-caixa h3 { font-family: var(--fonte-titulo); font-size: 19px; margin-bottom: 16px; font-weight: 600; letter-spacing: -.01em; }
 
 /* o canvas muda de proporção conforme o formato: o palco mantém
    a altura sob controle e centraliza o que sobrar */
@@ -857,7 +887,7 @@ button.copiar:hover img,
 .item-fav:last-child { border-bottom: 0; }
 .item-fav .ref-fav { font-size: 14px; font-weight: 600; color: var(--azul); margin-bottom: 4px; }
 .item-fav .txt-fav {
-  font-family: "Source Serif 4", serif;
+  font-family: var(--fonte-leitura);
   font-size: 15px;
   color: var(--texto);
   line-height: 1.45;
@@ -878,7 +908,7 @@ button.copiar:hover img,
   border-radius: var(--radius-sm);
   font-size: 13.5px;
   color: var(--texto-2);
-  font-family: "Source Serif 4", serif;
+  font-family: var(--fonte-leitura);
   line-height: 1.45;
 }
 .btn-remover {
@@ -1046,7 +1076,7 @@ html[data-tema="escuro"] .tema.ativo {
   padding: 32px 16px;
 }
 .vazio p {
-  font-family: "Source Serif 4", serif;
+  font-family: var(--fonte-leitura);
   font-size: 17px;
   color: var(--texto-2);
   margin-bottom: 20px;
@@ -1148,7 +1178,7 @@ html[data-tema="escuro"] .tema.ativo {
 .voltar:hover { opacity: 0.75; text-decoration: underline; }
 
 .v {
-  font-family: "Source Serif 4", Georgia, serif;
+  font-family: var(--fonte-leitura);
   font-size: calc(18px * var(--esc));
   line-height: 1.65;
   display: block;
@@ -1156,7 +1186,9 @@ html[data-tema="escuro"] .tema.ativo {
   color: var(--texto);
 }
 .v sup {
-  font-family: "Source Sans 3", sans-serif;
+  /* o número do versículo é chrome dentro do texto: sai do serif da
+     Palavra para não ser confundido com ela */
+  font-family: var(--fonte-interface);
   font-size: 11px;
   font-weight: 700;
   color: var(--azul);
@@ -1528,7 +1560,7 @@ body.modo-foco #sec-biblia .voltar {
   transition: border-color var(--trans), box-shadow var(--trans);
 }
 .card-plano:hover { border-color: var(--azul); box-shadow: var(--sombra); }
-.card-plano h3 { font-size: 16px; margin-bottom: 6px; color: var(--texto); }
+.card-plano h3 { font-family: var(--fonte-titulo); font-size: 18px; font-weight: 600; margin-bottom: 6px; color: var(--texto); letter-spacing: -.01em; }
 .card-plano p { font-size: 13.5px; color: var(--texto-2); margin-bottom: 12px; line-height: 1.45; }
 .card-plano .meta-plano { font-size: 12px; color: var(--texto-3); margin-bottom: 12px; }
 .cap.lido {
@@ -1600,7 +1632,7 @@ body.modo-foco #sec-biblia .voltar {
 .item-busca:hover { background: var(--azul-suave); margin: 0 -8px; padding-left: 8px; padding-right: 8px; border-radius: 6px; }
 .item-busca .ref-busca { font-size: 13.5px; font-weight: 600; color: var(--azul); margin-bottom: 4px; }
 .item-busca .txt-busca {
-  font-family: "Source Serif 4", serif;
+  font-family: var(--fonte-leitura);
   font-size: 15px;
   color: var(--texto);
   line-height: 1.45;
@@ -1672,7 +1704,7 @@ body.modo-foco #sec-biblia .voltar {
   line-height: 1.45;
 }
 #ficha-lugar { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--linha); }
-#ficha-lugar h3 { font-size: 17px; margin-bottom: 6px; letter-spacing: -.01em; }
+#ficha-lugar h3 { font-family: var(--fonte-titulo); font-size: 19px; margin-bottom: 8px; letter-spacing: -.01em; }
 .lugar-nota {
   font-size: 14.5px;
   color: var(--texto-2);
@@ -1721,7 +1753,7 @@ body.modo-foco #sec-biblia .voltar {
 }
 .ref-item-txt {
   display: block;
-  font-family: "Source Serif 4", Georgia, serif;
+  font-family: var(--fonte-leitura);
   font-size: calc(15px * var(--esc));
   line-height: 1.5;
   color: var(--texto);
@@ -1730,11 +1762,14 @@ body.modo-foco #sec-biblia .voltar {
 
 /* ---------------- saudação e primeira visita ---------------- */
 .saudacao {
-  font-size: 22px;
-  font-weight: 700;
+  /* é a maior tipografia da tela depois do versículo e a primeira que
+     se lê: ficava em sans bold enquanto tudo em volta virava serif */
+  font-family: var(--fonte-titulo);
+  font-size: 26px;
+  font-weight: 600;
   letter-spacing: -0.02em;
   color: var(--texto);
-  margin-bottom: 2px;
+  margin-bottom: 4px;
 }
 
 .boas-vindas { text-align: center; padding: 6px 0 2px; }
@@ -1748,7 +1783,7 @@ body.modo-foco #sec-biblia .voltar {
   place-items: center;
   margin: 0 auto 14px;
 }
-.boas-vindas h3 { font-size: 18px; margin-bottom: 8px; letter-spacing: -.01em; }
+.boas-vindas h3 { font-family: var(--fonte-titulo); font-size: 21px; font-weight: 600; margin-bottom: 10px; letter-spacing: -.015em; }
 .boas-vindas p {
   font-size: 14.5px;
   color: var(--texto-2);
@@ -1757,7 +1792,7 @@ body.modo-foco #sec-biblia .voltar {
 }
 
 /* ---------------- continuar de onde parou ---------------- */
-.continuar-nome { font-size: 16.5px; letter-spacing: -.01em; margin-bottom: 12px; }
+.continuar-nome { font-family: var(--fonte-titulo); font-size: 19px; font-weight: 600; letter-spacing: -.01em; margin-bottom: 12px; }
 .continuar-barra {
   height: 7px;
   border-radius: 99px;
@@ -1777,7 +1812,7 @@ body.modo-foco #sec-biblia .voltar {
   margin-top: 8px;
 }
 .continuar-ref {
-  font-family: "Source Serif 4", Georgia, serif;
+  font-family: var(--fonte-leitura);
   font-size: calc(17px * var(--esc));
   color: var(--texto);
   margin-top: 12px;
@@ -1869,7 +1904,7 @@ body.modo-foco #sec-biblia .voltar {
 }
 
 .passo .texto-passo {
-  font-family: "Source Serif 4", serif;
+  font-family: var(--fonte-leitura);
   font-size: calc(17.5px * var(--esc));
   line-height: 1.62;
   color: var(--texto);
@@ -1921,7 +1956,7 @@ body.modo-foco #sec-biblia .voltar {
   margin: 0 auto 16px;
   animation: popSuave 0.5s cubic-bezier(0.22, 1.2, 0.36, 1) both;
 }
-.fim-percurso h3 { font-size: 19px; margin-bottom: 6px; letter-spacing: -.01em; }
+.fim-percurso h3 { font-family: var(--fonte-titulo); font-size: 22px; font-weight: 600; margin-bottom: 8px; letter-spacing: -.015em; }
 .fim-percurso p { font-size: 14.5px; color: var(--texto-2); line-height: 1.55; margin-bottom: 18px; }
 .fim-percurso .acoes-fim { display: flex; flex-direction: column; gap: 8px; }
 
@@ -2017,7 +2052,7 @@ html[data-tema="escuro"] {
   margin-bottom: 4px;
 }
 .folha-txt {
-  font-family: "Source Serif 4", serif;
+  font-family: var(--fonte-leitura);
   font-size: 15px;
   color: var(--texto-2);
   line-height: 1.5;
@@ -2084,7 +2119,7 @@ html[data-tema="escuro"] {
 .folha-nota textarea {
   width: 100%;
   min-height: 110px;
-  font-family: "Source Serif 4", serif;
+  font-family: var(--fonte-leitura);
   font-size: 15px;
   line-height: 1.5;
   padding: 12px 14px;
@@ -2160,7 +2195,7 @@ html[data-ditado="0"] #btn-busca-voz { display: none; }
   margin-bottom: 6px;
 }
 .comp-txt {
-  font-family: "Source Serif 4", serif;
+  font-family: var(--fonte-leitura);
   font-size: 15.5px;
   line-height: 1.55;
   color: var(--texto);
@@ -7107,9 +7142,17 @@ async function redesenharImagem(){
 }
 
 /* Quebra o texto em linhas e reduz a fonte até o bloco caber */
+/* O canvas não entende variável de CSS. `ctx.font` passa pelo parser de
+   fonte, que rejeita `var(--fonte-leitura)` em silêncio e deixa valendo a
+   fonte anterior — 10px sans-serif, no começo do desenho. Foi assim que o
+   texto parou de encolher para caber: `measureText` media na fonte errada,
+   tudo "cabia" no tamanho máximo, e o versículo longo sairia estourando a
+   imagem. Aqui a pilha vai escrita, e o teste do gerador guarda isso. */
+const FONTE_CANVAS = '"Source Serif 4", Georgia, serif';
+
 function ajustarTexto(ctx, texto, maxW, maxH, fonteMax, fonteMin){
   for(let tam = fonteMax; tam >= fonteMin; tam -= 2){
-    ctx.font = '500 ' + tam + 'px "Source Serif 4", Georgia, serif';
+    ctx.font = '500 ' + tam + 'px ' + FONTE_CANVAS;
     const linhas = [];
     let linha = '';
     texto.split(/\s+/).forEach(p => {
@@ -7177,7 +7220,7 @@ function desenharTextoSobreFundo(ctx, W, H, claro){
   ctx.stroke();
 
   ctx.fillStyle = tinta;
-  ctx.font = '500 ' + tam + 'px "Source Serif 4", Georgia, serif';
+  ctx.font = '500 ' + tam + 'px ' + FONTE_CANVAS;
   let y = topo + alturaLinha * 0.78;
   linhas.forEach(l => { ctx.fillText(l, W / 2, y); y += alturaLinha; });
 
