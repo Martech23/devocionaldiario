@@ -424,6 +424,24 @@ continuam intactos.
 
 O cron em `vercel.json` chama `/api/daily-push` todo dia às **11:00 UTC** (8h em Brasília).
 
+### A notificação traz o versículo do dia
+
+Trazia outro. Eram duas listas independentes — 15 referências na função de
+servidor e as 180 do devocional — então quem tocasse no lembrete abria o
+app e via coisa diferente do que tinha acabado de ler na tela de bloqueio.
+Todo dia, sem exceção.
+
+A lista agora vive em `api/lib/versiculos.js`, cópia da que o app usa. Está
+repetida porque o app é um arquivo único e a função de servidor não importa
+de dentro dele — e a cópia é **presa por teste**: a suíte compara as duas
+listas item por item e simula os 366 dias do ano conferindo se os dois
+lados escolhem o mesmo versículo.
+
+O nome do livro sai da nossa tabela, não do `book_name` que a API devolve.
+E se a Bíblia estiver fora do ar, o lembrete ainda sai dizendo a referência
+("O devocional de hoje está em Salmos 34:10") — a referência é nossa e não
+depende de rede.
+
 ### Testar o push manualmente
 
 ```bash
