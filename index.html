@@ -3348,6 +3348,29 @@ html[data-tema="escuro"] .painel-config header { background: #152238; }
 </div>
 
 <script>
+/* =========================================================
+   O ENDEREÇO DO SITE VAI JUNTO
+
+   Versículo compartilhado sem link chega bonito e morre ali: quem
+   recebeu não tem como voltar para o lugar de onde veio.
+
+   O endereço sai da tag canônica, a mesma que a prévia do WhatsApp
+   usa — assim link compartilhado e link da prévia não podem
+   divergir. Em desenvolvimento, cai na origem da própria página.
+   ========================================================= */
+const LINK_SITE = (document.querySelector('link[rel="canonical"]') || {}).href
+  || (location.origin + '/');
+/* versão curta, para caber desenhada no rodapé da imagem */
+const DOMINIO_SITE = LINK_SITE.replace(/^https?:\/\//, '').replace(/\/$/, '');
+
+/* O link levar à capa não bastaria: quem recebeu o versículo teria de
+   procurá-lo. `?v=nr.capítulo.versículo` abre a passagem direto, com o
+   versículo destacado. Números e não o nome do livro porque o nome tem
+   acento e espaço, e endereço com "G%C3%AAnesis%2028" some quando o
+   aplicativo de mensagem corta o link no meio. */
+const linkDoVerso = (nr, cap, verso) =>
+  LINK_SITE + '?v=' + nr + '.' + cap + (verso ? '.' + verso : '');
+
 /* ===== fontes de texto: uso livre confirmado e ortografia atual ===== */
 /* Versões semente — funcionam mesmo se o catálogo remoto falhar */
 const VERSOES = [
@@ -5722,8 +5745,7 @@ function cartaoVersiculo(texto, nr, cap, verso, versao, extra, opcoes){
   c.querySelector('.link-cap').onclick = e => { e.preventDefault(); abrirLeitura(nr, cap, verso); };
   c.querySelector('.copiar').onclick = () => {
     const t = `"${texto}"\n${ref} — ${versao}`;
-    if(navigator.share) navigator.share({text:t}).catch(()=>{});
-    else if(navigator.clipboard) navigator.clipboard.writeText(t).then(()=>avisar('Texto copiado para compartilhar')).catch(()=>avisar('Não foi possível compartilhar'));
+    compartilharTexto(t, linkDoVerso(nr, cap, verso));
   };
   const op = opcoes || {};
   /* O que será lido em voz: referência, versículo e — no devocional —
@@ -5754,7 +5776,9 @@ function cartaoVersiculo(texto, nr, cap, verso, versao, extra, opcoes){
     this.classList.toggle('ativo', ativo);
     this.textContent = ativo ? '★ Favorito' : '☆ Favoritar';
   };
-  c.querySelector('.btn-img').onclick = () => abrirGeradorImagem(texto, ref, versao, typeof temaAtual !== 'undefined' ? temaAtual : '');
+  c.querySelector('.btn-img').onclick = () =>
+    abrirGeradorImagem(texto, ref, versao,
+      typeof temaAtual !== 'undefined' ? temaAtual : '', [nr, cap, verso]);
   if(extra) c.appendChild(extra);
   return c;
 }
@@ -6643,7 +6667,7 @@ async function descobrirTudo(){
 }
 
 /* ---------- gerador de imagem ---------- */
-let imgAtual = { texto: '', ref: '', versao: '', tema: '' };
+let imgAtual = { texto: '', ref: '', versao: '', tema: '', onde: null };
 let imgModo = 'foto'; /* 'foto' | 'arte' */
 let imgFotoLista = [];
 let imgFotoIdx = 0;
@@ -7044,8 +7068,10 @@ function desenharFotoCover(ctx, img, W, H){
   ctx.drawImage(img, x, y, nw, nh);
 }
 
-async function abrirGeradorImagem(texto, ref, versao, tema){
-  imgAtual = { texto, ref, versao, tema: tema || '' };
+async function abrirGeradorImagem(texto, ref, versao, tema, onde){
+  /* `onde` guarda de qual passagem a imagem saiu, para o link que vai
+     junto dela levar a essa passagem e não à capa */
+  imgAtual = { texto, ref, versao, tema: tema || '', onde: onde || null };
   imgFundo = null;
   imgFotoLista = [];
   imgFotoIdx = 0;
@@ -7240,12 +7266,24 @@ function desenharTextoSobreFundo(ctx, W, H, claro){
   ctx.font = '400 ' + Math.round(W * 0.023) + 'px "Source Sans 3", system-ui, sans-serif';
   ctx.fillText(imgAtual.versao, W / 2, topo + hTexto + gapOrn + gapRef + gapVer * 0.62);
 
+  /* O endereço, desenhado no rodapé.
+     Na legenda o link também vai, mas legenda não sobrevive ao
+     reencaminhamento: a imagem passa adiante sozinha e quem a recebe
+     de terceira mão não tem como saber de onde ela veio. Escrito na
+     imagem, o endereço viaja junto para sempre. */
+  /* cor própria, mais firme que a do crédito: sobre os fundos com
+     desenho — a oliveira e o pergaminho — a tinta de enfeite deixava
+     o endereço em 3,6:1, e endereço é para ser lido e digitado */
+  ctx.fillStyle = claro ? 'rgba(42,36,24,0.82)' : 'rgba(255,255,255,0.88)';
+  ctx.font = '600 ' + Math.round(W * 0.021) + 'px "Source Sans 3", system-ui, sans-serif';
+  ctx.fillText(DOMINIO_SITE, W / 2, H * 0.945);
+
   // crédito Pexels no rodapé (modo foto)
   if(imgModo === 'foto' && imgFotoLista[imgFotoIdx]){
     const f = imgFotoLista[imgFotoIdx];
     ctx.fillStyle = suave;
     ctx.font = '400 ' + Math.round(W * 0.018) + 'px "Source Sans 3", system-ui, sans-serif';
-    ctx.fillText('Foto: ' + f.photographer + ' / Pexels', W / 2, H * 0.965);
+    ctx.fillText('Foto: ' + f.photographer + ' / Pexels', W / 2, H * 0.975);
   }
 }
 
@@ -7305,6 +7343,29 @@ function baixarImagem(){
   avisar('Imagem baixada');
 }
 
+/* =========================================================
+   COMPARTILHAR TEXTO COM O LINK JUNTO
+
+   O link vai no campo `url`, separado, e não colado no texto. Quando
+   o destino só aceita texto — o WhatsApp é assim —, quem junta os
+   dois é o próprio navegador, com o espaçamento que aquele aplicativo
+   espera. Colar o endereço no texto *e* mandar em `url` faria o link
+   aparecer duas vezes nos destinos que entendem os dois campos.
+
+   Na cópia para a área de transferência não existe campo separado,
+   então aí o endereço entra no texto à mão.
+   ========================================================= */
+function compartilharTexto(texto, link){
+  const url = link || LINK_SITE;
+  if(navigator.share)
+    return navigator.share({ text: texto, url }).catch(() => {});
+  if(navigator.clipboard)
+    return navigator.clipboard.writeText(texto + '\n\n' + url)
+      .then(() => avisar('Texto e link copiados'))
+      .catch(() => avisar('Não foi possível copiar'));
+  avisar('Não foi possível compartilhar');
+}
+
 /* Compartilhar o arquivo direto, quando o aparelho permite */
 function compartilharImagem(){
   const canvas = $('canvas-verso');
@@ -7313,11 +7374,23 @@ function compartilharImagem(){
     if(!blob) return baixarImagem();
     const arquivo = new File([blob], nomeArquivoImagem(), { type: 'image/png' });
     if(navigator.canShare && !navigator.canShare({ files: [arquivo] })) return baixarImagem();
-    navigator.share({
+
+    /* Nem todo aparelho aceita arquivo e link no mesmo envio. Vale a
+       pena tentar com o link, mas nunca ao custo da imagem: se a
+       combinação for recusada, vai a imagem sozinha — que já leva o
+       endereço desenhado no rodapé. */
+    const alvo = imgAtual.onde ? linkDoVerso.apply(null, imgAtual.onde) : LINK_SITE;
+    const comLink = {
       files: [arquivo],
       title: imgAtual.ref,
-      text: imgAtual.ref + ' — Bíblia Devocional'
-    }).catch(e => {
+      text: imgAtual.ref + ' — Bíblia Devocional',
+      url: alvo
+    };
+    const carga = (!navigator.canShare || navigator.canShare(comLink))
+      ? comLink
+      : { files: [arquivo], title: comLink.title, text: comLink.text + '\n' + alvo };
+
+    navigator.share(carga).catch(e => {
       if(e && e.name === 'AbortError') return;   // a pessoa desistiu
       baixarImagem();
     });
@@ -7563,6 +7636,34 @@ const abaGuardada = localStorage.getItem(CHAVE_ABA_DIA) === hojeISO()
   : 'hoje';
 irParaAba(abaGuardada || 'hoje', { semRolar: true, silencioso: true });
 window.scrollTo(0, 0);
+
+/* =========================================================
+   CHEGANDO POR UM VERSÍCULO COMPARTILHADO
+
+   `?v=nr.capítulo.versículo` abre a passagem direto, com o versículo
+   destacado. Quem recebeu o versículo de um amigo cai nele, e não
+   numa capa onde teria de procurá-lo.
+
+   Vem depois da aba guardada de propósito: o link é o motivo pelo
+   qual a pessoa abriu o app agora, e ganha de onde ela estava ontem.
+
+   Depois de atendido, o endereço é limpo — senão a pessoa navega o
+   app inteiro com `?v=` grudado na barra, e um "atualizar" mais tarde
+   a jogaria de volta para aquele versículo sem ela pedir.
+   ========================================================= */
+function atenderLinkDeVerso(){
+  const bruto = new URLSearchParams(location.search).get('v');
+  if(!bruto) return false;
+  const [nr, cap, verso] = bruto.split('.').map(Number);
+  const livro = livroPorNr(nr);
+  if(!livro || !(cap >= 1 && cap <= livro.caps)) return false;
+
+  history.replaceState(null, '', location.pathname);
+  irParaAba('biblia', { semRolar: true, silencioso: true });
+  abrirLeitura(nr, cap, verso > 0 ? verso : null);
+  return true;
+}
+atenderLinkDeVerso();
 
 $('btn-menu').onclick = () => abrirMenu(true);
 $('veu').onclick = () => { abrirPainelVoz(false); abrirPainelConta(false); abrirMenu(false); };
@@ -7876,18 +7977,15 @@ $('fa-copiar').onclick = () => {
   if(!versoAberto) return;
   const { nr, cap, verso, texto } = versoAberto;
   const ref = livroPorNr(nr).nome + ' ' + cap + ':' + verso;
-  const t = `"${texto}"\n${ref} — ${versaoAtual.nome}`;
-  if(navigator.share) navigator.share({ text: t }).catch(() => {});
-  else if(navigator.clipboard) navigator.clipboard.writeText(t)
-    .then(() => avisar('Texto copiado para compartilhar'))
-    .catch(() => avisar('Não foi possível copiar'));
+  compartilharTexto(`"${texto}"\n${ref} — ${versaoAtual.nome}`, linkDoVerso(nr, cap, verso));
 };
 
 $('fa-imagem').onclick = () => {
   if(!versoAberto) return;
   const { nr, cap, verso, texto } = versoAberto;
   fecharFolha();
-  abrirGeradorImagem(texto, livroPorNr(nr).nome + ' ' + cap + ':' + verso, versaoAtual.nome, '');
+  abrirGeradorImagem(texto, livroPorNr(nr).nome + ' ' + cap + ':' + verso,
+                     versaoAtual.nome, '', [nr, cap, verso]);
 };
 
 $('btn-nota-voz').onclick = function(){
