@@ -43,6 +43,22 @@ async function montarMensagem() {
 }
 
 module.exports = async function handler(req, res) {
+  /* Qualquer coisa que escape daqui vira a tela de crash da Vercel, que não
+     diz o que houve nem aparece no navegador de quem chamou. Melhor um JSON
+     dizendo em que etapa foi. */
+  try {
+    return await enviar(req, res);
+  } catch (e) {
+    return res.status(500).json({
+      error: 'A função quebrou',
+      etapa: 'inesperada',
+      detalhe: String(e && e.message || e),
+      pilha: String(e && e.stack || '').split('\n').slice(0, 4)
+    });
+  }
+};
+
+async function enviar(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Authorization, Content-Type');
@@ -105,7 +121,22 @@ module.exports = async function handler(req, res) {
     return res.status(503).json({ error: 'VAPID keys não configuradas' });
   }
 
-  webpush.setVapidDetails(subject, publicKey, privateKey);
+  /* O web-push valida as chaves e joga uma exceção se elas estiverem
+     malformadas. Sem este try, uma chave torta virava a tela de crash da
+     Vercel, que não diz nada sobre o que aconteceu. */
+  try {
+    webpush.setVapidDetails(subject, publicKey, privateKey);
+  } catch (e) {
+    return res.status(503).json({
+      error: 'VAPID keys inválidas',
+      etapa: 'configurar VAPID',
+      detalhe: String(e && e.message || e),
+      dica: 'Confira VAPID_PUBLIC_KEY e VAPID_PRIVATE_KEY na Vercel. A pública tem 87 caracteres e a privada 43, ambas em base64url. VAPID_SUBJECT precisa ser mailto: ou uma URL.',
+      tamanhoPublica: publicKey.length,
+      tamanhoPrivada: privateKey.length,
+      subject: subject
+    });
+  }
 
   const msg = await montarMensagem();
   const payload = JSON.stringify({
@@ -115,7 +146,20 @@ module.exports = async function handler(req, res) {
     tag: 'devocional-diario'
   });
 
-  const subs = await listSubs();
+  /* Ler o Redis também estourava para fora: token errado, URL errada ou a
+     Upstash fora do ar davam 500 sem explicação. */
+  let subs;
+  try {
+    subs = await listSubs();
+  } catch (e) {
+    return res.status(502).json({
+      error: 'Não consegui ler as inscrições no Redis',
+      etapa: 'listar inscrições',
+      detalhe: String(e && e.message || e),
+      dica: 'Confira UPSTASH_REDIS_REST_URL e UPSTASH_REDIS_REST_TOKEN na Vercel.'
+    });
+  }
+
   let sent = 0;
   let removed = 0;
   const errors = [];
@@ -131,8 +175,9 @@ module.exports = async function handler(req, res) {
     } catch (e) {
       const code = e.statusCode;
       if (code === 404 || code === 410) {
-        await removeSub(sub.endpoint);
-        removed++;
+        /* a limpeza da inscrição morta não pode derrubar o envio dos outros */
+        try { await removeSub(sub.endpoint); removed++; }
+        catch (e2) { errors.push('falha ao remover inscrição: ' + String(e2 && e2.message || e2)); }
       } else {
         errors.push(String(e.message || e));
       }
@@ -147,4 +192,4 @@ module.exports = async function handler(req, res) {
     preview: { title: msg.title, body: msg.body },
     errors: errors.slice(0, 5)
   });
-};
+}
