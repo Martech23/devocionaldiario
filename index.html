@@ -2168,20 +2168,41 @@ html[data-ditado="0"] #btn-busca-voz { display: none; }
 .comp-falhou { font-style: italic; color: var(--texto-3); font-size: 14px; }
 
 /* ---------------- orações ---------------- */
-.form-oracao { display: flex; gap: 8px; align-items: flex-start; margin-bottom: 18px; }
+/* =========================================================
+   PEDIDO DE ORAÇÃO
+
+   O microfone ficava numa coluna ao lado do campo. Numa tela de
+   320px aquela coluna de 44px mais o vão comiam 52px da largura
+   útil do texto — um sexto da tela para um botão. Agora ele flutua
+   dentro do canto do próprio campo.
+   ========================================================= */
+.form-oracao { position: relative; margin-bottom: 18px; }
 .form-oracao textarea {
-  flex: 1 1 auto;
-  min-height: 52px;
+  display: block;   /* sem isto, a linha de base deixa uma fresta embaixo */
+  width: 100%;
   font-family: inherit;
   font-size: 15px;
   line-height: 1.5;
-  padding: 13px 14px;
+  /* o fundo é reservado para o microfone: ele começa a 8px da borda e
+     tem 44px, então o texto tem de parar antes dos 52px */
+  padding: 13px 14px 56px;
   border: 1px solid var(--linha-forte);
   border-radius: var(--radius-sm);
   background: var(--papel-alt);
   color: var(--texto);
-  resize: vertical;
+  /* a alça de redimensionar do navegador nasce exatamente no canto
+     onde o microfone agora pousa, e ele a cobriria. Em troca o campo
+     cresce sozinho conforme se escreve, que em celular é melhor do
+     que arrastar uma alça de 16px. */
+  resize: none;
+  overflow: hidden;
 }
+/* o botão é posicionado só aqui: o mesmo .btn-mic serve à busca por
+   voz e à nota do versículo, que continuam em linha */
+.form-oracao .btn-mic { position: absolute; right: 8px; bottom: 8px; }
+/* sem ditado no navegador o botão some, e o fundo reservado para ele
+   viraria um buraco embaixo do texto */
+html[data-ditado="0"] .form-oracao textarea { padding-bottom: 13px; }
 .item-oracao {
   display: flex;
   gap: 12px;
@@ -5048,6 +5069,9 @@ function adicionarOracao(){
   });
   salvarOracoes(lista);
   campo.value = '';
+  /* mexer no value por código não dispara `input`: sem isto o campo
+     ficaria alto e vazio depois de um pedido longo */
+  ajustarCampoOracao();
   renderOracoes();
   registrarAtividade();
   avisar('Pedido adicionado');
@@ -7849,10 +7873,25 @@ $('btn-add-oracao').onclick = adicionarOracao;
 $('campo-oracao').onkeydown = e => {
   if(e.key === 'Enter' && (e.metaKey || e.ctrlKey)) adicionarOracao();
 };
+
+/* O campo perdeu a alça de redimensionar — ela nascia no canto onde o
+   microfone agora fica. Em troca cresce sozinho: zera a altura para o
+   scrollHeight voltar a medir o conteúdo, não a altura de antes. */
+function ajustarCampoOracao(){
+  const ta = $('campo-oracao');
+  ta.style.height = 'auto';
+  /* com box-sizing: border-box a altura inclui a borda, e scrollHeight
+     não — sem somar as duas o campo fica 2px curto e corta a última
+     linha justamente de quem escreveu mais */
+  const borda = ta.offsetHeight - ta.clientHeight;
+  ta.style.height = Math.max(ta.scrollHeight + borda, 108) + 'px';
+}
+$('campo-oracao').addEventListener('input', ajustarCampoOracao);
 $('btn-oracao-voz').onclick = function(){
   Ditado.ouvir(this, dito => {
     const ta = $('campo-oracao');
     ta.value = (ta.value ? ta.value.trim() + ' ' : '') + dito;
+    ajustarCampoOracao();
     ta.focus();
   });
 };
