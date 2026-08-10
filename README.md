@@ -14,6 +14,8 @@ Site: https://devocionaldiario-eosin.vercel.app/
 - Favoritos, diário, progresso e streak
 - 12 planos de leitura, incluindo Bíblia em 1 ano
 - Busca por referência ou palavra
+- **Veja também** — referências cruzadas entre passagens
+- **Mapa da Terra Santa** — 24 lugares, cada um abrindo as passagens dali
 - PWA instalável
 - **Web Push** — lembrete diário (~8h Brasília)
 - **Leitura em voz** e **ditado por voz** — para quem não lê nem escreve
@@ -84,6 +86,70 @@ O *Treasury of Scripture Knowledge* (1830, domínio público) tem ~500 mil
 ligações, e o openbible.info publica um conjunto moderno em CC BY. Qualquer
 um dos dois entra no lugar de `GRUPOS_REF` sem mexer no resto — a licença
 precisa ser confirmada antes.
+
+## Mapa da Terra Santa
+
+Ler "desceu a Jericó" ou "atravessou para a outra margem" sem saber onde
+fica nada é ler metade. O mapa fica na aba **Bíblia**, atrás de um botão, e
+cada lugar abre uma ficha com o que aconteceu ali e as passagens para ler.
+
+| | |
+|---|---:|
+| Lugares | 24 |
+| Passagens ligadas a eles | 39 |
+| Cidades / vilas / portos / montes / águas | 12 / 4 / 4 / 2 / 2 |
+
+**O desenho é nosso, em SVG.** Pela mesma razão que os fundos do gerador de
+imagem são desenhados e não fotografados: sem licença de terceiro, sem
+chave de API, sem tile server — e funciona offline, que é o ponto de um app
+que se instala no celular. Um mapa de imagem pronta traria a licença junto;
+um mapa de tiles traria fronteiras modernas e uma dependência de rede.
+
+O que **não** é invenção são as coordenadas: latitude e longitude reais,
+projetadas por código na hora de desenhar.
+
+```js
+const COS_MEDIO = Math.cos((MAPA.sulLat + MAPA.norteLat) / 2 * Math.PI / 180);
+const projX = lon => (lon - MAPA.oesteLon) * COS_MEDIO * MAPA.k;
+const projY = lat => (MAPA.norteLat - lat) * MAPA.k;
+```
+
+Sem o `COS_MEDIO` a região sairia esticada no sentido leste-oeste — a
+longitude encolhe conforme se afasta do equador. Guardar grau e projetar em
+código, em vez de guardar pixel, deixa as posições relativas honestas: o
+teste confere que Belém cai ao sul de Jerusalém, Sidom ao norte de todos,
+Damasco a leste e Jope a oeste, sem olhar para o traço.
+
+Só o litoral, o Jordão, a Galileia e o Mar Morto são simplificados — são
+polilinhas de pontos reais da costa, não o contorno cartográfico.
+
+### Sobre atlas de código aberto
+
+Existem, e nenhum resolve melhor este caso:
+
+| Fonte | Licença | Por que não |
+|---|---|---|
+| openbible.info (geocoding) | CC BY | são **coordenadas**, não desenho — entra no lugar de `LUGARES`, não do mapa |
+| Atlas escaneados no Commons | domínio público (pré-1930) | imagem de 1900 em tela de celular: texto ilegível, sem toque, sem tema escuro |
+| Tiles do OpenStreetMap | ODbL | precisa de rede, mostra fronteiras modernas, e a atribuição viaja junto |
+
+Se um dia entrar um conjunto de lugares com licença aberta, ele **substitui
+`LUGARES` e nada mais** — o desenho, a projeção e a ficha continuam iguais.
+Foi por isso que os dados ficaram separados do desenho. Coordenada de
+Belém é fato; ninguém detém direito sobre ela.
+
+### Alvo de toque invisível
+
+Cada lugar é um grupo com ponto, rótulo e um retângulo transparente de
+44×44 por cima, que é quem recebe o toque — um ponto de 4px de raio é
+impossível de acertar com o dedo. O retângulo herdava o traço do grupo e
+desenhava uma caixa em volta de cada cidade; o teste confere que ele
+continua sem preenchimento e sem traço.
+
+Os rótulos de 14 lugares levam deslocamento próprio (`lado`, `dx`, `dy`),
+porque Jerusalém, Belém e Betânia ficam a poucos quilômetros e os nomes se
+sobrepunham. Há teste que compara os retângulos de todos os rótulos entre
+si e falha se dois se tocarem.
 
 ## Continuar de onde parou
 
