@@ -1,32 +1,16 @@
 const webpush = require('web-push');
 const { configured, listSubs, removeSub } = require('./lib/store');
+const { versiculoDoDia } = require('./lib/versiculos');
 
-/** Lista curta de versículos (nr, cap, verso) — giram pelo dia do ano */
-const VERSOES_DIA = [
-  [19, 23, 1],
-  [43, 3, 16],
-  [45, 8, 28],
-  [50, 4, 13],
-  [24, 29, 11],
-  [20, 3, 5],
-  [23, 40, 31],
-  [40, 11, 28],
-  [19, 46, 10],
-  [47, 5, 17],
-  [58, 11, 1],
-  [19, 27, 1],
-  [6, 1, 9],
-  [43, 14, 6],
-  [39, 3, 10]
-];
-
-function diaDoAno(d = new Date()) {
-  const inicio = new Date(d.getFullYear(), 0, 0);
-  return Math.floor((d - inicio) / 86400000);
-}
-
-async function buscarVersiculoDoDia() {
-  const [nr, cap, verso] = VERSOES_DIA[diaDoAno() % VERSOES_DIA.length];
+/**
+ * A notificação anunciava um versículo e o app mostrava outro: eram duas
+ * listas independentes, uma de 15 referências aqui e as 180 do devocional.
+ * Quem tocasse no lembrete abria o app e via coisa diferente do que tinha
+ * acabado de ler na tela de bloqueio. Agora a fonte é a mesma.
+ */
+async function montarMensagem() {
+  const { nr, cap, verso, livro } = versiculoDoDia();
+  const ref = livro + ' ' + cap + ':' + verso;
   const url = 'https://api.getbible.net/v2/livre/' + nr + '/' + cap + '.json';
   try {
     const r = await fetch(url);
@@ -34,14 +18,15 @@ async function buscarVersiculoDoDia() {
     const d = await r.json();
     const v = (d.verses || []).find((x) => Number(x.verse) === Number(verso));
     const texto = (v && v.text ? v.text : '').trim().replace(/\s+/g, ' ');
-    const ref = (d.book_name || 'Bíblia') + ' ' + cap + ':' + verso;
     if (!texto) throw new Error('sem texto');
     const body = texto.length > 120 ? texto.slice(0, 117) + '…' : texto;
     return { title: ref + ' · Bíblia Devocional', body: body, url: '/' };
   } catch (_) {
+    /* a Bíblia fora do ar não pode calar o lembrete; a referência é nossa
+       e continua certa mesmo sem o texto */
     return {
       title: 'Bíblia Devocional · Devocional do dia',
-      body: 'Seu encontro diário com a Palavra está pronto. Abra e medite.',
+      body: 'O devocional de hoje está em ' + ref + '. Abra e medite.',
       url: '/'
     };
   }
@@ -81,7 +66,7 @@ module.exports = async function handler(req, res) {
 
   webpush.setVapidDetails(subject, publicKey, privateKey);
 
-  const msg = await buscarVersiculoDoDia();
+  const msg = await montarMensagem();
   const payload = JSON.stringify({
     title: msg.title,
     body: msg.body,
