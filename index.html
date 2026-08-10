@@ -14,10 +14,38 @@
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600&display=swap" rel="stylesheet">
 <style>
+/* =========================================================
+   FONTES NO PRÓPRIO SITE
+   Antes vinham de fonts.googleapis.com por um <link rel="stylesheet">,
+   que é bloqueante: nada aparecia na tela até aquele host responder.
+   E o service worker só guarda o próprio domínio, então a folha externa
+   nunca entrava no cache — um app que promete funcionar offline
+   dependia de um servidor de fora para pintar a primeira tela.
+   São dois arquivos variáveis, um por família, cobrindo todos os pesos.
+   O unicode-range limita ao latim: fora dele o sistema assume.
+   ========================================================= */
+@font-face {
+  font-family: 'Source Sans 3';
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url('/fonts/source-sans-3.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+    U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193,
+    U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Source Serif 4';
+  font-style: normal;
+  font-weight: 400 600;
+  font-display: swap;
+  src: url('/fonts/source-serif-4.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+    U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193,
+    U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
 :root {
   /* Paleta premium — luz */
   --azul: #1A4A82;
@@ -32,7 +60,7 @@
   --linha-forte: #C9C2B6;
   --texto: #1F1E1C;
   --texto-2: #5A564F;
-  --texto-3: #8A847A;
+  --texto-3: #6E6A61;   /* escurecido: em #8A847A dava 3,41 sobre o fundo, abaixo dos 4,5 da WCAG AA */
   --sombra: 0 1px 2px rgba(28, 24, 18, 0.04), 0 4px 16px rgba(28, 24, 18, 0.06);
   --sombra-hover: 0 2px 4px rgba(28, 24, 18, 0.05), 0 8px 24px rgba(28, 24, 18, 0.09);
   --destaque: #FFF6D6;
@@ -58,7 +86,7 @@ html[data-tema="escuro"] {
   --linha-forte: #3D4654;
   --texto: #EDEAE4;
   --texto-2: #A8A29A;
-  --texto-3: #7A756E;
+  --texto-3: #8F8A82;   /* clareado pelo mesmo motivo: 4,00 sobre o fundo escuro não passava */
   --sombra: 0 1px 2px rgba(0, 0, 0, 0.25), 0 4px 16px rgba(0, 0, 0, 0.3);
   --sombra-hover: 0 2px 4px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.35);
   --destaque: #3A3420;
@@ -1411,6 +1439,15 @@ button.ouvir {
 html[data-tema="escuro"] button.ouvir img,
 html[data-tema="escuro"] #fa-ouvir img,
 html[data-tema="escuro"] .btn-ouvir .ico img {
+  filter: brightness(0) invert(1);
+}
+/* O compartilhar ficava preto sobre o fundo escuro nos três lugares onde
+   aparece — cartão do versículo, folha de ações e leitura. A regra pelo
+   arquivo pega qualquer lugar novo onde ele venha a ser usado; o #fa-copiar
+   precisa vir junto porque a regra dele tem id e venceria por
+   especificidade. */
+html[data-tema="escuro"] img[src$="icon-share.png"],
+html[data-tema="escuro"] #fa-copiar img {
   filter: brightness(0) invert(1);
 }
 button.ouvir.tocando img,

@@ -1,5 +1,5 @@
 /* Service Worker — Bíblia Devocional PWA + Web Push */
-const CACHE = 'lampada-v24';
+const CACHE = 'lampada-v25';
 const PRECACHE = [
   '/',
   '/index.html',
@@ -17,7 +17,11 @@ const PRECACHE = [
      offline com o microfone e o compartilhar quebrados */
   '/icon-mic.png',
   '/icon-share.png',
-  '/icon-speaker.png'
+  '/icon-speaker.png',
+  /* as fontes saíram do Google e vieram para cá: precisam estar no cache,
+     senão offline o app cairia na fonte do sistema */
+  '/fonts/source-sans-3.woff2',
+  '/fonts/source-serif-4.woff2'
 ];
 
 self.addEventListener('install', (event) => {
