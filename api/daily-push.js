@@ -41,14 +41,35 @@ module.exports = async function handler(req, res) {
   const isVercelCron = req.headers['x-vercel-cron'] === '1';
   const secret = process.env.CRON_SECRET || '';
   const auth = req.headers.authorization || '';
-  const okAuth = secret && auth === 'Bearer ' + secret;
-  const q = req.query || {};
-  const okQuery = secret && q.secret === secret;
+  const okAuth = !!secret && auth === 'Bearer ' + secret;
+
+  /* req.query nem sempre vem preenchido, dependendo do runtime em que a
+     função roda. Sem esta reserva, o ?secret= era silenciosamente ignorado
+     e a chamada dava 401 mesmo com o segredo certo. */
+  let q = req.query;
+  if (!q || typeof q.secret === 'undefined') {
+    try {
+      q = Object.fromEntries(new URL(req.url, 'http://x').searchParams);
+    } catch (_) {
+      q = q || {};
+    }
+  }
+  const enviouSegredo = !!(auth || q.secret);
+  const okQuery = !!secret && q.secret === secret;
 
   if (!isVercelCron && !okAuth && !okQuery) {
+    /* Três coisas diferentes davam a mesma resposta, e quem chamava não
+       tinha como saber qual era a sua. O segredo não vaza em nenhuma. */
+    const motivo = !secret
+      ? 'CRON_SECRET não está definido nas variáveis de ambiente deste projeto na Vercel. Enquanto não estiver, não há chamada manual possível — só o cron automático.'
+      : !enviouSegredo
+        ? 'Nenhum segredo foi enviado. Acrescente ?secret=SEU_SECRET no fim do endereço, ou o cabeçalho Authorization: Bearer SEU_SECRET.'
+        : 'O segredo enviado não confere com o CRON_SECRET configurado na Vercel.';
     return res.status(401).json({
       error: 'Não autorizado',
-      hint: 'Defina CRON_SECRET na Vercel e chame com Authorization: Bearer SEU_SECRET ou ?secret=SEU_SECRET'
+      motivo: motivo,
+      segredoConfigurado: !!secret,
+      segredoRecebido: enviouSegredo
     });
   }
 
