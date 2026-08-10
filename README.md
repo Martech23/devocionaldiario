@@ -126,6 +126,47 @@ prévia antiga por um bom tempo — o cache é do WhatsApp e não há botão par
 limpar. Para conferir que funcionou, mande o endereço com uma variação
 qualquer no fim (`?x=1`): para o robô é outra URL, e ele busca de novo.
 
+## Microfone dentro do campo do pedido
+
+Em "Minhas orações", o microfone ficava numa coluna ao lado do campo de
+texto. Numa tela de 320px, aquela coluna de 44px mais o vão de 8px comiam
+**52px** — um sexto da tela — para um botão que se usa uma vez por pedido.
+
+| Largura do campo | Antes | Agora |
+|---|---:|---:|
+| tela de 320px | 190px | **242px** |
+| tela de 390px | 260px | **312px** |
+
+Agora ele flutua dentro do canto de baixo do próprio campo: o container
+ancora com `position: relative`, o botão vai a `position: absolute` a 8px
+das bordas, e o campo reserva **56px** de `padding-bottom` para o texto
+nunca correr por baixo do ícone — 44px do botão mais os 8px que ele guarda
+da borda, mais folga.
+
+O posicionamento é escopado a `.form-oracao .btn-mic`. O mesmo `.btn-mic`
+serve à busca por voz e à nota do versículo, que continuam em linha; há
+teste conferindo que os dois seguem em `position: static`.
+
+### O que a mudança quebrava, e o que se fez
+
+A alça de redimensionar do navegador nasce exatamente no canto onde o
+microfone agora pousa — o botão a cobriria e ela viraria enfeite. Então o
+`resize` saiu, e em troca **o campo cresce sozinho** conforme se escreve,
+que em celular é melhor do que arrastar uma alça de 16px.
+
+Duas armadilhas nesse ajuste:
+
+- `box-sizing: border-box` faz a altura incluir a borda, e `scrollHeight`
+  não inclui. Sem somar as duas o campo fica 2px curto e corta a última
+  linha — justamente de quem escreveu mais.
+- Mexer no `value` por código **não dispara `input`**. Sem chamar o ajuste
+  à mão, o campo ficava alto e vazio depois de adicionar um pedido longo,
+  e o mesmo valia para o texto que chega pelo ditado.
+
+Quando o navegador não tem ditado, o botão some — e aí o fundo reservado
+para ele viraria um buraco embaixo do texto. O `padding-bottom` volta ao
+normal junto.
+
 ## Mapa da Terra Santa
 
 Ler "desceu a Jericó" ou "atravessou para a outra margem" sem saber onde
