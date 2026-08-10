@@ -1583,6 +1583,68 @@ body.modo-foco #sec-biblia .voltar {
   border-radius: 2px;
 }
 
+/* ---------------- saudação e primeira visita ---------------- */
+.saudacao {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--texto);
+  margin-bottom: 2px;
+}
+
+.boas-vindas { text-align: center; padding: 6px 0 2px; }
+.boas-vindas .selo-boas {
+  width: 54px; height: 54px;
+  border-radius: 50%;
+  background: var(--azul-suave);
+  color: var(--azul);
+  font-size: 24px;
+  display: grid;
+  place-items: center;
+  margin: 0 auto 14px;
+}
+.boas-vindas h3 { font-size: 18px; margin-bottom: 8px; letter-spacing: -.01em; }
+.boas-vindas p {
+  font-size: 14.5px;
+  color: var(--texto-2);
+  line-height: 1.55;
+  margin-bottom: 18px;
+}
+
+/* ---------------- continuar de onde parou ---------------- */
+.continuar-nome { font-size: 16.5px; letter-spacing: -.01em; margin-bottom: 12px; }
+.continuar-barra {
+  height: 7px;
+  border-radius: 99px;
+  background: var(--linha);
+  overflow: hidden;
+}
+.continuar-barra span {
+  display: block;
+  height: 100%;
+  background: var(--azul);
+  border-radius: 99px;
+  transition: width var(--trans-spring);
+}
+.continuar-meta {
+  font-size: 12.5px;
+  color: var(--texto-3);
+  margin-top: 8px;
+}
+.continuar-ref {
+  font-family: "Source Serif 4", Georgia, serif;
+  font-size: calc(17px * var(--esc));
+  color: var(--texto);
+  margin-top: 12px;
+}
+.continuar-acoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+}
+.continuar-acoes .btn { flex: 1 1 auto; }
+
 /* ---------------- percurso guiado do devocional ---------------- */
 .cabeca-percurso {
   display: flex;
@@ -2695,6 +2757,7 @@ html[data-tema="escuro"] .painel-config header { background: #152238; }
 
   <!-- ============ DEVOCIONAL DO DIA ============ -->
   <section class="secao" id="sec-hoje">
+    <p class="saudacao" id="saudacao"></p>
     <h2 class="rotulo-secao">Devocional do dia</h2>
     <div id="cartao-hoje">
       <div class="cartao">
@@ -2706,6 +2769,14 @@ html[data-tema="escuro"] .painel-config header { background: #152238; }
     </div>
   </section>
 
+  <!-- ============ CONTINUAR DE ONDE PAROU ============ -->
+  <!-- Só aparece com um plano em andamento: quem não começou nenhum não
+       precisa de um cartão vazio dizendo isso. -->
+  <section class="secao oculto" id="sec-continuar">
+    <h2 class="rotulo-secao">Continuar de onde parou</h2>
+    <div class="cartao" id="cartao-continuar"></div>
+  </section>
+
   <!-- ============ ESTATÍSTICAS / STREAK ============ -->
   <section class="secao" id="sec-stats">
     <h2 class="rotulo-secao">Sua jornada</h2>
@@ -2715,6 +2786,16 @@ html[data-tema="escuro"] .painel-config header { background: #152238; }
         <div class="stat-card"><div class="stat-num" id="stat-caps">0</div><div class="stat-label">capítulos lidos</div></div>
         <div class="stat-card"><div class="stat-num" id="stat-favs">0</div><div class="stat-label">favoritos</div></div>
         <div class="stat-card"><div class="stat-num" id="stat-planos">0</div><div class="stat-label">dias de planos</div></div>
+      </div>
+      <div class="boas-vindas oculto" id="boas-vindas">
+        <div class="selo-boas" aria-hidden="true">✦</div>
+        <h3>Sua jornada começa hoje</h3>
+        <p>
+          Aqui vão aparecer os dias seguidos com a Palavra, os capítulos lidos, os
+          versículos que você guardar e o progresso dos planos. Nada disso existe
+          ainda porque você acabou de chegar.
+        </p>
+        <button class="btn" type="button" id="btn-comecar">Abrir o devocional de hoje</button>
       </div>
       <p id="stat-msg" style="margin-top:14px;font-size:13.5px;color:var(--texto-2);line-height:1.5"></p>
       <div class="linha-ouvir" id="linha-ouvir-stats" style="margin-top:16px;margin-bottom:0"></div>
@@ -5387,6 +5468,18 @@ function calcularStreak(){
   }
   return streak;
 }
+/* Saudação por horário. Sem nome: a conta guarda só o e-mail, e deduzir um
+   nome do que vem antes do arroba erra feio na maioria das vezes. */
+function saudar(){
+  const el = $('saudacao');
+  if(!el) return;
+  const h = new Date().getHours();
+  el.textContent = h < 5 ? 'Boa madrugada'
+                 : h < 12 ? 'Bom dia'
+                 : h < 18 ? 'Boa tarde'
+                 : 'Boa noite';
+}
+
 function atualizarStats(){
   const map = carregarLidos();
   let caps = 0;
@@ -5401,8 +5494,20 @@ function atualizarStats(){
   el('stat-caps', caps);
   el('stat-favs', favs);
   el('stat-planos', planos);
+  /* Primeira visita: quatro zeros lado a lado são um boletim de nada feito.
+     Começar do zero é normal; ser recebido por um placar disso, não. */
+  const zerado = !streak && !caps && !favs && !planos;
+  const grid = $('grid-stats'), boas = $('boas-vindas');
+  if(grid) grid.classList.toggle('oculto', zerado);
+  if(boas) boas.classList.toggle('oculto', !zerado);
+  /* o "Ouvir meu resumo" leria os quatro zeros em voz alta, contradizendo
+     a mensagem logo acima */
+  const ouvirStats = $('linha-ouvir-stats');
+  if(ouvirStats) ouvirStats.classList.toggle('oculto', zerado);
+
   const msg = $('stat-msg');
   if(msg){
+    msg.classList.toggle('oculto', zerado);
     if(streak === 0) msg.textContent = 'Abra o devocional ou leia um capítulo hoje para iniciar sua sequência.';
     else if(streak === 1) msg.textContent = 'Bom começo! Volte amanhã para manter a sequência.';
     else if(streak < 7) msg.textContent = streak + ' dias seguidos. A constância transforma o coração.';
@@ -6503,7 +6608,7 @@ $('btn-tema').onclick = alternarTema;
    pergunta "pelo que você quer orar hoje?". Meu guarda o que se acumulou:
    a jornada, os dias anteriores, os favoritos, o diário. */
 const ABAS = {
-  hoje:   ['sec-hoje', 'sec-oracoes', 'sec-promessas'],
+  hoje:   ['sec-hoje', 'sec-continuar', 'sec-oracoes', 'sec-promessas'],
   biblia: ['controles', 'sec-busca', 'sec-biblia'],
   planos: ['sec-planos'],
   meu:    ['sec-stats', 'sec-hist', 'sec-favoritos', 'sec-app']
@@ -6552,6 +6657,8 @@ function mostrarSecao(id, bloco){
 document.querySelectorAll('#abas button').forEach(b => {
   b.onclick = () => irParaAba(b.dataset.aba);
 });
+
+if($('btn-comecar')) $('btn-comecar').onclick = () => mostrarSecao('sec-hoje');
 
 /* os links da gaveta agora trocam de aba além de rolar */
 document.querySelectorAll('.gaveta a[href^="#"]').forEach(a => {
@@ -7301,6 +7408,87 @@ function carregarProgPlanos(){
 }
 function salvarProgPlanos(p){ localStorage.setItem(CHAVE_PLANOS, JSON.stringify(p)); Conta.marcarSujo(); }
 
+/* =========================================================
+   CONTINUAR DE ONDE PAROU
+   Quem estava no dia 12 de um plano não via isso em lugar
+   nenhum na tela Hoje: tinha de ir na aba Planos, achar o
+   plano e achar o dia. É o que mais pesa em voltar no dia
+   seguinte, então mora ao lado do devocional.
+   ========================================================= */
+const CHAVE_PLANO_ATUAL = 'lampada-plano-atual';
+
+function planoEmAndamento(){
+  const prog = carregarProgPlanos();
+  const emAndamento = PLANOS
+    .map(p => ({ plano: p, feitos: new Set(prog[p.id] || []) }))
+    .filter(x => x.feitos.size > 0 && x.feitos.size < x.plano.dias.length);
+  if(!emAndamento.length) return null;
+  /* o último aberto ganha; sem essa marca — outro aparelho, por exemplo —
+     vale o mais adiantado, que é onde há mais a perder parando */
+  const ultimo = localStorage.getItem(CHAVE_PLANO_ATUAL);
+  return emAndamento.find(x => x.plano.id === ultimo)
+      || emAndamento.sort((a, b) => b.feitos.size - a.feitos.size)[0];
+}
+
+function montarContinuar(){
+  const sec = $('sec-continuar');
+  if(!sec) return;
+  const atual = planoEmAndamento();
+  sec.classList.toggle('oculto', !atual);
+  if(!atual) return;
+
+  const { plano, feitos } = atual;
+  /* o próximo é o primeiro que falta, e não o seguinte ao último marcado:
+     dá para marcar os dias fora de ordem */
+  let dia = 1;
+  while(feitos.has(dia)) dia++;
+  const caps = capitulosDoDia(plano.dias[dia - 1]);
+  const rotulo = rotuloDoDia(caps);
+  const pct = Math.round(feitos.size / plano.dias.length * 100);
+
+  const cx = $('cartao-continuar');
+  cx.innerHTML =
+    `<h3 class="continuar-nome"></h3>
+     <div class="continuar-barra" role="progressbar" aria-valuemin="0" aria-valuemax="100"><span></span></div>
+     <p class="continuar-meta"></p>
+     <p class="continuar-ref"></p>
+     <div class="continuar-acoes"></div>`;
+  cx.querySelector('.continuar-nome').textContent = plano.nome;
+  cx.querySelector('.continuar-meta').textContent =
+    feitos.size + ' de ' + plano.dias.length + ' dias · ' + pct + '%';
+  cx.querySelector('.continuar-ref').textContent = 'Dia ' + dia + ' · ' + rotulo;
+  const barra = cx.querySelector('.continuar-barra');
+  barra.setAttribute('aria-valuenow', String(pct));
+  barra.setAttribute('aria-label', plano.nome + ': ' + pct + ' por cento concluído');
+  barra.firstElementChild.style.width = pct + '%';
+
+  const acoes = cx.querySelector('.continuar-acoes');
+  const botao = (rot, classe, aoTocar) => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = classe;
+    b.textContent = rot;
+    b.onclick = aoTocar;
+    acoes.appendChild(b);
+    return b;
+  };
+  const marcarAtual = () => localStorage.setItem(CHAVE_PLANO_ATUAL, plano.id);
+  botao('Ler o dia ' + dia, 'btn', () => {
+    marcarAtual();
+    const [nr, cap] = caps[0];
+    abrirLeitura(nr, cap);
+  });
+  /* ouvirLeituraDoDia cuida da própria fila de voz, como nas linhas do
+     plano — aqui um botão comum basta */
+  botao('Ouvir', 'btn claro', () => { marcarAtual(); ouvirLeituraDoDia(caps, rotulo); })
+    .setAttribute('aria-label', 'Ouvir ' + rotulo);
+  botao('Ver o plano', 'btn claro', () => {
+    marcarAtual();
+    mostrarSecao('sec-planos');
+    abrirPlano(plano.id);
+  });
+}
+
 function montarPlanos(){
   const grid = $('grid-planos');
   if(!grid) return;
@@ -7323,6 +7511,7 @@ function montarPlanos(){
 function abrirPlano(id){
   const plano = PLANOS.find(p => p.id === id);
   if(!plano) return;
+  localStorage.setItem(CHAVE_PLANO_ATUAL, id);
   const area = $('area-plano-ativo');
   const prog = carregarProgPlanos();
   const feitos = new Set(prog[id] || []);
@@ -7359,8 +7548,10 @@ function abrirPlano(id){
       if(lista.has(dia)) lista.delete(dia); else lista.add(dia);
       p[id] = [...lista].sort((a,b)=>a-b);
       salvarProgPlanos(p);
+      localStorage.setItem(CHAVE_PLANO_ATUAL, id);
       abrirPlano(id);
       montarPlanos();
+      montarContinuar();
       atualizarStats();
       registrarAtividade();
     };
@@ -7508,6 +7699,8 @@ renderFavoritos();
 montarTemas();
 desenharLivros();
 montarPlanos();
+montarContinuar();
+saudar();
 versiculoDoDia();
 atualizarProgressoBiblia();
 atualizarStats();
