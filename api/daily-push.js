@@ -1,4 +1,14 @@
+const crypto = require('crypto');
 const webpush = require('web-push');
+
+/** Comparação em tempo constante, como já se faz com as senhas das contas. */
+function iguais(a, b) {
+  if (!a || !b) return false;
+  const x = Buffer.from(String(a));
+  const y = Buffer.from(String(b));
+  if (x.length !== y.length) return false;
+  return crypto.timingSafeEqual(x, y);
+}
 const { configured, listSubs, removeSub } = require('./lib/store');
 const { versiculoDoDia } = require('./lib/versiculos');
 
@@ -39,9 +49,13 @@ module.exports = async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(204).end();
 
   const isVercelCron = req.headers['x-vercel-cron'] === '1';
-  const secret = process.env.CRON_SECRET || '';
-  const auth = req.headers.authorization || '';
-  const okAuth = !!secret && auth === 'Bearer ' + secret;
+  /* trim dos dois lados: colar o valor no painel da Vercel costuma trazer
+     um espaço ou uma quebra de linha junto, e o erro daí é invisível —
+     os dois valores parecem idênticos na tela e nunca conferem */
+  const secret = String(process.env.CRON_SECRET || '').trim();
+  const auth = String(req.headers.authorization || '').trim();
+  const doBearer = auth.startsWith('Bearer ') ? auth.slice(7).trim() : '';
+  const okAuth = !!secret && iguais(doBearer, secret);
 
   /* req.query nem sempre vem preenchido, dependendo do runtime em que a
      função roda. Sem esta reserva, o ?secret= era silenciosamente ignorado
@@ -54,8 +68,10 @@ module.exports = async function handler(req, res) {
       q = q || {};
     }
   }
-  const enviouSegredo = !!(auth || q.secret);
-  const okQuery = !!secret && q.secret === secret;
+  const daUrl = String(q.secret || '').trim();
+  const recebido = daUrl || doBearer;
+  const enviouSegredo = !!recebido;
+  const okQuery = !!secret && iguais(daUrl, secret);
 
   if (!isVercelCron && !okAuth && !okQuery) {
     /* Três coisas diferentes davam a mesma resposta, e quem chamava não
@@ -69,7 +85,11 @@ module.exports = async function handler(req, res) {
       error: 'Não autorizado',
       motivo: motivo,
       segredoConfigurado: !!secret,
-      segredoRecebido: enviouSegredo
+      segredoRecebido: enviouSegredo,
+      /* só os tamanhos, nunca os valores: é o que revela na hora um espaço
+         colado junto, um valor truncado ou aspas em volta */
+      tamanhoConfigurado: secret.length,
+      tamanhoRecebido: recebido.length
     });
   }
 
