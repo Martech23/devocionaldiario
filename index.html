@@ -14,6 +14,34 @@
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png">
+<!-- =========================================================
+     PRÉVIA AO COMPARTILHAR
+     Sem estas tags o WhatsApp caía no <title> e no <meta description>
+     e mostrava só texto, sem imagem nenhuma. O favicon não serve para
+     isso: quem lê a prévia é o Open Graph, e ele quer uma imagem
+     própria, em endereço absoluto — link relativo o robô não resolve,
+     porque ele não está numa página, está buscando uma URL.
+     1200x630 é o que faz o WhatsApp mostrar a prévia grande; imagem
+     quadrada vira miniatura pequena ao lado do texto. E é JPEG de
+     53 KB de propósito: o robô desiste de arquivo grande, e a mesma
+     arte em PNG dava 399 KB.
+     ========================================================= -->
+<link rel="canonical" href="https://devocionaldiario-eosin.vercel.app/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Bíblia Devocional">
+<meta property="og:locale" content="pt_BR">
+<meta property="og:url" content="https://devocionaldiario-eosin.vercel.app/">
+<meta property="og:title" content="Bíblia Devocional · Leitura diária, promessas e Bíblia Sagrada">
+<meta property="og:description" content="Versículo do dia, promessas por tema e a Bíblia completa. De graça, e funciona sem internet.">
+<meta property="og:image" content="https://devocionaldiario-eosin.vercel.app/og-imagem.jpg">
+<meta property="og:image:type" content="image/jpeg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Bíblia Devocional — uma Bíblia dourada com uma cruz, sobre fundo azul.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Bíblia Devocional · Leitura diária, promessas e Bíblia Sagrada">
+<meta name="twitter:description" content="Versículo do dia, promessas por tema e a Bíblia completa. De graça, e funciona sem internet.">
+<meta name="twitter:image" content="https://devocionaldiario-eosin.vercel.app/og-imagem.jpg">
 <style>
 /* =========================================================
    FONTES NO PRÓPRIO SITE

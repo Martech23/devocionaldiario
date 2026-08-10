@@ -1,0 +1,51 @@
+<!doctype html><html><head><meta charset="utf-8">
+<!-- =========================================================
+     ARTE DA PRÉVIA DE COMPARTILHAMENTO
+
+     Esta página existe só para virar /og-imagem.jpg, a imagem que
+     WhatsApp, Telegram e afins mostram quando alguém manda o link.
+
+     Como refazer, com o site servido na raiz em localhost:8099
+     (por exemplo `python3 -m http.server 8099` na pasta do projeto)
+     e este arquivo copiado para a raiz:
+
+       await page.goto('http://localhost:8099/og-imagem.html');
+       await page.evaluate(() => document.fonts.ready);
+       await page.screenshot({ path: 'og-imagem.jpg',
+                               type: 'jpeg', quality: 88 });
+       // viewport 1200x630
+
+     1200x630 porque é o que faz o WhatsApp abrir a prévia grande.
+     JPEG de qualidade 88 porque a mesma arte em PNG dava 399 KB e o
+     robô do WhatsApp desiste de arquivo grande; assim fica em 53 KB.
+     ========================================================= -->
+<style>
+  @font-face { font-family: 'SS3'; src: url('/fonts/source-sans-3.woff2') format('woff2'); font-weight: 200 900; }
+  @font-face { font-family: 'SS4'; src: url('/fonts/source-serif-4.woff2') format('woff2'); font-weight: 200 900; }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { width:1200px; height:630px; overflow:hidden;
+    background: linear-gradient(135deg, #123665 0%, #1A4A82 55%, #2B6BB5 100%);
+    font-family: 'SS3', system-ui, sans-serif; color:#fff;
+    display:flex; align-items:center; gap:56px; padding:0 84px; position:relative; }
+  .brilho { position:absolute; width:900px; height:900px; border-radius:50%;
+    background: radial-gradient(circle, rgba(255,255,255,.10) 0%, transparent 62%);
+    right:-260px; top:-330px; }
+  .icone { width:268px; height:268px; border-radius:56px; flex:none;
+    box-shadow: 0 26px 64px rgba(0,0,0,.42); position:relative; }
+  .txt { position:relative; }
+  h1 { font-family:'SS4', Georgia, serif; font-size:82px; line-height:1.02;
+    font-weight:600; letter-spacing:-.022em; }
+  h1 span { display:block; color:#F0C669; }
+  p { font-size:33px; line-height:1.4; margin-top:26px; color:rgba(255,255,255,.9);
+    max-width:640px; font-weight:400; }
+  .fita { position:absolute; left:0; bottom:0; height:12px; width:100%;
+    background: linear-gradient(90deg, #E8B84B 0%, #F0C669 42%, #1A4A82 100%); }
+</style></head><body>
+  <div class="brilho"></div>
+  <img class="icone" src="/icon-512.png" alt="">
+  <div class="txt">
+    <h1>Bíblia<span>Devocional</span></h1>
+    <p>Versículo do dia, promessas por tema e a Bíblia completa. De graça, e funciona sem internet.</p>
+  </div>
+  <div class="fita"></div>
+</body></html>

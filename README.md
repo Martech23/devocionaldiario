@@ -16,6 +16,7 @@ Site: https://devocionaldiario-eosin.vercel.app/
 - Busca por referência ou palavra
 - **Veja também** — referências cruzadas entre passagens
 - **Mapa da Terra Santa** — 41 lugares, cada um abrindo as passagens dali
+- Prévia com imagem ao compartilhar o link
 - PWA instalável
 - **Web Push** — lembrete diário (~8h Brasília)
 - **Leitura em voz** e **ditado por voz** — para quem não lê nem escreve
@@ -91,6 +92,39 @@ licença deles, **CC BY 4.0**, foi conferida no arquivo `license.txt` do
 próprio repositório. O conjunto de referências cruzadas é outro arquivo e
 merece a mesma conferência antes de entrar — mas agora se sabe onde olhar,
 e o gerador do mapa serve de molde para o que faltar.
+
+## Prévia ao compartilhar
+
+Mandar o link no WhatsApp mostrava título e descrição, e nenhuma imagem.
+A causa não era o favicon: o `index.html` **não tinha nenhuma tag Open
+Graph**, e sem elas o WhatsApp cai no `<title>` e no `<meta description>`
+— que era exatamente o que aparecia.
+
+O favicon não resolve isso. Quem lê a prévia é o Open Graph, e ele quer
+uma imagem própria:
+
+| Exigência | Por quê |
+|---|---|
+| Endereço **absoluto**, com `https://` | o robô não está numa página, está buscando uma URL; caminho relativo ele não resolve |
+| **1200×630** | é o que abre a prévia grande; imagem quadrada vira miniatura ao lado do texto |
+| **JPEG ou PNG** | SVG e WEBP não são renderizados na prévia — então o `favicon.svg` nunca serviria |
+| Arquivo **leve** | acima de ~300 KB o robô costuma desistir e a prévia volta a sair sem imagem |
+
+A arte está em `og-imagem.jpg`, **53 KB**. A mesma imagem em PNG dava 399
+KB, perto demais do limite para valer o risco. Ela é gerada por
+`ferramentas/og-imagem.html`, uma página que existe só para virar captura
+de tela em 1200×630 — assim a arte se refaz com um comando em vez de
+depender de um arquivo que ninguém sabe mais como foi feito.
+
+A política de privacidade ganhou as mesmas tags, senão o link dela sairia
+sem imagem do mesmo jeito.
+
+### O WhatsApp guarda a prévia
+
+Depois de publicar, um link já compartilhado pode continuar mostrando a
+prévia antiga por um bom tempo — o cache é do WhatsApp e não há botão para
+limpar. Para conferir que funcionou, mande o endereço com uma variação
+qualquer no fim (`?x=1`): para o robô é outra URL, e ele busca de novo.
 
 ## Mapa da Terra Santa
 
