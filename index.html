@@ -1598,6 +1598,54 @@ body.modo-foco #sec-biblia .voltar {
   flex: 0 0 auto;
 }
 
+/* ---------------- mapa da Terra Santa ---------------- */
+.mapa { width: 100%; height: auto; display: block; border-radius: var(--radius-sm); }
+.m-mar   { fill: var(--azul-claro-bg); }
+.m-terra { fill: var(--papel-alt); }
+.m-costa { fill: none; stroke: var(--linha-forte); stroke-width: 2; }
+.m-agua  { fill: var(--azul-claro-bg); stroke: var(--linha-forte); stroke-width: 1.5; }
+.m-rio   { fill: none; stroke: var(--azul-cla); stroke-width: 2.5; stroke-linecap: round; }
+
+.m-lugar { cursor: pointer; }
+.m-lugar circle { fill: var(--papel); stroke: var(--azul); stroke-width: 2.5; transition: all var(--trans); }
+.m-lugar text {
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  fill: var(--texto-2);
+  paint-order: stroke;
+  stroke: var(--papel-alt);
+  stroke-width: 3.5;
+  transition: fill var(--trans);
+}
+/* a área de toque fica por cima, transparente: o desenho é pequeno
+   demais para servir de alvo, mas não precisa crescer por isso */
+.m-alvo { fill: transparent; stroke: none; }
+.m-t-monte circle { fill: var(--azul); }
+.m-lugar.m-t-agua text { fill: var(--azul-cla); font-style: italic; stroke: var(--azul-claro-bg); }
+.m-lugar:hover circle, .m-lugar:focus-visible circle { fill: var(--azul); }
+.m-lugar:hover text, .m-lugar:focus-visible text { fill: var(--azul); }
+.m-lugar.ativo circle { fill: var(--azul); r: 8; }
+.m-lugar.ativo text { fill: var(--azul); font-weight: 700; }
+.m-lugar:focus-visible { outline: none; }
+.m-lugar:focus-visible circle { stroke: var(--azul-esc); stroke-width: 4; }
+
+.mapa-aviso {
+  font-size: 12.5px;
+  color: var(--texto-3);
+  margin-top: 10px;
+  line-height: 1.45;
+}
+#ficha-lugar { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--linha); }
+#ficha-lugar h3 { font-size: 17px; margin-bottom: 6px; letter-spacing: -.01em; }
+.lugar-nota {
+  font-size: 14.5px;
+  color: var(--texto-2);
+  line-height: 1.55;
+  margin-bottom: 12px;
+}
+.lugar-refs { display: flex; flex-wrap: wrap; gap: 8px; }
+
 /* ---------------- veja também ---------------- */
 .refs-titulo {
   font-size: 11.5px;
@@ -2830,6 +2878,7 @@ html[data-tema="escuro"] .painel-config header { background: #152238; }
     </div>
     <div class="linha-ferramentas">
       <button class="ferramenta" id="btn-livros">Lista de livros ⌄</button>
+      <button class="ferramenta" id="btn-mapa" type="button">Mapa ⌄</button>
       <button class="ferramenta" id="btn-entrar-foco" type="button">Modo foco</button>
     </div>
   </div>
@@ -2960,6 +3009,16 @@ html[data-tema="escuro"] .painel-config header { background: #152238; }
         <button class="voltar" data-volta="capitulos">‹ Capítulos</button>
         <div id="area-leitura"></div>
       </div>
+    </div>
+  </section>
+
+  <!-- ============ MAPA DA TERRA SANTA ============ -->
+  <section class="secao oculto" id="sec-mapa">
+    <h2 class="rotulo-secao">Mapa da Terra Santa</h2>
+    <div class="cartao">
+      <div id="palco-mapa"></div>
+      <p class="mapa-aviso">Desenho nosso, com as posições em latitude e longitude reais. Toque num lugar.</p>
+      <div id="ficha-lugar" class="oculto"></div>
     </div>
   </section>
 
@@ -3226,6 +3285,129 @@ const LIVROS = [
   [59,'Tiago',5,'JAS'],[60,'1 Pedro',5,'1PE'],[61,'2 Pedro',3,'2PE'],[62,'1 João',5,'1JN'],
   [63,'2 João',1,'2JN'],[64,'3 João',1,'3JN'],[65,'Judas',1,'JUD'],[66,'Apocalipse',22,'REV']
 ].map(([nr,nome,caps,sigla]) => ({nr,nome,caps,sigla}));
+
+/* =========================================================
+   MAPA DA TERRA SANTA
+   Coordenadas de lugar são fato, não obra: ninguém detém
+   direito sobre a latitude de Belém. O desenho é nosso, feito
+   em SVG — pela mesma razão que os fundos do gerador de imagem
+   são desenhados e não fotografados: sem licença, sem chave de
+   API, e funciona offline.
+   Guardamos latitude e longitude de verdade e projetamos por
+   código. Assim as posições relativas são honestas; só o traço
+   do litoral é simplificado.
+   ========================================================= */
+
+/* Recorte do mapa, em graus */
+const MAPA = { oesteLon: 34.15, lesteLon: 36.45, sulLat: 30.85, norteLat: 33.75, k: 300 };
+
+/* Longitude encolhe com a latitude; sem isso a Terra Santa sairia
+   esticada no sentido leste-oeste. */
+const COS_MEDIO = Math.cos((MAPA.sulLat + MAPA.norteLat) / 2 * Math.PI / 180);
+const MAPA_W = (MAPA.lesteLon - MAPA.oesteLon) * COS_MEDIO * MAPA.k;
+const MAPA_H = (MAPA.norteLat - MAPA.sulLat) * MAPA.k;
+
+const projX = lon => (lon - MAPA.oesteLon) * COS_MEDIO * MAPA.k;
+const projY = lat => (MAPA.norteLat - lat) * MAPA.k;
+const traco = pontos => pontos.map(([la, lo]) => projX(lo).toFixed(1) + ',' + projY(la).toFixed(1)).join(' ');
+
+/* Litoral do Mediterrâneo, de sul para norte. Simplificado, mas
+   ancorado em pontos reais da costa. */
+const LITORAL = [
+  [30.85, 34.20], [31.20, 34.25], [31.52, 34.42], [31.80, 34.62], [32.05, 34.74],
+  [32.30, 34.83], [32.55, 34.90], [32.83, 34.97], [33.05, 35.10], [33.27, 35.19],
+  [33.56, 35.37], [33.75, 35.48]
+];
+
+/* Rio Jordão: do lago da Galileia ao Mar Morto */
+const JORDAO = [
+  [32.72, 35.57], [32.55, 35.57], [32.35, 35.55], [32.15, 35.56], [31.95, 35.54], [31.82, 35.53]
+];
+
+/* Lago da Galileia e Mar Morto, como polígonos fechados */
+const GALILEIA = [
+  [32.90, 35.53], [32.88, 35.63], [32.82, 35.66], [32.75, 35.62], [32.73, 35.55], [32.80, 35.51]
+];
+const MAR_MORTO = [
+  [31.77, 35.48], [31.76, 35.58], [31.55, 35.60], [31.40, 35.53], [31.25, 35.52],
+  [31.10, 35.45], [31.20, 35.42], [31.45, 35.44], [31.65, 35.45]
+];
+
+/* Lugares. As passagens são as que a pessoa pode abrir dali. */
+const LUGARES = [
+  { nome: 'Jerusalém', lat: 31.78, lon: 35.23, tipo: 'cidade', lado: 'e', dy: -4,
+    nota: 'A cidade do templo. Cenário da Páscoa, da cruz e da ressurreição.',
+    refs: [[19,122,6],[42,19,41],[44,2,1]] },
+  { nome: 'Belém', lat: 31.70, lon: 35.20, tipo: 'cidade', lado: 'e', dy: 14,
+    nota: 'Onde Rute colheu, Davi nasceu e Jesus nasceu.',
+    refs: [[33,5,2],[42,2,4],[8,1,22]] },
+  { nome: 'Nazaré', lat: 32.70, lon: 35.30, tipo: 'cidade', lado: 'e', dy: 10,
+    nota: 'Onde Jesus cresceu, e de onde diziam que nada de bom podia vir.',
+    refs: [[42,2,51],[43,1,46]] },
+  { nome: 'Cafarnaum', lat: 32.88, lon: 35.57, tipo: 'cidade', lado: 'd', dy: -8,
+    nota: 'Base do ministério de Jesus na Galileia.',
+    refs: [[40,4,13],[41,2,1]] },
+  { nome: 'Caná', lat: 32.75, lon: 35.34, tipo: 'vila', lado: 'd', dy: -2,
+    nota: 'O primeiro sinal: a água que virou vinho.',
+    refs: [[43,2,11]] },
+  { nome: 'Jericó', lat: 31.87, lon: 35.44, tipo: 'cidade', lado: 'd', dy: -2,
+    nota: 'A cidade das muralhas, e onde Zaqueu subiu na árvore.',
+    refs: [[6,6,20],[42,19,5]] },
+  { nome: 'Betel', lat: 31.93, lon: 35.22, tipo: 'vila', lado: 'e', dy: -6,
+    nota: 'Onde Jacó sonhou com a escada que subia ao céu.',
+    refs: [[1,28,19]] },
+  { nome: 'Siquém', lat: 32.21, lon: 35.28, tipo: 'cidade', lado: 'd', dy: 8,
+    nota: 'Onde Josué reuniu o povo para escolher a quem servir.',
+    refs: [[6,24,15]] },
+  { nome: 'Samaria', lat: 32.28, lon: 35.20, tipo: 'cidade', lado: 'e', dy: -4,
+    nota: 'Capital do reino do norte; terra da mulher do poço.',
+    refs: [[43,4,5],[44,8,5]] },
+  { nome: 'Hebrom', lat: 31.53, lon: 35.10, tipo: 'cidade',
+    nota: 'Onde Abraão morou e foi sepultado. Primeira capital de Davi.',
+    refs: [[1,23,19],[10,2,4]] },
+  { nome: 'Berseba', lat: 31.25, lon: 34.79, tipo: 'cidade',
+    nota: 'O extremo sul da terra: "de Dã a Berseba".',
+    refs: [[1,21,33],[9,3,20]] },
+  { nome: 'Jope', lat: 32.05, lon: 34.75, tipo: 'porto',
+    nota: 'De onde Jonas fugiu de navio; onde Pedro teve a visão.',
+    refs: [[32,1,3],[44,10,9]] },
+  { nome: 'Cesareia', lat: 32.50, lon: 34.89, tipo: 'porto',
+    nota: 'Porto romano. Casa de Cornélio e prisão de Paulo.',
+    refs: [[44,10,1],[44,23,33]] },
+  { nome: 'Monte Carmelo', lat: 32.73, lon: 35.05, tipo: 'monte', lado: 'e', dy: -8,
+    nota: 'Onde Elias desafiou os profetas de Baal.',
+    refs: [[11,18,20]] },
+  { nome: 'Meguido', lat: 32.58, lon: 35.18, tipo: 'cidade',
+    nota: 'Passagem de exércitos por séculos.',
+    refs: [[12,23,29]] },
+  { nome: 'Tiro', lat: 33.27, lon: 35.19, tipo: 'porto',
+    nota: 'Cidade fenícia. Jesus esteve nos seus arredores.',
+    refs: [[41,7,24]] },
+  { nome: 'Sidom', lat: 33.56, lon: 35.37, tipo: 'porto',
+    nota: 'A viúva de Sarepta, entre Tiro e Sidom, sustentou Elias.',
+    refs: [[11,17,9],[42,4,26]] },
+  { nome: 'Damasco', lat: 33.51, lon: 36.29, tipo: 'cidade',
+    nota: 'No caminho para lá, Saulo viu a luz e virou Paulo.',
+    refs: [[44,9,3]] },
+  { nome: 'Betânia', lat: 31.77, lon: 35.29, tipo: 'vila', lado: 'd', dy: 4,
+    nota: 'Casa de Marta, Maria e Lázaro.',
+    refs: [[43,11,1],[42,10,38]] },
+  { nome: 'Silo', lat: 32.06, lon: 35.29, tipo: 'vila',
+    nota: 'Onde ficou o tabernáculo, e onde Ana orou por um filho.',
+    refs: [[9,1,9]] },
+  { nome: 'Gaza', lat: 31.52, lon: 34.45, tipo: 'cidade',
+    nota: 'Cidade filisteia; onde Sansão derrubou as colunas.',
+    refs: [[7,16,21]] },
+  { nome: 'Monte Nebo', lat: 31.77, lon: 35.73, tipo: 'monte', lado: 'd', dy: 16,
+    nota: 'De onde Moisés viu a terra que não pisaria.',
+    refs: [[5,34,1]] },
+  { nome: 'Lago da Galileia', lat: 32.82, lon: 35.59, tipo: 'agua', lado: 'd', dy: 12,
+    nota: 'Onde Jesus chamou pescadores e acalmou a tempestade.',
+    refs: [[41,4,39],[40,4,18]] },
+  { nome: 'Mar Morto', lat: 31.45, lon: 35.48, tipo: 'agua', lado: 'e', dy: 0,
+    nota: 'O ponto mais baixo da terra firme. Perto de Sodoma e Gomorra.',
+    refs: [[1,19,24]] }
+];
 
 /* =========================================================
    REFERÊNCIAS CRUZADAS
@@ -4372,6 +4554,102 @@ function salvarNotaDoVerso(){
 }
 
 /* ---------- comparação entre versões ---------- */
+/* =========================================================
+   DESENHO DO MAPA
+   Tudo sai das coordenadas: o litoral, os rios e os lugares
+   passam pela mesma projeção, então nada pode sair de lugar
+   em relação ao resto.
+   ========================================================= */
+let lugarAberto = null;
+
+function desenharMapa(){
+  const palco = $('palco-mapa');
+  if(!palco || palco.dataset.pronto) return;
+
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.setAttribute('viewBox', '0 0 ' + Math.round(MAPA_W) + ' ' + Math.round(MAPA_H));
+  svg.setAttribute('class', 'mapa');
+  svg.setAttribute('role', 'img');
+  svg.setAttribute('aria-label', 'Mapa da Terra Santa com ' + LUGARES.length + ' lugares');
+
+  const criar = (tag, attrs) => {
+    const e = document.createElementNS('http://www.w3.org/2000/svg', tag);
+    for(const k in attrs) e.setAttribute(k, attrs[k]);
+    return e;
+  };
+
+  /* o mar é o fundo; a terra é um polígono que fecha pelo lado leste */
+  svg.appendChild(criar('rect', { x: 0, y: 0, width: MAPA_W, height: MAPA_H, class: 'm-mar' }));
+  const terra = LITORAL.map(([la, lo]) => [projX(lo), projY(la)]);
+  const pontosTerra = terra.map(p => p[0].toFixed(1) + ',' + p[1].toFixed(1)).join(' ')
+    + ' ' + MAPA_W + ',0 ' + MAPA_W + ',' + MAPA_H + ' ' + terra[0][0].toFixed(1) + ',' + MAPA_H;
+  svg.appendChild(criar('polygon', { points: pontosTerra, class: 'm-terra' }));
+  svg.appendChild(criar('polyline', { points: traco(LITORAL), class: 'm-costa' }));
+
+  svg.appendChild(criar('polygon', { points: traco(GALILEIA), class: 'm-agua' }));
+  svg.appendChild(criar('polygon', { points: traco(MAR_MORTO), class: 'm-agua' }));
+  svg.appendChild(criar('polyline', { points: traco(JORDAO), class: 'm-rio' }));
+
+  /* rótulo à direita de quem está à oeste e vice-versa: reduz encavalamento */
+  const meio = (MAPA.oesteLon + MAPA.lesteLon) / 2;
+  LUGARES.forEach((l, i) => {
+    const x = projX(l.lon), y = projY(l.lat);
+    const g = criar('g', { class: 'm-lugar m-t-' + l.tipo, tabindex: '0', role: 'button' });
+    g.setAttribute('aria-label', l.nome + '. ' + l.nota);
+    g.dataset.i = i;
+    if(l.tipo !== 'agua')
+      g.appendChild(criar('circle', { cx: x.toFixed(1), cy: y.toFixed(1), r: 6 }));
+    /* onde os lugares se amontoam — Jerusalém e vizinhos, a Galileia — o
+       rótulo ganha deslocamento próprio, senão um cobre o outro */
+    const paraDireita = l.lado ? l.lado === 'd' : l.lon < meio;
+    const t = criar('text', {
+      x: ((paraDireita ? x + 11 : x - 11) + (l.dx || 0)).toFixed(1),
+      y: (y + 5 + (l.dy || 0)).toFixed(1),
+      'text-anchor': paraDireita ? 'start' : 'end'
+    });
+    t.textContent = l.nome;
+    g.appendChild(t);
+    /* alvo de toque generoso por cima do desenho, que é pequeno */
+    g.appendChild(criar('rect', {
+      x: (x - 22).toFixed(1), y: (y - 22).toFixed(1),
+      width: 44, height: 44, class: 'm-alvo'
+    }));
+    const abrir = () => mostrarLugar(i);
+    g.onclick = abrir;
+    g.onkeydown = e => { if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); abrir(); } };
+    svg.appendChild(g);
+  });
+
+  palco.innerHTML = '';
+  palco.appendChild(svg);
+  palco.dataset.pronto = '1';
+}
+
+function mostrarLugar(i){
+  const l = LUGARES[i];
+  if(!l) return;
+  lugarAberto = i;
+  document.querySelectorAll('#palco-mapa .m-lugar').forEach(g =>
+    g.classList.toggle('ativo', +g.dataset.i === i));
+
+  const ficha = $('ficha-lugar');
+  ficha.classList.remove('oculto');
+  ficha.innerHTML = '<h3></h3><p class="lugar-nota"></p><div class="lugar-refs"></div>';
+  ficha.querySelector('h3').textContent = l.nome;
+  ficha.querySelector('.lugar-nota').textContent = l.nota;
+
+  const caixa = ficha.querySelector('.lugar-refs');
+  l.refs.forEach(([nr, cap, verso]) => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'btn-sm';
+    b.textContent = livroPorNr(nr).nome + ' ' + cap + ':' + verso;
+    b.onclick = () => abrirLeitura(nr, cap, verso);
+    caixa.appendChild(b);
+  });
+  if(Voz.prefs.modo) Voz.anunciar(l.nome + '. ' + l.nota);
+}
+
 /* =========================================================
    VEJA TAMBÉM
    Mostra as passagens ligadas à que está aberta. A referência
@@ -6908,7 +7186,7 @@ $('btn-tema').onclick = alternarTema;
    a jornada, os dias anteriores, os favoritos, o diário. */
 const ABAS = {
   hoje:   ['sec-hoje', 'sec-continuar', 'sec-oracoes', 'sec-promessas'],
-  biblia: ['controles', 'sec-busca', 'sec-biblia'],
+  biblia: ['controles', 'sec-busca', 'sec-biblia', 'sec-mapa'],
   planos: ['sec-planos'],
   meu:    ['sec-stats', 'sec-hist', 'sec-favoritos', 'sec-app']
 };
@@ -6987,6 +7265,13 @@ document.querySelectorAll('[data-fecha]').forEach(a => a.onclick = () => abrirMe
 $('btn-busca').onclick = buscarReferencia;
 $('busca').onkeydown = e => { if(e.key === 'Enter') buscarReferencia(); };
 $('btn-livros').onclick = () => { mostrarNivel('livros'); mostrarSecao('sec-biblia'); };
+$('btn-mapa').onclick = function(){
+  const sec = $('sec-mapa');
+  const abrindo = sec.classList.contains('oculto');
+  if(abrindo){ desenharMapa(); sec.classList.remove('oculto'); mostrarSecao('sec-mapa'); }
+  else sec.classList.add('oculto');
+  this.textContent = abrindo ? 'Mapa ⌃' : 'Mapa ⌄';
+};
 /* O tamanho da letra não era guardado: voltava ao normal a cada abertura,
    justamente para quem mais precisa dele. Agora fica. */
 const CHAVE_ESC = 'lampada-escala';
