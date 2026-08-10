@@ -156,6 +156,70 @@ muito antes e sem relação aparente com tipografia. A pilha do canvas vai
 escrita numa constante `FONTE_CANVAS`, e agora há teste conferindo que
 ela é aceita pelo navegador e que não contém `var(`.
 
+## Compartilhar leva ao versículo
+
+Versículo compartilhado sem link chega bonito e morre ali: quem recebeu
+não tem como voltar ao lugar de onde ele veio. Agora vai um link junto —
+e ele **não é a capa**, é a passagem.
+
+```
+https://devocionaldiario-eosin.vercel.app/?v=1.28.19
+```
+
+`?v=livro.capítulo.versículo`. Abre Gênesis 28, com o 19 destacado.
+
+São **números e não o nome do livro** porque o nome tem acento e espaço, e
+um endereço com `G%C3%AAnesis%2028` some quando o aplicativo de mensagem
+corta o link no meio.
+
+O endereço-base sai da tag `canonical` — a mesma que a prévia do WhatsApp
+usa. Se saíssem de lugares diferentes, um dia divergiriam sem ninguém
+notar; há teste conferindo que `LINK_SITE`, a canônica e a `og:url` são a
+mesma coisa.
+
+### O link vai no campo certo
+
+`navigator.share({ text, url })`, com o endereço **separado** e não colado
+no texto. Quando o destino só aceita texto — o WhatsApp é assim —, quem
+junta os dois é o próprio navegador, com o espaçamento que aquele
+aplicativo espera. Colar o endereço no texto *e* mandar em `url` faria o
+link aparecer duas vezes onde os dois campos são entendidos.
+
+Na cópia para a área de transferência não existe campo separado, então aí
+o endereço entra no texto à mão. Há teste para os dois caminhos.
+
+### Chegando pelo link
+
+`?v=` é atendido **depois** da aba guardada, de propósito: o link é o
+motivo pelo qual a pessoa abriu o app agora, e ganha de onde ela estava
+ontem. Depois de atendido o endereço é limpo — senão ela navegaria o app
+inteiro com `?v=` grudado na barra, e um "atualizar" mais tarde a jogaria
+de volta àquele versículo sem ter pedido.
+
+Link estragado não derruba nada: livro que não existe, capítulo além do
+fim do livro ou lixo no lugar dos números caem no devocional do dia, como
+uma abertura normal. São quatro asserções.
+
+### Na imagem, o endereço vai desenhado
+
+Legenda não sobrevive ao reencaminhamento. A imagem passa adiante sozinha,
+e quem a recebe de terceira mão não teria como saber de onde veio. Por
+isso o domínio é **escrito no rodapé da imagem**, além de ir na legenda.
+
+Ele tem cor própria, mais firme que a do crédito da foto: com a tinta de
+enfeite, sobre os dois fundos que têm desenho — a oliveira e o pergaminho
+— o endereço ficava em **3,6:1**, abaixo dos 4,5 da WCAG AA. Endereço é
+para ser lido e digitado.
+
+| | Antes | Agora |
+|---|---:|---:|
+| Pior fundo (pergaminho) | 3,65 | **6,33** |
+| Segundo pior (oliveira) | 3,61 | **6,83** |
+| Melhor caso | 9,96 | **15,29** |
+
+O teste percorre os dez fundos e reprova se qualquer um cair abaixo de
+4,5.
+
 ## Prévia ao compartilhar
 
 Mandar o link no WhatsApp mostrava título e descrição, e nenhuma imagem.
