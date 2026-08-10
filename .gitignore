@@ -11,6 +11,10 @@ node_modules/
 .next
 dist/
 
+# cópia local dos dados do OpenBible, baixada pelo gerador do mapa;
+# são 15 MB e o que importa versionar é a saída, não a entrada
+ferramentas/.cache-openbible/
+
 # lixo de sistema
 .DS_Store
 Thumbs.db
