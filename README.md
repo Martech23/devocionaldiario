@@ -48,6 +48,43 @@ versículos que contivessem a palavra "gênesis". A referência só era
 reconhecida com número junto (`Gênesis 1`). Agora o nome sozinho abre o
 livro, com ou sem acento.
 
+## Veja também — referências cruzadas
+
+Tocar num versículo e ver as passagens que conversam com ele. Cada uma
+abre no leitor; dá para ouvir todas de uma vez.
+
+**Nada aqui é copiado de obra alheia.** São ligações entre passagens — que
+são fato, não texto —, escritas à mão. Os comentários clássicos (Matthew
+Henry, Gill, Clarke) são domínio público *em inglês*, mas a tradução para
+o português é obra nova com direito próprio: a mesma armadilha que barrou a
+ACF e a NVI. Referência cruzada escapa disso porque não tem prosa.
+
+| | |
+|---|---:|
+| Grupos temáticos | 34 |
+| Citações do NT ao AT | 23 |
+| Versículos cobertos | 260 |
+| Ligações geradas | 1.470 |
+| Devocionais do dia cobertos | **180/180** |
+
+As ligações ficam como **grupos**, não como listas por versículo, porque a
+relação é simétrica — se A remete a B, B remete a A. Derivar os dois
+sentidos em código elimina a chance de ligar num sentido e esquecer o
+outro; há teste que percorre o índice inteiro conferindo isso.
+
+As **citações** aparecem antes das ligações por tema: Mateus 4:4 cita
+Deuteronômio 8:3, e isso é mais forte do que parentesco de assunto.
+
+A referência aparece **mesmo quando o texto não vem**: a ligação é nossa e
+não depende de rede; só o texto é buscado.
+
+### Para crescer
+
+O *Treasury of Scripture Knowledge* (1830, domínio público) tem ~500 mil
+ligações, e o openbible.info publica um conjunto moderno em CC BY. Qualquer
+um dos dois entra no lugar de `GRUPOS_REF` sem mexer no resto — a licença
+precisa ser confirmada antes.
+
 ## Continuar de onde parou
 
 Quem estava no dia 12 de um plano não via isso em lugar nenhum na tela

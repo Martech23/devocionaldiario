@@ -1598,6 +1598,52 @@ body.modo-foco #sec-biblia .voltar {
   flex: 0 0 auto;
 }
 
+/* ---------------- veja também ---------------- */
+.refs-titulo {
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--texto-3);
+  margin: 14px 0 8px;
+}
+.refs-titulo:first-child { margin-top: 4px; }
+.refs-vazio { font-size: 14px; color: var(--texto-2); padding: 10px 0; }
+
+.ref-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  font-family: inherit;
+  background: var(--papel-alt);
+  border: 1px solid var(--linha);
+  border-radius: var(--radius-sm);
+  padding: 11px 13px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  min-height: 44px;
+  transition: all var(--trans);
+}
+.ref-item:hover, .ref-item:focus-visible {
+  border-color: var(--azul);
+  background: var(--azul-suave);
+}
+.ref-item-ref {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--azul);
+  margin-bottom: 3px;
+}
+.ref-item-txt {
+  display: block;
+  font-family: "Source Serif 4", Georgia, serif;
+  font-size: calc(15px * var(--esc));
+  line-height: 1.5;
+  color: var(--texto);
+}
+.ref-item-txt.falhou { font-family: inherit; font-size: 13px; color: var(--texto-3); }
+
 /* ---------------- saudação e primeira visita ---------------- */
 .saudacao {
   font-size: 22px;
@@ -3101,6 +3147,7 @@ html[data-tema="escuro"] .painel-config header { background: #152238; }
       <button type="button" id="fa-fav">☆ Favoritar</button>
       <button type="button" id="fa-nota">✎ Nota</button>
       <button type="button" id="fa-comparar">⇄ Comparar</button>
+      <button type="button" id="fa-refs">↔ Veja também</button>
       <button type="button" id="fa-copiar"><img src="/icon-share.png" alt="" width="16" height="16" decoding="async"> Compartilhar</button>
       <button type="button" id="fa-imagem"><svg class="i" aria-hidden="true"><use href="#i-imagem"/></svg> Imagem</button>
     </div>
@@ -3112,6 +3159,13 @@ html[data-tema="escuro"] .painel-config header { background: #152238; }
       <button class="btn-mic" id="btn-nota-voz" type="button" aria-label="Ditar a nota" title="Ditar"><img src="/icon-mic.png" alt="" width="18" height="18" decoding="async"></button>
       <button class="btn-ouvir" id="btn-salvar-nota" type="button" style="flex:1 1 auto;justify-content:center">Salvar nota</button>
       <button class="btn-ouvir claro" id="btn-voltar-folha" type="button">Voltar</button>
+    </div>
+  </div>
+
+  <div id="folha-refs" class="oculto">
+    <div id="lista-refs"></div>
+    <div class="linha-nota" style="margin-top:14px">
+      <button class="btn-ouvir claro" id="btn-voltar-folha3" type="button" style="flex:1 1 auto;justify-content:center">Voltar</button>
     </div>
   </div>
 
@@ -3172,6 +3226,125 @@ const LIVROS = [
   [59,'Tiago',5,'JAS'],[60,'1 Pedro',5,'1PE'],[61,'2 Pedro',3,'2PE'],[62,'1 João',5,'1JN'],
   [63,'2 João',1,'2JN'],[64,'3 João',1,'3JN'],[65,'Judas',1,'JUD'],[66,'Apocalipse',22,'REV']
 ].map(([nr,nome,caps,sigla]) => ({nr,nome,caps,sigla}));
+
+/* =========================================================
+   REFERÊNCIAS CRUZADAS
+   Nada aqui é copiado de obra alheia: são ligações entre
+   passagens, que são fato e não texto. Ficam escritas como
+   grupos porque a relação é simétrica — se A remete a B, B
+   remete a A —, e derivar os dois sentidos em código evita
+   ligar num sentido e esquecer o outro.
+   ========================================================= */
+
+/* Passagens que tratam do mesmo assunto */
+const GRUPOS_REF = [
+  /* o Senhor é o pastor */
+  [[19,23,1],[43,10,11],[26,34,11],[23,40,11],[60,2,25],[58,13,20],[19,80,1]],
+  /* não temas, estou contigo */
+  [[23,41,10],[6,1,9],[5,31,6],[23,43,1],[19,23,4],[19,27,1],[19,118,6],[58,13,6]],
+  /* ansiedade entregue */
+  [[50,4,6],[60,5,7],[40,6,34],[19,55,22],[23,26,3],[43,14,27],[19,94,19]],
+  /* força na fraqueza */
+  [[23,40,31],[50,4,13],[47,12,9],[49,6,10],[19,73,26],[23,41,13],[51,1,11],[19,28,7]],
+  /* provisão */
+  [[50,4,19],[40,6,33],[19,34,10],[39,3,10],[19,37,25],[40,6,26],[42,6,38],[19,23,1]],
+  /* descanso para os cansados */
+  [[40,11,28],[24,6,16],[58,4,9],[19,127,2],[19,62,1]],
+  /* direção e sabedoria */
+  [[20,3,5],[20,3,6],[19,32,8],[19,119,105],[23,30,21],[24,29,11],[59,1,5],[19,25,4],[20,16,9]],
+  /* perdão que vem de Deus */
+  [[62,1,9],[19,103,12],[23,1,18],[33,7,19],[19,51,10],[23,43,25],[58,8,12],[19,32,1]],
+  /* perdoar os outros */
+  [[40,6,14],[41,11,25],[42,6,37],[51,3,13],[49,4,32]],
+  /* fé */
+  [[58,11,1],[58,11,6],[45,10,17],[47,5,7],[41,9,23],[59,1,6]],
+  /* esperança */
+  [[45,15,13],[45,5,5],[25,3,22],[25,3,23],[19,27,14],[45,8,28],[60,1,3]],
+  /* gratidão */
+  [[19,100,4],[52,5,18],[51,3,15],[19,107,1],[49,5,20],[19,103,2],[19,136,1]],
+  /* proteção */
+  [[19,91,1],[19,91,11],[19,121,7],[20,18,10],[53,3,3],[19,46,1],[19,32,7],[34,1,7]],
+  /* o amor de Deus */
+  [[43,3,16],[45,5,8],[62,4,10],[45,8,28],[24,31,3],[49,2,4]],
+  /* nova criatura, salvação pela graça */
+  [[47,5,17],[49,2,8],[45,10,9],[56,3,5],[43,1,12]],
+  /* a Palavra */
+  [[19,119,105],[55,3,16],[58,4,12],[23,55,11],[6,1,8],[19,1,2]],
+  /* oração */
+  [[40,7,7],[59,5,16],[62,5,14],[24,33,3],[52,5,17],[50,4,6]],
+  /* consolo na dor */
+  [[19,34,18],[19,147,3],[40,5,4],[47,1,3],[66,21,4],[19,30,2],[19,42,11]],
+  /* a casa e os filhos */
+  [[6,24,15],[20,22,6],[49,6,4],[5,6,7],[19,127,3],[44,16,31]],
+  /* luz */
+  [[43,8,12],[40,5,14],[19,27,1],[62,1,5],[43,1,5]],
+  /* alegria e louvor */
+  [[19,118,24],[50,4,4],[16,8,10],[19,100,2],[19,95,2]],
+  /* humildade */
+  [[59,4,10],[60,5,6],[20,3,34],[33,6,8],[40,23,12]],
+  /* coragem no lugar do medo */
+  [[19,56,3],[55,1,7],[19,34,4],[43,16,33],[19,27,1],[19,118,6],[45,8,37],[62,5,4]],
+  /* rocha e fortaleza */
+  [[19,18,2],[19,46,7],[5,33,27],[19,3,3],[19,91,4],[19,62,2],[20,30,5]],
+  /* firmeza e perseverança */
+  [[46,16,13],[58,10,23],[45,12,12],[48,6,9],[46,15,58],[19,130,5],[19,39,7]],
+  /* Deus dá forças a quem não tem */
+  [[23,40,29],[49,3,16],[35,3,19],[19,138,3],[23,12,2],[38,4,6],[55,4,17]],
+  /* toda boa dádiva */
+  [[59,1,17],[19,84,11],[47,9,8],[19,145,16],[19,111,5],[20,3,10],[51,3,17]],
+  /* o Senhor proverá */
+  [[1,22,14],[2,16,4],[11,17,14],[43,6,35],[50,4,19]],
+  /* Ele sara */
+  [[24,30,17],[19,103,3],[19,6,2],[2,15,26],[39,4,2],[24,17,14],[19,147,3]],
+  /* Ele guia os passos */
+  [[19,37,23],[23,58,11],[20,16,3],[19,143,8],[43,16,13],[19,48,14],[20,4,11],[23,42,16],[19,139,10]],
+  /* nenhuma condenação */
+  [[45,8,1],[19,130,4],[44,3,19],[19,86,5],[42,23,34],[14,7,14]],
+  /* dar graças em tudo */
+  [[51,3,17],[13,16,34],[19,9,1],[47,9,15],[42,17,15],[19,34,1],[58,12,28],[19,92,1],[27,2,23]],
+  /* a casa unida */
+  [[21,4,9],[20,17,6],[19,133,1],[54,5,8],[8,1,16],[19,128,3],[51,3,20],[20,31,28],[41,10,9],[46,13,7]],
+  /* o Senhor guarda */
+  [[19,4,8],[19,121,8],[23,54,17],[19,5,11],[55,4,18],[19,27,5],[19,121,7]]
+];
+
+/* Passagens do Novo Testamento que citam o Antigo. A ligação é
+   de citação mesmo, não de tema — vale marcar à parte. */
+const CITACOES_REF = [
+  [[40,4,4],[5,8,3]],   [[40,4,7],[5,6,16]],   [[40,4,10],[5,6,13]],
+  [[40,22,37],[5,6,5]], [[40,22,39],[3,19,18]],
+  [[45,1,17],[35,2,4]], [[58,10,38],[35,2,4]], [[48,3,11],[35,2,4]],
+  [[40,1,23],[23,7,14]],[[42,4,18],[23,61,1]],
+  [[40,27,46],[19,22,1]], [[43,19,24],[19,22,18]],
+  [[60,2,24],[23,53,5]], [[44,8,32],[23,53,7]],
+  [[45,10,13],[29,2,32]], [[44,2,17],[29,2,28]],
+  [[58,13,6],[19,118,6]], [[40,21,42],[19,118,22]], [[60,2,7],[19,118,22]],
+  [[46,15,54],[23,25,8]], [[66,21,4],[23,25,8]],
+  [[45,4,3],[1,15,6]],  [[59,2,23],[1,15,6]]
+];
+
+/* Índice: de cada versículo para os que se ligam a ele. Construído
+   uma vez, nos dois sentidos. */
+const REFS = (() => {
+  const mapa = new Map();
+  const ligar = (a, b, tipo) => {
+    const k = a.join('-');
+    if(!mapa.has(k)) mapa.set(k, []);
+    const lista = mapa.get(k);
+    if(!lista.some(x => x.ref.join('-') === b.join('-'))) lista.push({ ref: b, tipo });
+  };
+  for(const grupo of GRUPOS_REF)
+    for(const a of grupo) for(const b of grupo)
+      if(a !== b) ligar(a, b, 'tema');
+  for(const [a, b] of CITACOES_REF){ ligar(a, b, 'citacao'); ligar(b, a, 'citacao'); }
+  return mapa;
+})();
+
+/* As citações vêm primeiro: são ligação direta, não parentesco de assunto. */
+function referenciasDe(nr, cap, verso){
+  const lista = REFS.get([nr, cap, verso].join('-')) || [];
+  return [...lista].sort((a, b) => (a.tipo === 'citacao' ? 0 : 1) - (b.tipo === 'citacao' ? 0 : 1));
+}
 
 const PROMESSAS = {
   'Medo e ansiedade':[[23,41,10],[19,56,3],[43,14,27],[50,4,6],[60,5,7],[55,1,7],[19,34,4],[40,6,34],[19,94,19],
@@ -4106,7 +4279,7 @@ function pintarVerso(el, nr, cap, verso){
 let versoAberto = null;   // {nr, cap, verso, texto}
 
 function mostrarPaineFolha(qual){
-  ['folha-principal', 'folha-nota', 'folha-comparar'].forEach(id =>
+  ['folha-principal', 'folha-nota', 'folha-comparar', 'folha-refs'].forEach(id =>
     $(id).classList.toggle('oculto', id !== qual)
   );
 }
@@ -4199,6 +4372,81 @@ function salvarNotaDoVerso(){
 }
 
 /* ---------- comparação entre versões ---------- */
+/* =========================================================
+   VEJA TAMBÉM
+   Mostra as passagens ligadas à que está aberta. A referência
+   aparece mesmo quando o texto não vem — ela é nossa e não
+   depende de rede; só o texto é buscado.
+   ========================================================= */
+async function verReferencias(){
+  if(!versoAberto) return;
+  const { nr, cap, verso } = versoAberto;
+  const ligadas = referenciasDe(nr, cap, verso);
+  const alvo = $('lista-refs');
+  mostrarPaineFolha('folha-refs');
+
+  if(!ligadas.length){
+    alvo.innerHTML = '';
+    const vazio = document.createElement('p');
+    vazio.className = 'refs-vazio';
+    vazio.textContent = 'Ainda não há passagens ligadas a este versículo.';
+    alvo.appendChild(vazio);
+    return;
+  }
+
+  alvo.innerHTML = '<div class="carregando"><span class="giro"></span> Buscando as passagens…</div>';
+  const buscados = await Promise.all(ligadas.map(async l => {
+    const [n, c, v] = l.ref;
+    try { return { l, texto: await buscarVerso(n, c, v).then(r => r.texto) }; }
+    catch { return { l, texto: null }; }
+  }));
+
+  alvo.innerHTML = '';
+  const grupos = [
+    ['citacao', 'Cita ou é citado'],
+    ['tema',    'Sobre o mesmo assunto']
+  ];
+  for(const [tipo, titulo] of grupos){
+    const doTipo = buscados.filter(b => b.l.tipo === tipo);
+    if(!doTipo.length) continue;
+    const t = document.createElement('p');
+    t.className = 'refs-titulo';
+    t.textContent = titulo;
+    alvo.appendChild(t);
+    for(const { l, texto } of doTipo){
+      const [n, c, v] = l.ref;
+      const ref = livroPorNr(n).nome + ' ' + c + ':' + v;
+      const item = document.createElement('button');
+      item.type = 'button';
+      item.className = 'ref-item';
+      const r = document.createElement('span');
+      r.className = 'ref-item-ref';
+      r.textContent = ref;
+      const x = document.createElement('span');
+      x.className = texto ? 'ref-item-txt' : 'ref-item-txt falhou';
+      x.textContent = texto || 'Toque para abrir a passagem.';
+      item.appendChild(r);
+      item.appendChild(x);
+      item.onclick = () => { fecharFolha(); abrirLeitura(n, c, v); };
+      alvo.appendChild(item);
+    }
+  }
+
+  const comTexto = buscados.filter(b => b.texto);
+  if(comTexto.length){
+    const linha = document.createElement('div');
+    linha.className = 'linha-ouvir';
+    linha.style.marginTop = '14px';
+    linha.appendChild(criarBotaoOuvir('Ouvir as passagens', () =>
+      comTexto.map(({ l, texto }) => {
+        const [n, c, v] = l.ref;
+        return { texto: refFalada(n, c, v) + '. ' + texto,
+                 rotulo: livroPorNr(n).nome + ' ' + c + ':' + v };
+      }), { classe: 'claro', voz: { titulo: 'Passagens ligadas' } }));
+    alvo.appendChild(linha);
+  }
+}
+
 async function compararVersoes(){
   if(!versoAberto) return;
   const { nr, cap, verso } = versoAberto;
@@ -7026,6 +7274,8 @@ $('fa-fav').onclick = function(){
 
 $('fa-nota').onclick = () => mostrarPaineFolha('folha-nota');
 $('fa-comparar').onclick = compararVersoes;
+$('fa-refs').onclick = verReferencias;
+$('btn-voltar-folha3').onclick = () => mostrarPaineFolha('folha-principal');
 $('btn-voltar-folha').onclick = () => mostrarPaineFolha('folha-principal');
 $('btn-voltar-folha2').onclick = () => mostrarPaineFolha('folha-principal');
 $('btn-salvar-nota').onclick = salvarNotaDoVerso;
