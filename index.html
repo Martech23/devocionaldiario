@@ -7788,30 +7788,14 @@ $('btn-tirar').onclick = tirarPromessa;
 $('btn-fechar-modal').onclick = fecharModalImg;
 $('btn-baixar-img').onclick = baixarImagem;
 /* =========================================================
-   CARROSSEL DE FUNDOS (APENAS PEXELS)
+   BOTÃO TROCAR FUNDO (PEXELS)
    ========================================================= */
-function montarCarrosselFundos() {
-  const carrosselFundos = document.getElementById('carrossel-fundos');
-  if (!carrosselFundos) return;
+const btnTrocarFundo = $('btn-trocar-fundo') || document.getElementById('btn-trocar-fundo');
+if (btnTrocarFundo) {
+  // Mostra o botão caso ele estivesse oculto
+  btnTrocarFundo.style.display = 'inline-block';
   
-  // Limpa o carrossel
-  carrosselFundos.innerHTML = '';
-
-  // Cria o botão de troca de foto do Pexels
-  const miniaturaPexels = document.createElement('button');
-  miniaturaPexels.type = 'button';
-  miniaturaPexels.title = 'Próxima foto do Pexels';
-  miniaturaPexels.className = 'miniatura-fundo ativo';
-  miniaturaPexels.style.display = 'flex';
-  miniaturaPexels.style.alignItems = 'center';
-  miniaturaPexels.style.justifyContent = 'center';
-  miniaturaPexels.style.backgroundColor = 'var(--linha-forte)';
-  
-  // Ícone de câmera/foto em SVG
-  miniaturaPexels.innerHTML = '<svg width="28" height="28" viewBox="0 0 24 24" fill="var(--texto)"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>';
-
-  miniaturaPexels.onclick = async (e) => {
-    // Mantém o botão ativo e executa a lógica original de buscar nova foto no Pexels
+  btnTrocarFundo.onclick = async function() {
     if (typeof imgModo !== 'undefined') imgModo = 'foto';
     
     if (typeof imgFotoLista !== 'undefined' && imgFotoLista.length > 1) {
@@ -7827,6 +7811,7 @@ function montarCarrosselFundos() {
     if (typeof redesenharImagem === 'function') await redesenharImagem();
     if (typeof marcarOpcoes === 'function') marcarOpcoes();
   };
+}
 
   carrosselFundos.appendChild(miniaturaPexels);
 }
