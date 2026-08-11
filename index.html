@@ -7788,16 +7788,6 @@ $('btn-tirar').onclick = tirarPromessa;
 $('btn-fechar-modal').onclick = fecharModalImg;
 $('btn-baixar-img').onclick = baixarImagem;
      $('btn-trocar-fundo').onclick = trocarFundo;
-
-// Aciona a montagem quando o modal abre
-const btnAbrirModalImg = $('btn-compartilhar-img') || document.getElementById('btn-compartilhar-img');
-if (btnAbrirModalImg) {
-  const originalClick = btnAbrirModalImg.onclick;
-  btnAbrirModalImg.onclick = function(e) {
-    if (typeof originalClick === 'function') originalClick.call(this, e);
-    setTimeout(montarCarrosselFundos, 50);
-  };
-}
      
 $('btn-compartilhar-img').onclick = compartilharImagem;
 $('modal-img').onclick = e => { if(e.target === $('modal-img')) fecharModalImg(); };
