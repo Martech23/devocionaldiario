@@ -7787,34 +7787,7 @@ $('btn-tirar').onclick = tirarPromessa;
 /* Modal imagem */
 $('btn-fechar-modal').onclick = fecharModalImg;
 $('btn-baixar-img').onclick = baixarImagem;
-/* =========================================================
-   BOTÃO TROCAR FUNDO (PEXELS)
-   ========================================================= */
-const btnTrocarFundo = $('btn-trocar-fundo') || document.getElementById('btn-trocar-fundo');
-if (btnTrocarFundo) {
-  // Mostra o botão caso ele estivesse oculto
-  btnTrocarFundo.style.display = 'inline-block';
-  
-  btnTrocarFundo.onclick = async function() {
-    if (typeof imgModo !== 'undefined') imgModo = 'foto';
-    
-    if (typeof imgFotoLista !== 'undefined' && imgFotoLista.length > 1) {
-      imgFotoIdx = (imgFotoIdx + 1) % imgFotoLista.length;
-      imgFotoObj = null;
-    } else if (typeof consultaFotoPorTema === 'function' && typeof imgAtual !== 'undefined') {
-      const q = consultaFotoPorTema(imgAtual.tema, imgAtual.texto);
-      if (typeof imgFotoCache !== 'undefined') delete imgFotoCache[q];
-      if (typeof imgFotoLista !== 'undefined') imgFotoLista = [];
-      imgFotoObj = null;
-    }
-    
-    if (typeof redesenharImagem === 'function') await redesenharImagem();
-    if (typeof marcarOpcoes === 'function') marcarOpcoes();
-  };
-}
-
-  carrosselFundos.appendChild(miniaturaPexels);
-}
+     $('btn-trocar-fundo').onclick = trocarFundo;
 
 // Aciona a montagem quando o modal abre
 const btnAbrirModalImg = $('btn-compartilhar-img') || document.getElementById('btn-compartilhar-img');
