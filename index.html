@@ -7153,7 +7153,12 @@ async function abrirGeradorImagem(texto, ref, versao, tema, onde){
 function fecharModalImg(){
   $('modal-img').classList.remove('aberto');
   Foco.soltar($('modal-img'));
+  
+  // Destrava a rolagem do corpo do site e do HTML principal
+  document.body.style.overflow = ''; 
+  document.documentElement.style.overflow = '';
 }
+
 
 function montarOpcoesImagem(){
   const fmt = $('img-formatos');
