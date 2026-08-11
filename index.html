@@ -7788,42 +7788,58 @@ $('btn-tirar').onclick = tirarPromessa;
 $('btn-fechar-modal').onclick = fecharModalImg;
 $('btn-baixar-img').onclick = baixarImagem;
 /* =========================================================
-   CARROSSEL DE FUNDOS SEGURO
+   CARROSSEL DE FUNDOS (APENAS PEXELS)
    ========================================================= */
-const carrosselFundos = document.getElementById('carrossel-fundos');
-if (carrosselFundos && typeof FUNDOS !== 'undefined' && carrosselFundos.children.length === 0) {
-  const tempCanvas = document.createElement('canvas');
-  tempCanvas.width = 64;
-  tempCanvas.height = 64;
-  const tempCtx = tempCanvas.getContext('2d');
+function montarCarrosselFundos() {
+  const carrosselFundos = document.getElementById('carrossel-fundos');
+  if (!carrosselFundos) return;
+  
+  // Limpa o carrossel
+  carrosselFundos.innerHTML = '';
 
-  FUNDOS.forEach((fundo, index) => {
-    tempCtx.clearRect(0, 0, 64, 64);
-    if (typeof fundo.desenhar === 'function') {
-      fundo.desenhar(tempCtx, 64, 64);
+  // Cria o botão de troca de foto do Pexels
+  const miniaturaPexels = document.createElement('button');
+  miniaturaPexels.type = 'button';
+  miniaturaPexels.title = 'Próxima foto do Pexels';
+  miniaturaPexels.className = 'miniatura-fundo ativo';
+  miniaturaPexels.style.display = 'flex';
+  miniaturaPexels.style.alignItems = 'center';
+  miniaturaPexels.style.justifyContent = 'center';
+  miniaturaPexels.style.backgroundColor = 'var(--linha-forte)';
+  
+  // Ícone de câmera/foto em SVG
+  miniaturaPexels.innerHTML = '<svg width="28" height="28" viewBox="0 0 24 24" fill="var(--texto)"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>';
+
+  miniaturaPexels.onclick = async (e) => {
+    // Mantém o botão ativo e executa a lógica original de buscar nova foto no Pexels
+    if (typeof imgModo !== 'undefined') imgModo = 'foto';
+    
+    if (typeof imgFotoLista !== 'undefined' && imgFotoLista.length > 1) {
+      imgFotoIdx = (imgFotoIdx + 1) % imgFotoLista.length;
+      imgFotoObj = null;
+    } else if (typeof consultaFotoPorTema === 'function' && typeof imgAtual !== 'undefined') {
+      const q = consultaFotoPorTema(imgAtual.tema, imgAtual.texto);
+      if (typeof imgFotoCache !== 'undefined') delete imgFotoCache[q];
+      if (typeof imgFotoLista !== 'undefined') imgFotoLista = [];
+      imgFotoObj = null;
     }
-    const miniaturaImg = tempCanvas.toDataURL('image/jpeg', 0.8);
+    
+    if (typeof redesenharImagem === 'function') await redesenharImagem();
+    if (typeof marcarOpcoes === 'function') marcarOpcoes();
+  };
 
-    const miniatura = document.createElement('button');
-    miniatura.type = 'button';
-    miniatura.title = fundo.nome;
-    miniatura.className = 'miniatura-fundo' + (index === 0 ? ' ativo' : '');
-    miniatura.style.backgroundImage = `url('${miniaturaImg}')`;
-
-    miniatura.onclick = (e) => {
-      carrosselFundos.querySelectorAll('.miniatura-fundo').forEach(b => b.classList.remove('ativo'));
-      e.target.classList.add('ativo');
-      
-      if (typeof imgModo !== 'undefined') imgModo = 'arte';
-      if (typeof imgFundo !== 'undefined') imgFundo = fundo.id;
-      if (typeof marcarOpcoes === 'function') marcarOpcoes();
-      if (typeof desenharImagemArte === 'function') desenharImagemArte();
-    };
-
-    carrosselFundos.appendChild(miniatura);
-  });
+  carrosselFundos.appendChild(miniaturaPexels);
 }
 
+// Aciona a montagem quando o modal abre
+const btnAbrirModalImg = $('btn-compartilhar-img') || document.getElementById('btn-compartilhar-img');
+if (btnAbrirModalImg) {
+  const originalClick = btnAbrirModalImg.onclick;
+  btnAbrirModalImg.onclick = function(e) {
+    if (typeof originalClick === 'function') originalClick.call(this, e);
+    setTimeout(montarCarrosselFundos, 50);
+  };
+}
      
 $('btn-compartilhar-img').onclick = compartilharImagem;
 $('modal-img').onclick = e => { if(e.target === $('modal-img')) fecharModalImg(); };
