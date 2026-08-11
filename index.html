@@ -7787,7 +7787,43 @@ $('btn-tirar').onclick = tirarPromessa;
 /* Modal imagem */
 $('btn-fechar-modal').onclick = fecharModalImg;
 $('btn-baixar-img').onclick = baixarImagem;
-$('btn-trocar-fundo').onclick = trocarFundo;
+// $('btn-trocar-fundo').onclick = trocarFundo;
+     /* =========================================================
+   INICIALIZAÇÃO DO CARROSSEL DE FUNDOS
+   ========================================================= */
+const carrossel = document.getElementById('carrossel-fundos');
+
+// 1. COLOQUE AQUI OS CAMINHOS DAS SUAS IMAGENS DE FUNDO
+// (Olhe dentro da sua função trocarFundo original para pegar os nomes exatos)
+const listaDeFundos = [
+  'caminho/para/fundo1.jpg', 
+  'caminho/para/fundo2.jpg',
+  'caminho/para/fundo3.jpg'
+];
+
+if (carrossel && listaDeFundos.length > 0) {
+  listaDeFundos.forEach((fundoUrl, index) => {
+    const miniatura = document.createElement('button');
+    // A primeira miniatura já começa com a borda azul de "selecionada"
+    miniatura.className = 'miniatura-fundo' + (index === 0 ? ' ativo' : '');
+    miniatura.style.backgroundImage = `url('${fundoUrl}')`;
+
+    miniatura.onclick = (e) => {
+      // Remove a borda azul de todas as outras miniaturas
+      carrossel.querySelectorAll('.miniatura-fundo').forEach(b => b.classList.remove('ativo'));
+      // Adiciona a borda azul na que foi clicada
+      e.target.classList.add('ativo');
+
+      // 2. CONECTE COM O SEU CANVAS AQUI
+      // Substitua a linha abaixo pela função que seu app usa para desenhar a imagem escolhida
+      // Exemplo: aplicarFundoNoCanvas(fundoUrl);
+      console.log('Fundo selecionado:', fundoUrl); 
+    };
+    
+    carrossel.appendChild(miniatura);
+  });
+}
+
 $('btn-compartilhar-img').onclick = compartilharImagem;
 $('modal-img').onclick = e => { if(e.target === $('modal-img')) fecharModalImg(); };
 
