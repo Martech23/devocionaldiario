@@ -7789,40 +7789,84 @@ $('btn-fechar-modal').onclick = fecharModalImg;
 $('btn-baixar-img').onclick = baixarImagem;
 // $('btn-trocar-fundo').onclick = trocarFundo;
      /* =========================================================
-   INICIALIZAÇÃO DO CARROSSEL DE FUNDOS
+   IN/* =========================================================
+   INICIALIZAÇÃO DO CARROSSEL DE FUNDOS (COM PEXELS E ARTE)
    ========================================================= */
 const carrossel = document.getElementById('carrossel-fundos');
 
-// 1. COLOQUE AQUI OS CAMINHOS DAS SUAS IMAGENS DE FUNDO
-// (Olhe dentro da sua função trocarFundo original para pegar os nomes exatos)
-const listaDeFundos = [
-  'caminho/para/fundo1.jpg', 
-  'caminho/para/fundo2.jpg',
-  'caminho/para/fundo3.jpg'
-];
+if (carrossel && typeof FUNDOS !== 'undefined') {
+  
+  // 1. CRIAR O BOTÃO ESPECIAL PARA O PEXELS
+  const btnPexels = document.createElement('button');
+  btnPexels.type = 'button';
+  btnPexels.title = 'Foto do Pexels';
+  btnPexels.className = 'miniatura-fundo';
+  btnPexels.style.display = 'flex';
+  btnPexels.style.alignItems = 'center';
+  btnPexels.style.justifyContent = 'center';
+  btnPexels.style.backgroundColor = 'var(--linha-forte)';
+  // Ícone de imagem em SVG
+  btnPexels.innerHTML = '<svg width="28" height="28" viewBox="0 0 24 24" fill="var(--texto)"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>';
 
-if (carrossel && listaDeFundos.length > 0) {
-  listaDeFundos.forEach((fundoUrl, index) => {
+  btnPexels.onclick = async (e) => {
+    // Atualiza o visual das miniaturas
+    carrossel.querySelectorAll('.miniatura-fundo').forEach(b => b.classList.remove('ativo'));
+    e.currentTarget.classList.add('ativo');
+
+    // Lógica original do Pexels que estava no trocarFundo()
+    imgModo = 'foto';
+    if (typeof imgFotoLista !== 'undefined' && imgFotoLista.length > 1) {
+      imgFotoIdx = (imgFotoIdx + 1) % imgFotoLista.length;
+      imgFotoObj = null;
+    } else if (typeof consultaFotoPorTema === 'function') {
+      const q = consultaFotoPorTema(imgAtual.tema, imgAtual.texto);
+      if (typeof imgFotoCache !== 'undefined') delete imgFotoCache[q];
+      imgFotoLista = [];
+      imgFotoObj = null;
+    }
+    
+    if (typeof redesenharImagem === 'function') await redesenharImagem();
+    if (typeof marcarOpcoes === 'function') marcarOpcoes();
+  };
+  carrossel.appendChild(btnPexels);
+
+  // 2. CRIAR AS MINIATURAS DE ARTE (A SUA LISTA "FUNDOS")
+  const tempCanvas = document.createElement('canvas');
+  tempCanvas.width = 64;
+  tempCanvas.height = 64;
+  const tempCtx = tempCanvas.getContext('2d');
+
+  FUNDOS.forEach((fundo, index) => {
+    tempCtx.clearRect(0, 0, 64, 64);
+    fundo.desenhar(tempCtx, 64, 64);
+    
+    const miniaturaImg = tempCanvas.toDataURL('image/jpeg', 0.8);
+
     const miniatura = document.createElement('button');
-    // A primeira miniatura já começa com a borda azul de "selecionada"
-    miniatura.className = 'miniatura-fundo' + (index === 0 ? ' ativo' : '');
-    miniatura.style.backgroundImage = `url('${fundoUrl}')`;
+    miniatura.type = 'button';
+    miniatura.title = fundo.nome;
+    miniatura.className = 'miniatura-fundo';
+    
+    // Se quiser que o app inicie com a primeira arte ativa em vez do Pexels, descomente a linha abaixo:
+    // if (index === 0) miniatura.classList.add('ativo');
+    
+    miniatura.style.backgroundImage = `url('${miniaturaImg}')`;
 
     miniatura.onclick = (e) => {
-      // Remove a borda azul de todas as outras miniaturas
       carrossel.querySelectorAll('.miniatura-fundo').forEach(b => b.classList.remove('ativo'));
-      // Adiciona a borda azul na que foi clicada
       e.target.classList.add('ativo');
 
-      // 2. CONECTE COM O SEU CANVAS AQUI
-      // Substitua a linha abaixo pela função que seu app usa para desenhar a imagem escolhida
-      // Exemplo: aplicarFundoNoCanvas(fundoUrl);
-      console.log('Fundo selecionado:', fundoUrl); 
+      imgModo = 'arte';
+      imgFundo = fundo.id;
+      
+      if (typeof marcarOpcoes === 'function') marcarOpcoes();
+      if (typeof desenharImagemArte === 'function') desenharImagemArte();
     };
     
     carrossel.appendChild(miniatura);
   });
 }
+
 
 $('btn-compartilhar-img').onclick = compartilharImagem;
 $('modal-img').onclick = e => { if(e.target === $('modal-img')) fecharModalImg(); };
