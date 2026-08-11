@@ -7913,6 +7913,7 @@ function abrirPainelConta(estado){
   $('veu').classList.toggle('aberto', estado);
   $('gaveta').classList.remove('aberta');
   Foco.soltar($('gaveta'));
+       document.body.style.overflow = estado ? 'hidden' : '';
   if(estado){
     p.querySelector('.painel-corpo').scrollTop = 0;
     pintarPainel();
