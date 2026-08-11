@@ -7680,6 +7680,7 @@ function atenderLinkDeVerso(){
 atenderLinkDeVerso();
 
 $('btn-menu').onclick = () => abrirMenu(true);
+ document.querySelector('.logo').onclick = () => irParaAba('hoje');
 $('veu').onclick = () => { abrirPainelVoz(false); abrirPainelConta(false); abrirMenu(false); };
 document.querySelectorAll('[data-fecha]').forEach(a => a.onclick = () => abrirMenu(false));
 $('btn-busca').onclick = buscarReferencia;
