@@ -360,7 +360,10 @@ html[data-tema="escuro"] header.barra {
   box-shadow: 4px 0 32px rgba(0, 0, 0, 0.2);
   display: flex;
   flex-direction: column;
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
+
 .gaveta.aberta { transform: translateX(0); }
 
 .gaveta a {
@@ -372,6 +375,7 @@ html[data-tema="escuro"] header.barra {
   opacity: 1;
   transform: translateX(0);
 }
+
 .gaveta.aberta a:nth-child(2) { transition-delay: 0.04s; }
 .gaveta.aberta a:nth-child(3) { transition-delay: 0.08s; }
 .gaveta.aberta a:nth-child(4) { transition-delay: 0.12s; }
