@@ -7787,7 +7787,44 @@ $('btn-tirar').onclick = tirarPromessa;
 /* Modal imagem */
 $('btn-fechar-modal').onclick = fecharModalImg;
 $('btn-baixar-img').onclick = baixarImagem;
-$('btn-trocar-fundo').onclick = trocarFundo;
+/* =========================================================
+   CARROSSEL DE FUNDOS SEGURO
+   ========================================================= */
+const carrosselFundos = document.getElementById('carrossel-fundos');
+if (carrosselFundos && typeof FUNDOS !== 'undefined' && carrosselFundos.children.length === 0) {
+  const tempCanvas = document.createElement('canvas');
+  tempCanvas.width = 64;
+  tempCanvas.height = 64;
+  const tempCtx = tempCanvas.getContext('2d');
+
+  FUNDOS.forEach((fundo, index) => {
+    tempCtx.clearRect(0, 0, 64, 64);
+    if (typeof fundo.desenhar === 'function') {
+      fundo.desenhar(tempCtx, 64, 64);
+    }
+    const miniaturaImg = tempCanvas.toDataURL('image/jpeg', 0.8);
+
+    const miniatura = document.createElement('button');
+    miniatura.type = 'button';
+    miniatura.title = fundo.nome;
+    miniatura.className = 'miniatura-fundo' + (index === 0 ? ' ativo' : '');
+    miniatura.style.backgroundImage = `url('${miniaturaImg}')`;
+
+    miniatura.onclick = (e) => {
+      carrosselFundos.querySelectorAll('.miniatura-fundo').forEach(b => b.classList.remove('ativo'));
+      e.target.classList.add('ativo');
+      
+      if (typeof imgModo !== 'undefined') imgModo = 'arte';
+      if (typeof imgFundo !== 'undefined') imgFundo = fundo.id;
+      if (typeof marcarOpcoes === 'function') marcarOpcoes();
+      if (typeof desenharImagemArte === 'function') desenharImagemArte();
+    };
+
+    carrosselFundos.appendChild(miniatura);
+  });
+}
+
+     
 $('btn-compartilhar-img').onclick = compartilharImagem;
 $('modal-img').onclick = e => { if(e.target === $('modal-img')) fecharModalImg(); };
 
