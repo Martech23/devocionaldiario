@@ -8788,7 +8788,7 @@ function alternarModoFoco(){
   });
 })();
 
-     /* =========================================================
+/* =========================================================
    GESTOS DE LEITURA (SWIPE)
    Permite avançar ou voltar capítulos deslizando a tela
    ========================================================= */
@@ -8801,13 +8801,11 @@ function alternarModoFoco(){
   const area = document.getElementById('nivel-leitura');
   if (!area) return;
 
-  // Captura o ponto onde o dedo tocou na tela
   area.addEventListener('touchstart', function(event) {
     touchstartX = event.changedTouches[0].screenX;
     touchstartY = event.changedTouches[0].screenY;
   }, { passive: true });
 
-  // Captura o ponto onde o dedo saiu da tela
   area.addEventListener('touchend', function(event) {
     touchendX = event.changedTouches[0].screenX;
     touchendY = event.changedTouches[0].screenY;
@@ -8815,20 +8813,17 @@ function alternarModoFoco(){
   }, { passive: true });
 
   function handleSwipe() {
-    // Ignora se o usuário não estiver com a tela de leitura aberta
     if (area.classList.contains('oculto')) return;
 
     const deltaX = touchendX - touchstartX;
     const deltaY = touchendY - touchstartY;
 
-    // Limiar mínimo de pixels para o movimento ser considerado um swipe intencional
-    const threshold = 60;
+    const thresholdX = 60; // Mínimo de movimento horizontal para ser swipe
+    const limiteY = 45;    // MÁXIMO de movimento vertical permitido
 
-    // Só age se o movimento horizontal for maior que o vertical 
-    // (isso evita trocar de capítulo sem querer quando o usuário estiver apenas rolando o texto para baixo)
-    if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > threshold) {
+    // O swipe agora só aciona se for intencionalmente reto (horizontal)
+    if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > thresholdX && Math.abs(deltaY) < limiteY) {
       
-      // Busca os botões do final da página para acioná-los
       const passos = area.querySelector('.passos');
       if (!passos) return;
 
@@ -8842,15 +8837,14 @@ function alternarModoFoco(){
       });
 
       if (deltaX < 0) {
-        // Deslizou da direita para a esquerda (←): Simula o clique em "Próximo"
         if (btnProximo) btnProximo.click();
       } else {
-        // Deslizou da esquerda para a direita (→): Simula o clique em "Anterior"
         if (btnAnterior) btnAnterior.click();
       }
     }
   }
 })();
+
 /* =========================================================
    BARRA SUPERIOR DINÂMICA
    Esconde ao rolar para baixo, mostra ao rolar para cima
@@ -8858,26 +8852,31 @@ function alternarModoFoco(){
 (function initBarraDinamica() {
   let ultimoScroll = window.scrollY;
   const barra = document.querySelector('header.barra');
+  let animando = false; // Controle de quadros para evitar travamentos
   
   if (!barra) return;
 
   window.addEventListener('scroll', function() {
     const atualScroll = window.scrollY;
     
-    // Só aplica o efeito se a página não estiver travada (menu aberto)
     if (document.body.style.overflow === 'hidden') return;
 
-    // Se rolou para baixo e já passou do topo (60px)
-    if (atualScroll > ultimoScroll && atualScroll > 60) {
-      barra.classList.add('escondida');
-    } else {
-      // Se rolou para cima
-      barra.classList.remove('escondida');
+    // requestAnimationFrame sincroniza a leitura com a taxa de atualização da tela
+    if (!animando) {
+      window.requestAnimationFrame(function() {
+        if (atualScroll > ultimoScroll && atualScroll > 60) {
+          barra.classList.add('escondida');
+        } else if (atualScroll < ultimoScroll) {
+          barra.classList.remove('escondida');
+        }
+        ultimoScroll = atualScroll;
+        animando = false;
+      });
+      animando = true;
     }
-    
-    ultimoScroll = atualScroll;
   }, { passive: true });
 })();
+
 
      
 </script>
