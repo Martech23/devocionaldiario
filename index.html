@@ -7798,6 +7798,9 @@ const Foco = (() => {
 function abrirMenu(estado){
   $('gaveta').classList.toggle('aberta', estado);
   $('veu').classList.toggle('aberto', estado);
+  
+     document.body.style.overflow = estado ? 'hidden' : ''; 
+     
   /* o foco entra no primeiro item do menu, não no A− do cabeçalho: quem
      abriu a gaveta quer navegar, o tamanho da letra está ali de plantão */
   if(estado) Foco.prender($('gaveta'), {
