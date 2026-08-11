@@ -2827,6 +2827,48 @@ html[data-tema="escuro"] .painel-config header { background: #152238; }
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+     /* =========================================================
+   CARROSSEL DE FUNDOS (GERADOR DE IMAGEM)
+   ========================================================= */
+.carrossel-fundos {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding: 4px 0 12px 0;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Barra de rolagem customizada */
+.carrossel-fundos::-webkit-scrollbar {
+  height: 6px;
+}
+.carrossel-fundos::-webkit-scrollbar-thumb {
+  background: var(--linha-forte);
+  border-radius: 4px;
+}
+
+/* Quadrados das miniaturas */
+.miniatura-fundo {
+  width: 64px;
+  height: 64px;
+  flex-shrink: 0;
+  border-radius: 8px;
+  border: 2px solid transparent;
+  background-size: cover;
+  background-position: center;
+  cursor: pointer;
+  scroll-snap-align: start;
+  transition: transform 0.2s, border-color 0.2s;
+  padding: 0;
+}
+
+/* Efeito de miniatura selecionada */
+.miniatura-fundo.ativo {
+  border-color: var(--azul);
+  transform: scale(1.05);
+}
+
 }
 </style>
 </head>
