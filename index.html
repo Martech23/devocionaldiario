@@ -7787,7 +7787,23 @@ $('btn-tirar').onclick = tirarPromessa;
 /* Modal imagem */
 $('btn-fechar-modal').onclick = fecharModalImg;
 $('btn-baixar-img').onclick = baixarImagem;
-     $('btn-trocar-fundo').onclick = trocarFundo;
+     $('btn-trocar-fundo').onclick = async function() {
+  if (typeof imgModo !== 'undefined') imgModo = 'foto';
+  
+  if (typeof imgFotoLista !== 'undefined' && imgFotoLista.length > 1) {
+    imgFotoIdx = (imgFotoIdx + 1) % imgFotoLista.length;
+    imgFotoObj = null;
+  } else if (typeof consultaFotoPorTema === 'function' && typeof imgAtual !== 'undefined') {
+    const q = consultaFotoPorTema(imgAtual.tema, imgAtual.texto);
+    if (typeof imgFotoCache !== 'undefined') delete imgFotoCache[q];
+    if (typeof imgFotoLista !== 'undefined') imgFotoLista = [];
+    imgFotoObj = null;
+  }
+  
+  if (typeof redesenharImagem === 'function') await redesenharImagem();
+  if (typeof marcarOpcoes === 'function') marcarOpcoes();
+};
+;
      
 $('btn-compartilhar-img').onclick = compartilharImagem;
 $('modal-img').onclick = e => { if(e.target === $('modal-img')) fecharModalImg(); };
