@@ -8851,6 +8851,33 @@ function alternarModoFoco(){
     }
   }
 })();
+/* =========================================================
+   BARRA SUPERIOR DINÂMICA
+   Esconde ao rolar para baixo, mostra ao rolar para cima
+   ========================================================= */
+(function initBarraDinamica() {
+  let ultimoScroll = window.scrollY;
+  const barra = document.querySelector('header.barra');
+  
+  if (!barra) return;
+
+  window.addEventListener('scroll', function() {
+    const atualScroll = window.scrollY;
+    
+    // Só aplica o efeito se a página não estiver travada (menu aberto)
+    if (document.body.style.overflow === 'hidden') return;
+
+    // Se rolou para baixo e já passou do topo (60px)
+    if (atualScroll > ultimoScroll && atualScroll > 60) {
+      barra.classList.add('escondida');
+    } else {
+      // Se rolou para cima
+      barra.classList.remove('escondida');
+    }
+    
+    ultimoScroll = atualScroll;
+  }, { passive: true });
+})();
 
      
 </script>
