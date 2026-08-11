@@ -8779,6 +8779,71 @@ function alternarModoFoco(){
   });
 })();
 
+     /* =========================================================
+   GESTOS DE LEITURA (SWIPE)
+   Permite avançar ou voltar capítulos deslizando a tela
+   ========================================================= */
+(function initSwipeLeitura() {
+  let touchstartX = 0;
+  let touchstartY = 0;
+  let touchendX = 0;
+  let touchendY = 0;
+
+  const area = document.getElementById('nivel-leitura');
+  if (!area) return;
+
+  // Captura o ponto onde o dedo tocou na tela
+  area.addEventListener('touchstart', function(event) {
+    touchstartX = event.changedTouches[0].screenX;
+    touchstartY = event.changedTouches[0].screenY;
+  }, { passive: true });
+
+  // Captura o ponto onde o dedo saiu da tela
+  area.addEventListener('touchend', function(event) {
+    touchendX = event.changedTouches[0].screenX;
+    touchendY = event.changedTouches[0].screenY;
+    handleSwipe();
+  }, { passive: true });
+
+  function handleSwipe() {
+    // Ignora se o usuário não estiver com a tela de leitura aberta
+    if (area.classList.contains('oculto')) return;
+
+    const deltaX = touchendX - touchstartX;
+    const deltaY = touchendY - touchstartY;
+
+    // Limiar mínimo de pixels para o movimento ser considerado um swipe intencional
+    const threshold = 60;
+
+    // Só age se o movimento horizontal for maior que o vertical 
+    // (isso evita trocar de capítulo sem querer quando o usuário estiver apenas rolando o texto para baixo)
+    if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > threshold) {
+      
+      // Busca os botões do final da página para acioná-los
+      const passos = area.querySelector('.passos');
+      if (!passos) return;
+
+      const botoes = passos.querySelectorAll('button');
+      let btnAnterior = null;
+      let btnProximo = null;
+
+      botoes.forEach(b => {
+        if (b.textContent.includes('Anterior')) btnAnterior = b;
+        if (b.textContent.includes('Próximo')) btnProximo = b;
+      });
+
+      if (deltaX < 0) {
+        // Deslizou da direita para a esquerda (←): Simula o clique em "Próximo"
+        if (btnProximo) btnProximo.click();
+      } else {
+        // Deslizou da esquerda para a direita (→): Simula o clique em "Anterior"
+        if (btnAnterior) btnAnterior.click();
+      }
+    }
+  }
+})();
+
+     
 </script>
 </body>
 </html>
