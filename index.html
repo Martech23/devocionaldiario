@@ -3206,10 +3206,17 @@ html[data-tema="escuro"] .painel-config header { background: #152238; }
     <h3>Imagem para compartilhar</h3>
     <div class="palco-img"><canvas id="canvas-verso" width="1080" height="1350"></canvas></div>
 
-    <div class="linha-fundo">
-      <span class="nome-fundo" id="img-nome-fundo" aria-live="polite"></span>
-      <button class="btn claro" id="btn-trocar-fundo" type="button">Trocar fundo</button>
-    </div>
+    <div class="carrossel-fundos-container" style="margin-top: 16px;">
+  <p class="rotulo-img">Escolher fundo</p>
+  <div class="carrossel-fundos" id="carrossel-fundos">
+    <!-- As miniaturas entrarão aqui automaticamente -->
+  </div>
+         
+  <!-- Mantemos os IDs originais escondidos para o aplicativo não dar erro -->
+  <span id="img-nome-fundo" style="display: none;"></span>
+  <button id="btn-trocar-fundo" style="display: none;"></button>
+</div>
+
     <p id="img-credito-foto" style="font-size:12px;color:var(--texto-3);margin:6px 0 0;line-height:1.4"></p>
 
     <p class="rotulo-img">Formato</p>
