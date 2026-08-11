@@ -7788,8 +7788,7 @@ $('btn-tirar').onclick = tirarPromessa;
 $('btn-fechar-modal').onclick = fecharModalImg;
 $('btn-baixar-img').onclick = baixarImagem;
 // $('btn-trocar-fundo').onclick = trocarFundo;
-     /* =========================================================
-   IN/* =========================================================
+   /*=========================================================
    INICIALIZAÇÃO DO CARROSSEL DE FUNDOS (COM PEXELS E ARTE)
    ========================================================= */
 const carrossel = document.getElementById('carrossel-fundos');
@@ -7866,7 +7865,6 @@ if (carrossel && typeof FUNDOS !== 'undefined') {
     carrossel.appendChild(miniatura);
   });
 }
-
 
 $('btn-compartilhar-img').onclick = compartilharImagem;
 $('modal-img').onclick = e => { if(e.target === $('modal-img')) fecharModalImg(); };
