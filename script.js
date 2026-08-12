@@ -1,30 +1,38 @@
-// 1. Conexão com o Supabase com as suas chaves oficiais
 const SUPABASE_URL = 'https://yzcxeleheanwnragxkfr.supabase.co'; 
 const SUPABASE_ANON_KEY = 'Sb_publishable_uhCDsJE0a1Vu5xx34A55Tw_4v-VFwt4';
-
-// 2. Inicializa o cliente do Supabase
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// 3. Função para testar se está tudo funcionando
-async function testarConexao() {
-    console.log("Tentando conectar com o banco de dados da Bíblia Devocional...");
-    
+async function carregarDevocional() {
     try {
-        // Tenta buscar os dados da tabela (mesmo que ainda não exista)
         const { data, error } = await supabase
             .from('devocionais') 
             .select('*')
             .limit(1);
 
-        if (error) {
-            console.error("Erro ao buscar no banco:", error.message);
-        } else {
-            console.log("SUCESSO! Conexão estabelecida. Dados encontrados:", data);
+        if (error) throw error;
+
+        if (data && data.length > 0) {
+            const devocional = data[0];
+            
+            // Procura os espaços no HTML para colocar o texto
+            const caixaTitulo = document.getElementById('titulo-devocional');
+            const caixaTexto = document.getElementById('texto-devocional');
+            const skeletonLoaders = document.getElementById('esqueleto-carregamento'); // Opcional, para esconder as barrinhas
+
+            // Injeta o texto vindo do Supabase
+            if (caixaTitulo && caixaTexto) {
+                caixaTitulo.innerText = devocional.titulo;
+                caixaTexto.innerText = devocional.texto;
+                
+                // Esconde as barrinhas se o elemento existir
+                if (skeletonLoaders) skeletonLoaders.style.display = 'none';
+            } else {
+                console.log("Atenção: Não encontrei onde colocar o texto no HTML.");
+            }
         }
     } catch (erro) {
-        console.error("Erro inesperado:", erro);
+        console.error("Erro ao carregar:", erro.message);
     }
 }
 
-// 4. Roda o teste assim que a página carrega
-testarConexao();
+carregarDevocional();
