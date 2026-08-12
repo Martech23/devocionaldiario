@@ -8941,5 +8941,58 @@ function alternarModoFoco(){
 
      
 </script>
+<!-- Importa a biblioteca do Supabase direto do CDN -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<!-- Script seguro para carregar o Supabase sem travar o PWA -->
+<script>
+  // Função assíncrona isolada
+  async function carregarDevocionalSupabase() {
+    // 1. Só tenta conectar se o usuário tiver internet (protege o modo offline do PWA)
+    if (!navigator.onLine) {
+      console.log("Modo offline: Supabase ignorado para proteger o PWA.");
+      return; 
+    }
+
+    try {
+      // 2. Substitua com a sua URL e Chave Anônima reais
+      const SUPABASE_URL = 'https://yzcxeleheanwnragxkfr.supabase.co';
+      const SUPABASE_ANON_KEY = 'Sb_publishable_uhCDsJE0a1Vu5xx34A55Tw_4v-VFwt4';
+      
+      const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+      // 3. Busca o devocional
+      const { data, error } = await supabase
+        .from('devocionais')
+        .select('*')
+        .limit(1);
+
+      if (error) throw error;
+
+      if (data && data.length > 0) {
+        const devocional = data[0];
+        
+        // 4. Procura os IDs no HTML ANTES de tentar injetar o texto
+        const caixaTitulo = document.getElementById('titulo-devocional');
+        const caixaTexto = document.getElementById('texto-devocional');
+
+        if (caixaTitulo && caixaTexto) {
+          caixaTitulo.innerText = devocional.titulo;
+          caixaTexto.innerText = devocional.texto;
+        } else {
+          console.warn("Supabase carregou os dados, mas não encontrou os IDs 'titulo-devocional' e 'texto-devocional' no HTML para mostrá-los.");
+        }
+      }
+    } catch (erro) {
+      // Se der qualquer erro (banco fora do ar, erro de digitação), ele cai aqui e não trava o seu site!
+      console.error("Erro isolado no Supabase (o PWA continua seguro):", erro.message);
+    }
+  }
+
+  // Dispara a função de forma silenciosa
+  carregarDevocionalSupabase();
+</script>
+
+     
 </body>
 </html>
