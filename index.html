@@ -3059,11 +3059,19 @@ html[data-tema="escuro"] .painel-config header { background: #152238; }
     <h2 class="rotulo-secao">Devocional do dia</h2>
     <div id="cartao-hoje">
       <div class="cartao">
-        <div class="skeleton skeleton-titulo"></div>
-        <div class="skeleton skeleton-linha"></div>
-        <div class="skeleton skeleton-linha"></div>
-        <div class="skeleton skeleton-linha" style="width:80%"></div>
-      </div>
+  <!-- 1. Envolvemos as barrinhas com o ID que o JavaScript vai esconder -->
+  <div id="esqueleto-carregamento">
+    <div class="skeleton skeleton-titulo"></div>
+    <div class="skeleton skeleton-linha"></div>
+    <div class="skeleton skeleton-linha"></div>
+    <div class="skeleton skeleton-linha" style="width:80%"></div>
+  </div>
+  
+  <!-- 2. Criamos o espaço vazio onde o JavaScript vai injetar o texto real -->
+  <h3 id="titulo-devocional" style="margin-top: 0; margin-bottom: 10px; color: var(--texto-1);"></h3>
+  <p id="texto-devocional" style="color: var(--texto-2); line-height: 1.5;"></p>
+</div>
+
     </div>
   </section>
 
