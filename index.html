@@ -8946,6 +8946,7 @@ function alternarModoFoco(){
 <!-- Importa a biblioteca do Supabase direto do CDN -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
+<!-- Script ninja do Supabase - Criando um bloco exclusivo acima do cartão -->
 <script>
   async function carregarDevocionalSupabase() {
     if (!navigator.onLine) return;
@@ -8956,7 +8957,6 @@ function alternarModoFoco(){
       
       const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-      // Busca ordenando pela data de criação decrescente (o mais novo primeiro)
       const { data, error } = await supabaseClient
         .from('devocionais')
         .select('*')
@@ -8968,15 +8968,22 @@ function alternarModoFoco(){
       if (data && data.length > 0) {
         const devocional = data[0];
         
-        const elementoTitulo = document.querySelector('#cartao-hoje h3, .cartao h3, div[class*="cartao"] h3');
-        const elementoTexto = document.querySelector('#cartao-hoje p, .cartao p, div[class*="cartao"] p');
+        // Procura onde começa o cartão principal na tela
+        const cartaoPrincipal = document.querySelector('#cartao-hoje, .cartao, div[class*="cartao"]');
         
-        if (elementoTitulo) {
-          elementoTitulo.textContent = devocional.titulo;
-        }
-        
-        if (elementoTexto) {
-          elementoTexto.textContent = devocional.texto;
+        if (cartaoPrincipal && !document.getElementById('bloco-supabase-extra')) {
+          // Cria um novo bloco visual bem bonito acima do cartão original
+          const novoBloco = document.createElement('div');
+          novoBloco.id = 'bloco-supabase-extra';
+          novoBloco.style.cssText = 'background: #fdf8f0; border-left: 4px solid #d4af37; padding: 15px 20px; margin-bottom: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);';
+          
+          novoBloco.innerHTML = `
+            <h4 style="margin: 0 0 8px 0; color: #2c3e50; font-size: 16px; font-weight: bold;">${devocional.titulo}</h4>
+            <p style="margin: 0; color: #555; font-size: 14px; line-height: 1.5;">${devocional.texto}</p>
+          `;
+          
+          // Insere o novo bloco logo acima do cartão de Mateus
+          cartaoPrincipal.parentNode.insertBefore(novoBloco, cartaoPrincipal);
         }
       }
     } catch (erro) {
@@ -8986,6 +8993,7 @@ function alternarModoFoco(){
 
   setTimeout(carregarDevocionalSupabase, 3000);
 </script>
+
 
 
 
