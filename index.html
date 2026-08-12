@@ -8946,56 +8946,41 @@ function alternarModoFoco(){
 <!-- Importa a biblioteca do Supabase direto do CDN -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-<!-- Script ninja do Supabase - Criando um bloco exclusivo acima do cartão -->
+<!-- Script ninja do Supabase - Versão Direta com Ordenação -->
 <script>
   async function carregarDevocionalSupabase() {
-    if (!navigator.onLine) return;
-    
     try {
       const SUPABASE_URL = 'https://yzcxeleheanwnragxkfr.supabase.co';
       const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl6Y3hlbGVoZWFud25yYWd4a2ZyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1MDExMjgsImV4cCI6MjEwMjA3NzEyOH0.jOObwRc_wd3L7BOTVQQ5w-4fCD6hPFalQAx7J5n98xA'; 
-      
-      const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-      const { data, error } = await supabaseClient
+      // Busca o mais recente da tabela
+      const { data } = await supabase
         .from('devocionais')
         .select('*')
         .order('created_at', { ascending: false })
         .limit(1);
-
-      if (error) throw error;
-
+      
       if (data && data.length > 0) {
-        const devocional = data[0];
+        const item = data[0];
         
-        // Procura onde começa o cartão principal na tela
-        const cartaoPrincipal = document.querySelector('#cartao-hoje, .cartao, div[class*="cartao"]');
-        
-        if (cartaoPrincipal && !document.getElementById('bloco-supabase-extra')) {
-          // Cria um novo bloco visual bem bonito acima do cartão original
-          const novoBloco = document.createElement('div');
-          novoBloco.id = 'bloco-supabase-extra';
-          novoBloco.style.cssText = 'background: #fdf8f0; border-left: 4px solid #d4af37; padding: 15px 20px; margin-bottom: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);';
+        // Evita duplicar se já existir na tela
+        if (!document.getElementById('bloco-colombia')) {
+          const div = document.createElement('div');
+          div.id = 'bloco-colombia';
+          div.style.cssText = 'background: #fdf8f0; border-left: 4px solid #d4af37; padding: 15px; margin: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);';
+          div.innerHTML = `<strong style="color: #2c3e50; font-size: 16px;">${item.titulo}</strong><p style="margin: 8px 0 0 0; color: #555; font-size: 14px; line-height: 1.5;">${item.texto}</p>`;
           
-          novoBloco.innerHTML = `
-            <h4 style="margin: 0 0 8px 0; color: #2c3e50; font-size: 16px; font-weight: bold;">${devocional.titulo}</h4>
-            <p style="margin: 0; color: #555; font-size: 14px; line-height: 1.5;">${devocional.texto}</p>
-          `;
-          
-          // Insere o novo bloco logo acima do cartão de Mateus
-          cartaoPrincipal.parentNode.insertBefore(novoBloco, cartaoPrincipal);
+          // Coloca no topo absoluto da página
+          document.body.prepend(div);
         }
       }
-    } catch (erro) {
-      console.error("Erro ao carregar do Supabase:", erro);
+    } catch (e) {
+      console.log("Erro:", e);
     }
   }
-
-  setTimeout(carregarDevocionalSupabase, 3000);
+  setTimeout(carregarDevocionalSupabase, 2000);
 </script>
-
-
-
 
 </body>
 </html>
