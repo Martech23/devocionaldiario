@@ -8946,7 +8946,6 @@ function alternarModoFoco(){
 <!-- Importa a biblioteca do Supabase direto do CDN -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-<!-- Script ninja do Supabase - Mantendo o design original -->
 <script>
   async function carregarDevocionalSupabase() {
     if (!navigator.onLine) return;
@@ -8957,13 +8956,18 @@ function alternarModoFoco(){
       
       const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-      const { data, error } = await supabaseClient.from('devocionais').select('*').limit(1);
+      // Busca ordenando pela data de criação decrescente (o mais novo primeiro)
+      const { data, error } = await supabaseClient
+        .from('devocionais')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(1);
+
       if (error) throw error;
 
       if (data && data.length > 0) {
         const devocional = data[0];
         
-        // Em vez de apagar o cartão, procuramos os textos internos originais
         const elementoTitulo = document.querySelector('#cartao-hoje h3, .cartao h3, div[class*="cartao"] h3');
         const elementoTexto = document.querySelector('#cartao-hoje p, .cartao p, div[class*="cartao"] p');
         
@@ -8980,9 +8984,9 @@ function alternarModoFoco(){
     }
   }
 
-  // Executa após 3 segundos para garantir que o app carregou a estrutura
   setTimeout(carregarDevocionalSupabase, 3000);
 </script>
+
 
 
 </body>
