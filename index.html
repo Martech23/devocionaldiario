@@ -8943,32 +8943,26 @@ function alternarModoFoco(){
 
      
 </script>
-<!-- Importa a biblioteca do Supabase direto do CDN -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-<!-- Script ninja do Supabase -->
 <script>
   async function carregarDevocionalSupabase() {
-    // Só tenta conectar se o usuário tiver internet (protege o modo offline)
     if (!navigator.onLine) return;
     
     try {
       const SUPABASE_URL = 'https://yzcxeleheanwnragxkfr.supabase.co';
       const SUPABASE_ANON_KEY = 'Sb_publishable_uhCDsJE0a1Vu5xx34A55Tw_4v-VFwt4'; 
       
-      const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-      const { data, error } = await supabase.from('devocionais').select('*').limit(1);
+      const { data, error } = await supabaseClient.from('devocionais').select('*').limit(1);
       if (error) throw error;
 
       if (data && data.length > 0) {
         const devocional = data[0];
-        
-        // Busca o cartão original que o seu app já renderizou sem erros
         const cartaoHoje = document.querySelector('#cartao-hoje .cartao');
         
         if (cartaoHoje) {
-          // Substitui as barras de carregamento originais pelo texto do banco de dados
           cartaoHoje.innerHTML = `
             <h3 style="margin-top: 15px; color: var(--texto-1);">${devocional.titulo}</h3>
             <p style="margin-top: 10px; font-size: 16px; line-height: 1.6;">${devocional.texto}</p>
@@ -8976,12 +8970,14 @@ function alternarModoFoco(){
         }
       }
     } catch (erro) {
-      console.error("Erro isolado no Supabase:", erro.message);
+      // Se houver qualquer erro, ele vai aparecer num aviso no ecrã!
+      alert("Erro secreto do Supabase: " + erro.message);
     }
   }
 
-  // O SEGREDO: Espera 1.5 segundos para garantir que a Bíblia e as abas carregaram primeiro!
-  setTimeout(carregarDevocionalSupabase, 1500);
+  // Aumentámos para 3 segundos para garantir que o app não apaga o nosso texto
+  setTimeout(carregarDevocionalSupabase, 3000);
 </script>
+
 </body>
 </html>
