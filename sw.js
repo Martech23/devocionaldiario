@@ -1,5 +1,5 @@
 /* Service Worker — Bíblia Devocional PWA + Web Push */
-const CACHE = 'lampada-v42';
+const CACHE = 'lampada-v43';
 const PRECACHE = [
   '/',
   '/index.html',
