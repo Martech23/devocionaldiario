@@ -1,2 +1,4 @@
-// Arquivo principal de controle da Bíblia Devocional
-console.info("Bíblia Devocional inicializada com sucesso.");
+const supabase = window.supabase.createClient(
+  'https://yzcxeleheanwnragxkfr.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl6Y3hlbGVoZWFud25yYWd4a2ZyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1MDExMjgsImV4cCI6MjEwMjA3NzEyOH0.jOObwRc_wd3L7BOTVQQ5w-4fCD6hPFalQAx7J5n98xA'
+);
