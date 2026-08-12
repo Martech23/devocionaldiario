@@ -1,17 +1,9 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-     <script>
-  window.onerror = function(erro, url, linha) {
-    alert("DETETIVE DE ERROS!\n\nLinha do erro: " + linha + "\nMensagem: " + erro);
-  };
-</script>
-
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Bíblia Devocional · Leitura diária, promessas e Bíblia Sagrada</title>
-     <!-- Importa a biblioteca do Supabase -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <meta name="description" content="Versículo do dia, caixa de promessas e a Bíblia Sagrada completa em versões de uso livre.">
 <meta name="theme-color" content="#1A4A82">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -3065,19 +3057,11 @@ html[data-tema="escuro"] .painel-config header { background: #152238; }
     <h2 class="rotulo-secao">Devocional do dia</h2>
     <div id="cartao-hoje">
       <div class="cartao">
-  <!-- 1. Envolvemos as barrinhas com o ID que o JavaScript vai esconder -->
-  <div id="esqueleto-carregamento">
-    <div class="skeleton skeleton-titulo"></div>
-    <div class="skeleton skeleton-linha"></div>
-    <div class="skeleton skeleton-linha"></div>
-    <div class="skeleton skeleton-linha" style="width:80%"></div>
-  </div>
-  
-  <!-- 2. Criamos o espaço vazio onde o JavaScript vai injetar o texto real -->
-  <h3 id="titulo-devocional" style="margin-top: 0; margin-bottom: 10px; color: var(--texto-1);"></h3>
-  <p id="texto-devocional" style="color: var(--texto-2); line-height: 1.5;"></p>
-</div>
-
+        <div class="skeleton skeleton-titulo"></div>
+        <div class="skeleton skeleton-linha"></div>
+        <div class="skeleton skeleton-linha"></div>
+        <div class="skeleton skeleton-linha" style="width:80%"></div>
+      </div>
     </div>
   </section>
 
@@ -8956,7 +8940,8 @@ function alternarModoFoco(){
   }, { passive: true });
 })();
 
+
+     
 </script>
-<script src="script.js"></script>
 </body>
 </html>
