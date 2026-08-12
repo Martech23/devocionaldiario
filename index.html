@@ -7212,6 +7212,15 @@ async function trocarFundo(){
   imgModo = 'foto';
   await redesenharImagem();
      }
+     async function redesenharImagem(){
+  try {
+    await desenharImagemFoto();
+  } catch(e){
+    console.info('Pexels:', e.message);
+    avisar('Não foi possível carregar foto do Pexels. Toque em Trocar fundo para tentar de novo.');
+  }
+  marcarOpcoes();
+     }
 
     let linha = '';
     texto.split(/\s+/).forEach(p => {
