@@ -3054,14 +3054,19 @@ html[data-tema="escuro"] .painel-config header { background: #152238; }
     <p class="saudacao" id="saudacao"></p>
     <h2 class="rotulo-secao">Devocional do dia</h2>
     <div id="cartao-hoje">
-      <div class="cartao">
-        <div class="skeleton skeleton-titulo"></div>
-        <div class="skeleton skeleton-linha"></div>
-        <div class="skeleton skeleton-linha"></div>
-        <div class="skeleton skeleton-linha" style="width:80%"></div>
-      </div>
-    </div>
-  </section>
+   <div class="cartao">
+    <!-- Barras de carregamento originais (pode mantê-las) -->
+    <div class="skeleton skeleton-titulo"></div>
+    <div class="skeleton skeleton-linha"></div>
+    <div class="skeleton skeleton-linha"></div>
+    <div class="skeleton skeleton-linha" style="width:80%"></div>
+    
+    <!-- AQUI ESTÁ O PALCO PARA O SUPABASE -->
+    <h3 id="titulo-devocional" style="margin-top: 15px; color: var(--texto-1);"></h3>
+    <p id="texto-devocional" style="margin-top: 10px;"></p>
+  </div>
+</div>
+
 
   <!-- ============ CONTINUAR DE ONDE PAROU ============ -->
   <!-- Só aparece com um plano em andamento: quem não começou nenhum não
