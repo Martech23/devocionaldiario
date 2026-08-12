@@ -7202,60 +7202,17 @@ function marcarOpcoes(){
 }
 
 async function trocarFundo(){
-  if(imgModo === 'foto'){
-    if(imgFotoLista.length > 1){
-      imgFotoIdx = (imgFotoIdx + 1) % imgFotoLista.length;
-      imgFotoObj = null;
-      await redesenharImagem();
-    } else {
-      // força nova busca ignorando cache da query atual
-      const q = consultaFotoPorTema(imgAtual.tema, imgAtual.texto);
-      delete imgFotoCache[q];
-      imgFotoLista = [];
-      imgFotoObj = null;
-      await redesenharImagem();
-    }
-    return;
-  }
-  // Estava em modo artístico: tenta o Pexels de novo em vez de só circular nos fundos
-  avisar('Tentando foto real do Pexels…');
-  imgModo = 'foto';
+  // Sempre tenta Pexels de novo
+  avisar('Buscando nova foto no Pexels…');
   const q = consultaFotoPorTema(imgAtual.tema, imgAtual.texto);
   delete imgFotoCache[q];
   imgFotoLista = [];
   imgFotoObj = null;
+  imgFotoIdx = 0;
+  imgModo = 'foto';
   await redesenharImagem();
-}
+     }
 
-async function redesenharImagem(){
-  if(imgModo === 'foto'){
-    try {
-      await desenharImagemFoto();
-    } catch(e){
-      console.info('Pexels:', e.message);
-      avisar('Pexels indisponível. Usando fundo artístico. Toque em Trocar fundo para tentar de novo.');
-      imgModo = 'arte';
-      desenharImagemArte();
-    }
-  } else {
-    desenharImagemArte();
-  }
-  marcarOpcoes();
-}
-
-/* Quebra o texto em linhas e reduz a fonte até o bloco caber */
-/* O canvas não entende variável de CSS. `ctx.font` passa pelo parser de
-   fonte, que rejeita `var(--fonte-leitura)` em silêncio e deixa valendo a
-   fonte anterior — 10px sans-serif, no começo do desenho. Foi assim que o
-   texto parou de encolher para caber: `measureText` media na fonte errada,
-   tudo "cabia" no tamanho máximo, e o versículo longo sairia estourando a
-   imagem. Aqui a pilha vai escrita, e o teste do gerador guarda isso. */
-const FONTE_CANVAS = '"Source Serif 4", Georgia, serif';
-
-function ajustarTexto(ctx, texto, maxW, maxH, fonteMax, fonteMin){
-  for(let tam = fonteMax; tam >= fonteMin; tam -= 2){
-    ctx.font = '500 ' + tam + 'px ' + FONTE_CANVAS;
-    const linhas = [];
     let linha = '';
     texto.split(/\s+/).forEach(p => {
       const teste = linha ? linha + ' ' + p : p;
