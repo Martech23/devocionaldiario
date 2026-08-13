@@ -7240,10 +7240,8 @@ async function desenharImagemFoto(){
   const ctx = canvas.getContext('2d');
   const W = canvas.width, H = canvas.height;
 
-  ctx.fillStyle = '#111';
-  ctx.fillRect(0, 0, W, H);
-
   const q = consultaFotoPorTema(imgAtual.tema, imgAtual.texto);
+
   if(!imgFotoLista.length){
     const nome = $('img-nome-fundo');
     if(nome) nome.textContent = 'Buscando foto do tema…';
@@ -7263,13 +7261,7 @@ async function desenharImagemFoto(){
       }
 
       desenharFotoCover(ctx, imgFotoObj, W, H);
-
-      try {
-        desenharTextoSobreFundo(ctx, W, H, false);
-      } catch(errTexto){
-        console.error('Erro ao desenhar texto sobre a foto:', errTexto);
-      }
-
+      desenharTextoSobreFundo(ctx, W, H, false);
       return;
     } catch(e){
       console.info('Falha na foto', foto.id || foto.url, e.message);
@@ -7279,6 +7271,10 @@ async function desenharImagemFoto(){
     }
   }
 
+  // fallback: pelo menos o texto aparece
+  ctx.fillStyle = '#1a1a1a';
+  ctx.fillRect(0, 0, W, H);
+  desenharTextoSobreFundo(ctx, W, H, false);
   throw new Error('Nenhuma foto do Pexels carregou');
 }
      
