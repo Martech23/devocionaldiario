@@ -7285,6 +7285,39 @@ async function desenharImagemFoto(){
   ctx.fillRect(0, 0, W, H);
   desenharTextoSobreFundo(ctx, W, H, false);
 }
+const FONTE_CANVAS = '"Source Serif 4", "Georgia", "Times New Roman", serif';
+function ajustarTexto(ctx, texto, maxW, maxH, tamMax, tamMin){
+  let tam = tamMax;
+  while(tam >= tamMin){
+    ctx.font = '500 ' + tam + 'px ' + FONTE_CANVAS;
+    const palavras = texto.split(' ');
+    const linhas = [];
+    let linha = '';
+    for(let i = 0; i < palavras.length; i++){
+      const teste = linha ? linha + ' ' + palavras[i] : palavras[i];
+      if(ctx.measureText(teste).width > maxW){
+        if(linha) linhas.push(linha);
+        linha = palavras[i];
+      } else {
+        linha = teste;
+      }
+    }
+    if(linha) linhas.push(linha);
+
+    const alturaLinha = tam * 1.42;
+    if(linhas.length * alturaLinha <= maxH){
+      return { linhas, tam, alturaLinha };
+    }
+    tam -= 1;
+  }
+  ctx.font = '500 ' + tamMin + 'px ' + FONTE_CANVAS;
+  return {
+    linhas: [texto],
+    tam: tamMin,
+    alturaLinha: tamMin * 1.42
+  };
+}
+     
 function desenharTextoSobreFundo(ctx, W, H, claro){
   const margem = W * 0.11;
   const ajuste = ajustarTexto(ctx, '\u201C' + imgAtual.texto + '\u201D',
