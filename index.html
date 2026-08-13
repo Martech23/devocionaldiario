@@ -7231,6 +7231,7 @@ async function redesenharImagem(){
     avisar('Não foi possível carregar foto do Pexels. Toque em Trocar fundo para tentar de novo.');
   }
   marcarOpcoes();
+}
 async function desenharImagemFoto(){
   const canvas = $('canvas-verso');
   const fmt = FORMATOS.find(f => f.id === imgFormato) || FORMATOS[0];
