@@ -7240,7 +7240,6 @@ async function desenharImagemFoto(){
   const ctx = canvas.getContext('2d');
   const W = canvas.width, H = canvas.height;
 
-  // limpa o canvas
   ctx.fillStyle = '#111';
   ctx.fillRect(0, 0, W, H);
 
@@ -7252,7 +7251,6 @@ async function desenharImagemFoto(){
     imgFotoIdx = Math.floor(semente(imgAtual.ref + q)() * imgFotoLista.length) % imgFotoLista.length;
   }
 
-  // Tenta até 6 fotos diferentes se uma falhar
   let tentativas = 0;
   while(tentativas < 6){
     const foto = imgFotoLista[imgFotoIdx];
@@ -7264,17 +7262,15 @@ async function desenharImagemFoto(){
         imgFotoObj._url = foto.url;
       }
 
-      // desenha a foto
       desenharFotoCover(ctx, imgFotoObj, W, H);
 
-      // desenha o texto (com proteção)
       try {
         desenharTextoSobreFundo(ctx, W, H, false);
       } catch(errTexto){
         console.error('Erro ao desenhar texto sobre a foto:', errTexto);
       }
 
-      return; // sucesso
+      return;
     } catch(e){
       console.info('Falha na foto', foto.id || foto.url, e.message);
       imgFotoIdx = (imgFotoIdx + 1) % imgFotoLista.length;
@@ -7284,7 +7280,8 @@ async function desenharImagemFoto(){
   }
 
   throw new Error('Nenhuma foto do Pexels carregou');
-         }
+}
+     
 function desenharTextoSobreFundo(ctx, W, H, claro){
   const margem = W * 0.11;
   const ajuste = ajustarTexto(ctx, '\u201C' + imgAtual.texto + '\u201D',
