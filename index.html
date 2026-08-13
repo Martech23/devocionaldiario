@@ -7119,21 +7119,13 @@ async function buscarFotosPexels(query){
 
 function carregarImagemUrl(url){
   return new Promise((resolve, reject) => {
-    const tentar = (comCors) => {
-      const img = new Image();
-      if(comCors) img.crossOrigin = 'anonymous';
-      img.onload = () => resolve(img);
-      img.onerror = () => {
-        if(comCors) {
-          // tenta de novo sem CORS
-          tentar(false);
-        } else {
-          reject(new Error('Falha ao carregar a foto'));
-        }
-      };
-      img.src = url + (url.includes('?') ? '&' : '?') + 't=' + Date.now();
-    };
-    tentar(true);
+    // Usa o proxy para evitar problema de CORS no canvas
+    const proxyUrl = '/api/proxy-image?url=' + encodeURIComponent(url);
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => resolve(img);
+    img.onerror = () => reject(new Error('Falha ao carregar a foto'));
+    img.src = proxyUrl;
   });
 }
 
