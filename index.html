@@ -7374,45 +7374,6 @@ function desenharTextoSobreFundo(ctx, W, H, claro){
     ctx.fillText('Foto: ' + f.photographer + ' / Pexels', W / 2, H * 0.975);
   }
 }
-
-async function desenharImagemFoto(){
-  const canvas = $('canvas-verso');
-  const fmt = FORMATOS.find(f => f.id === imgFormato) || FORMATOS[0];
-  canvas.width = fmt.w;
-  canvas.height = fmt.h;
-  const ctx = canvas.getContext('2d');
-  const W = canvas.width, H = canvas.height;
-
-  const q = consultaFotoPorTema(imgAtual.tema, imgAtual.texto);
-  if(!imgFotoLista.length){
-    const nome = $('img-nome-fundo');
-    if(nome) nome.textContent = 'Buscando foto do tema…';
-    imgFotoLista = await buscarFotosPexels(q);
-    imgFotoIdx = Math.floor(semente(imgAtual.ref + q)() * imgFotoLista.length) % imgFotoLista.length;
-  }
-
-  // Tenta até 5 fotos diferentes se uma falhar
-  let tentativas = 0;
-  while(tentativas < 5){
-    const foto = imgFotoLista[imgFotoIdx];
-    try {
-      if(!imgFotoObj || imgFotoObj._url !== foto.url){
-        imgFotoObj = await carregarImagemUrl(foto.url);
-        imgFotoObj._url = foto.url;
-      }
-      desenharFotoCover(ctx, imgFotoObj, W, H);
-      desenharTextoSobreFundo(ctx, W, H, false);
-      return; // sucesso
-    } catch(e){
-      console.info('Falha na foto', foto.id, e.message);
-      imgFotoIdx = (imgFotoIdx + 1) % imgFotoLista.length;
-      imgFotoObj = null;
-      tentativas++;
-    }
-  }
-  throw new Error('Nenhuma foto do Pexels carregou');
-         }
-
 function desenharImagemArte(){
   const canvas = $('canvas-verso');
   const fmt = FORMATOS.find(f => f.id === imgFormato) || FORMATOS[0];
