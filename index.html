@@ -7240,13 +7240,18 @@ async function desenharImagemFoto(){
   const ctx = canvas.getContext('2d');
   const W = canvas.width, H = canvas.height;
 
-  const q = consultaFotoPorTema(imgAtual.tema, imgAtual.texto);
+  // garante que tem texto para desenhar
+  const texto = (imgAtual && imgAtual.texto) ? imgAtual.texto : 'Versículo não carregado';
+  const ref   = (imgAtual && imgAtual.ref)   ? imgAtual.ref   : '';
+  const versao = (imgAtual && imgAtual.versao) ? imgAtual.versao : '';
+
+  const q = consultaFotoPorTema(imgAtual ? imgAtual.tema : '', texto);
 
   if(!imgFotoLista.length){
     const nome = $('img-nome-fundo');
     if(nome) nome.textContent = 'Buscando foto do tema…';
     imgFotoLista = await buscarFotosPexels(q);
-    imgFotoIdx = Math.floor(semente(imgAtual.ref + q)() * imgFotoLista.length) % imgFotoLista.length;
+    imgFotoIdx = Math.floor(semente(ref + q)() * imgFotoLista.length) % imgFotoLista.length;
   }
 
   let tentativas = 0;
@@ -7260,8 +7265,12 @@ async function desenharImagemFoto(){
         imgFotoObj._url = foto.url;
       }
 
+      // desenha a foto
       desenharFotoCover(ctx, imgFotoObj, W, H);
+
+      // desenha o texto
       desenharTextoSobreFundo(ctx, W, H, false);
+
       return;
     } catch(e){
       console.info('Falha na foto', foto.id || foto.url, e.message);
@@ -7271,13 +7280,11 @@ async function desenharImagemFoto(){
     }
   }
 
-  // fallback: pelo menos o texto aparece
+  // fallback
   ctx.fillStyle = '#1a1a1a';
   ctx.fillRect(0, 0, W, H);
   desenharTextoSobreFundo(ctx, W, H, false);
-  throw new Error('Nenhuma foto do Pexels carregou');
 }
-     
 function desenharTextoSobreFundo(ctx, W, H, claro){
   const margem = W * 0.11;
   const ajuste = ajustarTexto(ctx, '\u201C' + imgAtual.texto + '\u201D',
