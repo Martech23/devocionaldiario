@@ -222,8 +222,18 @@ header.barra {
   top: 0;
   z-index: 40;
   box-shadow: 0 1px 8px rgba(0, 0, 0, 0.18);
+  /* COLE ESTA LINHA AQUI DENTRO: */
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.35s ease;
+
 }
+
+/* COLE ESTE BLOCO NOVO AQUI, LOGO ABAIXO DA CHAVE: */
+header.barra.escondida {
+  transform: translateY(-100%);
+}
+
 html[data-tema="escuro"] header.barra {
+
   background: #152238;
   box-shadow: 0 1px 8px rgba(0, 0, 0, 0.4);
 }
@@ -277,7 +287,13 @@ html[data-tema="escuro"] header.barra {
   display: flex;
   align-items: center;
   gap: 10px;
+  cursor: pointer;
+  
+  /* ADICIONE ESTAS DUAS LINHAS PARA BLOQUEAR A SELEÇÃO: */
+  -webkit-user-select: none;
+  user-select: none;
 }
+     
 .logo .marca {
   width: 28px;
   height: 28px;
@@ -360,7 +376,10 @@ html[data-tema="escuro"] header.barra {
   box-shadow: 4px 0 32px rgba(0, 0, 0, 0.2);
   display: flex;
   flex-direction: column;
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
+
 .gaveta.aberta { transform: translateX(0); }
 
 /* o esmaecido do pé, aceso só quando ainda há menu abaixo da dobra */
@@ -469,10 +488,10 @@ html[data-tema="escuro"] .gaveta header { background: #152238; }
 }
 .gaveta .nota {
   /* o espaço livre é absorvido por .gaveta-config, logo acima */
-  padding: 18px 20px calc(18px + env(safe-area-inset-bottom, 0px));
-  font-size: 12px;
+  padding: 14px 20px calc(16px + env(safe-area-inset-bottom, 0px));
+  font-size: 11.5px;
   color: var(--texto-3);
-  line-height: 1.65;
+  line-height: 1.5;
   opacity: 0;
   transition: opacity 0.4s ease 0.2s;
 }
@@ -2845,6 +2864,48 @@ html[data-tema="escuro"] .painel-config header { background: #152238; }
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+     /* =========================================================
+   CARROSSEL DE FUNDOS (GERADOR DE IMAGEM)
+   ========================================================= */
+.carrossel-fundos {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding: 4px 0 12px 0;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Barra de rolagem customizada */
+.carrossel-fundos::-webkit-scrollbar {
+  height: 6px;
+}
+.carrossel-fundos::-webkit-scrollbar-thumb {
+  background: var(--linha-forte);
+  border-radius: 4px;
+}
+
+/* Quadrados das miniaturas */
+.miniatura-fundo {
+  width: 64px;
+  height: 64px;
+  flex-shrink: 0;
+  border-radius: 8px;
+  border: 2px solid transparent;
+  background-size: cover;
+  background-position: center;
+  cursor: pointer;
+  scroll-snap-align: start;
+  transition: transform 0.2s, border-color 0.2s;
+  padding: 0;
+}
+
+/* Efeito de miniatura selecionada */
+.miniatura-fundo.ativo {
+  border-color: var(--azul);
+  transform: scale(1.05);
+}
+
 }
 </style>
 </head>
@@ -2888,8 +2949,11 @@ html[data-tema="escuro"] .painel-config header { background: #152238; }
     </h1>
     <div class="acoes-direita">
       <button class="btn-tema" id="btn-tema" aria-label="Alternar tema" title="Alternar tema claro/escuro">◐</button>
-      <button class="icone-btn" id="btn-abrir-conta" aria-label="Sua conta" title="Sua conta"><span class="conta">✦</span></button>
-    </div>
+      <button class="icone-btn" id="btn-abrir-conta" aria-label="Sua conta" title="Sua conta">
+  <svg class="ico" viewBox="0 0 24 24" aria-hidden="true" width="24" height="24" fill="currentColor">
+    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+  </svg>
+</button>
   </div>
 </header>
 
@@ -3029,17 +3093,19 @@ html[data-tema="escuro"] .painel-config header { background: #152238; }
 
   <!-- ============ DEVOCIONAL DO DIA ============ -->
   <section class="secao" id="sec-hoje">
-    <p class="saudacao" id="saudacao"></p>
-    <h2 class="rotulo-secao">Devocional do dia</h2>
-    <div id="cartao-hoje">
-      <div class="cartao">
-        <div class="skeleton skeleton-titulo"></div>
-        <div class="skeleton skeleton-linha"></div>
-        <div class="skeleton skeleton-linha"></div>
-        <div class="skeleton skeleton-linha" style="width:80%"></div>
-      </div>
+  <p class="saudacao" id="saudacao"></p>
+  <h2 class="rotulo-secao">Devocional do dia</h2>
+  <div id="cartao-hoje">
+    <div class="cartao">
+      <div class="skeleton skeleton-titulo"></div>
+      <div class="skeleton skeleton-linha"></div>
+      <div class="skeleton skeleton-linha"></div>
+      <div class="skeleton skeleton-linha" style="width:80%"></div>
     </div>
-  </section>
+  </div>
+</section>
+
+
 
   <!-- ============ CONTINUAR DE ONDE PAROU ============ -->
   <!-- Só aparece com um plano em andamento: quem não começou nenhum não
@@ -3229,11 +3295,12 @@ html[data-tema="escuro"] .painel-config header { background: #152238; }
   <div class="modal-caixa">
     <h3>Imagem para compartilhar</h3>
     <div class="palco-img"><canvas id="canvas-verso" width="1080" height="1350"></canvas></div>
+       
+<button class="btn claro" id="btn-trocar-fundo" style="width: 100%; margin-bottom: 12px;">Trocar fundo</button>
 
-    <div class="linha-fundo">
-      <span class="nome-fundo" id="img-nome-fundo" aria-live="polite"></span>
-      <button class="btn claro" id="btn-trocar-fundo" type="button">Trocar fundo</button>
-    </div>
+<!-- Mantém o ID oculto caso algum script antigo procure por ele -->
+<span id="img-nome-fundo" style="display: none;"></span>
+
     <p id="img-credito-foto" style="font-size:12px;color:var(--texto-3);margin:6px 0 0;line-height:1.4"></p>
 
     <p class="rotulo-img">Formato</p>
@@ -7094,11 +7161,13 @@ async function buscarFotosPexels(query){
 
 function carregarImagemUrl(url){
   return new Promise((resolve, reject) => {
+    // Usa o proxy para evitar problema de CORS no canvas
+    const proxyUrl = '/api/proxy-image?url=' + encodeURIComponent(url);
     const img = new Image();
     img.crossOrigin = 'anonymous';
     img.onload = () => resolve(img);
     img.onerror = () => reject(new Error('Falha ao carregar a foto'));
-    img.src = url;
+    img.src = proxyUrl;
   });
 }
 
@@ -7134,7 +7203,12 @@ async function abrirGeradorImagem(texto, ref, versao, tema, onde){
 function fecharModalImg(){
   $('modal-img').classList.remove('aberto');
   Foco.soltar($('modal-img'));
+  
+  // Destrava a rolagem do corpo do site e do HTML principal
+  document.body.style.overflow = ''; 
+  document.documentElement.style.overflow = '';
 }
+
 
 function montarOpcoesImagem(){
   const fmt = $('img-formatos');
@@ -7172,70 +7246,120 @@ function marcarOpcoes(){
 }
 
 async function trocarFundo(){
-  if(imgModo === 'foto'){
-    if(imgFotoLista.length > 1){
-      imgFotoIdx = (imgFotoIdx + 1) % imgFotoLista.length;
-      imgFotoObj = null;
-      await redesenharImagem();
-    } else {
-      // força nova busca ignorando cache da query atual
-      const q = consultaFotoPorTema(imgAtual.tema, imgAtual.texto);
-      delete imgFotoCache[q];
-      imgFotoLista = [];
-      imgFotoObj = null;
-      await redesenharImagem();
-    }
+  // Se já tem várias fotos carregadas, só troca para a próxima
+  if(imgFotoLista.length > 1){
+    imgFotoIdx = (imgFotoIdx + 1) % imgFotoLista.length;
+    imgFotoObj = null;
+    await redesenharImagem();
     return;
   }
-  const atual = fundoAtual().id;
-  const i = FUNDOS.findIndex(f => f.id === atual);
-  imgFundo = FUNDOS[(i + 1) % FUNDOS.length].id;
-  marcarOpcoes();
-  desenharImagemArte();
+
+  // Se só tem 1 foto (ou nenhuma), busca novas
+  avisar('Buscando novas fotos no Pexels…');
+  const q = consultaFotoPorTema(imgAtual.tema, imgAtual.texto);
+  delete imgFotoCache[q];
+  imgFotoLista = [];
+  imgFotoObj = null;
+  imgFotoIdx = 0;
+  imgModo = 'foto';
+  await redesenharImagem();
 }
 
 async function redesenharImagem(){
-  if(imgModo === 'foto'){
-    try {
-      await desenharImagemFoto();
-    } catch(e){
-      console.info('Pexels:', e.message);
-      avisar('Buscando outro fundo…');
-      imgModo = 'arte';
-      desenharImagemArte();
-    }
-  } else {
-    desenharImagemArte();
+  try {
+    await desenharImagemFoto();
+  } catch(e){
+    console.info('Pexels:', e.message);
+    avisar('Não foi possível carregar foto do Pexels. Toque em Trocar fundo para tentar de novo.');
   }
   marcarOpcoes();
 }
+async function desenharImagemFoto(){
+  const canvas = $('canvas-verso');
+  const fmt = FORMATOS.find(f => f.id === imgFormato) || FORMATOS[0];
+  canvas.width = fmt.w;
+  canvas.height = fmt.h;
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
 
-/* Quebra o texto em linhas e reduz a fonte até o bloco caber */
-/* O canvas não entende variável de CSS. `ctx.font` passa pelo parser de
-   fonte, que rejeita `var(--fonte-leitura)` em silêncio e deixa valendo a
-   fonte anterior — 10px sans-serif, no começo do desenho. Foi assim que o
-   texto parou de encolher para caber: `measureText` media na fonte errada,
-   tudo "cabia" no tamanho máximo, e o versículo longo sairia estourando a
-   imagem. Aqui a pilha vai escrita, e o teste do gerador guarda isso. */
-const FONTE_CANVAS = '"Source Serif 4", Georgia, serif';
+  // garante que tem texto para desenhar
+  const texto = (imgAtual && imgAtual.texto) ? imgAtual.texto : 'Versículo não carregado';
+  const ref   = (imgAtual && imgAtual.ref)   ? imgAtual.ref   : '';
+  const versao = (imgAtual && imgAtual.versao) ? imgAtual.versao : '';
 
-function ajustarTexto(ctx, texto, maxW, maxH, fonteMax, fonteMin){
-  for(let tam = fonteMax; tam >= fonteMin; tam -= 2){
+  const q = consultaFotoPorTema(imgAtual ? imgAtual.tema : '', texto);
+
+  if(!imgFotoLista.length){
+    const nome = $('img-nome-fundo');
+    if(nome) nome.textContent = 'Buscando foto do tema…';
+    imgFotoLista = await buscarFotosPexels(q);
+    imgFotoIdx = Math.floor(semente(ref + q)() * imgFotoLista.length) % imgFotoLista.length;
+  }
+
+  let tentativas = 0;
+  while(tentativas < 6){
+    const foto = imgFotoLista[imgFotoIdx];
+    if(!foto) break;
+
+    try {
+      if(!imgFotoObj || imgFotoObj._url !== foto.url){
+        imgFotoObj = await carregarImagemUrl(foto.url);
+        imgFotoObj._url = foto.url;
+      }
+
+      // desenha a foto
+      desenharFotoCover(ctx, imgFotoObj, W, H);
+
+      // desenha o texto
+      desenharTextoSobreFundo(ctx, W, H, false);
+
+      return;
+    } catch(e){
+      console.info('Falha na foto', foto.id || foto.url, e.message);
+      imgFotoIdx = (imgFotoIdx + 1) % imgFotoLista.length;
+      imgFotoObj = null;
+      tentativas++;
+    }
+  }
+
+  // fallback
+  ctx.fillStyle = '#1a1a1a';
+  ctx.fillRect(0, 0, W, H);
+  desenharTextoSobreFundo(ctx, W, H, false);
+}
+const FONTE_CANVAS = '"Source Serif 4", "Georgia", "Times New Roman", serif';
+function ajustarTexto(ctx, texto, maxW, maxH, tamMax, tamMin){
+  let tam = tamMax;
+  while(tam >= tamMin){
     ctx.font = '500 ' + tam + 'px ' + FONTE_CANVAS;
+    const palavras = texto.split(' ');
     const linhas = [];
     let linha = '';
-    texto.split(/\s+/).forEach(p => {
-      const teste = linha ? linha + ' ' + p : p;
-      if(ctx.measureText(teste).width > maxW && linha){ linhas.push(linha); linha = p; }
-      else linha = teste;
-    });
+    for(let i = 0; i < palavras.length; i++){
+      const teste = linha ? linha + ' ' + palavras[i] : palavras[i];
+      if(ctx.measureText(teste).width > maxW){
+        if(linha) linhas.push(linha);
+        linha = palavras[i];
+      } else {
+        linha = teste;
+      }
+    }
     if(linha) linhas.push(linha);
-    const alturaLinha = tam * 1.42;
-    if(linhas.length * alturaLinha <= maxH) return { linhas, tam, alturaLinha };
-  }
-  return null;
-}
 
+    const alturaLinha = tam * 1.42;
+    if(linhas.length * alturaLinha <= maxH){
+      return { linhas, tam, alturaLinha };
+    }
+    tam -= 1;
+  }
+  ctx.font = '500 ' + tamMin + 'px ' + FONTE_CANVAS;
+  return {
+    linhas: [texto],
+    tam: tamMin,
+    alturaLinha: tamMin * 1.42
+  };
+}
+     
 function desenharTextoSobreFundo(ctx, W, H, claro){
   const margem = W * 0.11;
   const ajuste = ajustarTexto(ctx, '\u201C' + imgAtual.texto + '\u201D',
@@ -7319,7 +7443,6 @@ function desenharTextoSobreFundo(ctx, W, H, claro){
      o endereço em 3,6:1, e endereço é para ser lido e digitado */
   ctx.fillStyle = claro ? 'rgba(42,36,24,0.82)' : 'rgba(255,255,255,0.88)';
   ctx.font = '600 ' + Math.round(W * 0.021) + 'px "Source Sans 3", system-ui, sans-serif';
-  ctx.fillText(DOMINIO_SITE, W / 2, H * 0.945);
 
   // crédito Pexels no rodapé (modo foto)
   if(imgModo === 'foto' && imgFotoLista[imgFotoIdx]){
@@ -7329,31 +7452,6 @@ function desenharTextoSobreFundo(ctx, W, H, claro){
     ctx.fillText('Foto: ' + f.photographer + ' / Pexels', W / 2, H * 0.975);
   }
 }
-
-async function desenharImagemFoto(){
-  const canvas = $('canvas-verso');
-  const fmt = FORMATOS.find(f => f.id === imgFormato) || FORMATOS[0];
-  canvas.width = fmt.w;
-  canvas.height = fmt.h;
-  const ctx = canvas.getContext('2d');
-  const W = canvas.width, H = canvas.height;
-
-  const q = consultaFotoPorTema(imgAtual.tema, imgAtual.texto);
-  if(!imgFotoLista.length){
-    const nome = $('img-nome-fundo');
-    if(nome) nome.textContent = 'Buscando foto do tema…';
-    imgFotoLista = await buscarFotosPexels(q);
-    imgFotoIdx = Math.floor(semente(imgAtual.ref + q)() * imgFotoLista.length) % imgFotoLista.length;
-  }
-  const foto = imgFotoLista[imgFotoIdx];
-  if(!imgFotoObj || imgFotoObj._url !== foto.url){
-    imgFotoObj = await carregarImagemUrl(foto.url);
-    imgFotoObj._url = foto.url;
-  }
-  desenharFotoCover(ctx, imgFotoObj, W, H);
-  desenharTextoSobreFundo(ctx, W, H, false);
-}
-
 function desenharImagemArte(){
   const canvas = $('canvas-verso');
   const fmt = FORMATOS.find(f => f.id === imgFormato) || FORMATOS[0];
@@ -7714,6 +7812,7 @@ $('gaveta').querySelector('.gaveta-rolagem').addEventListener('scroll', marcarSo
 /* e ao mudar o tamanho da letra, que muda a altura de tudo dentro */
 document.querySelectorAll('.fonte-rapida button').forEach(b =>
   b.addEventListener('click', () => setTimeout(marcarSobraDaGaveta, 60)));
+ document.querySelector('.logo').onclick = () => irParaAba('hoje');
 $('veu').onclick = () => { abrirPainelVoz(false); abrirPainelConta(false); abrirMenu(false); };
 document.querySelectorAll('[data-fecha]').forEach(a => a.onclick = () => abrirMenu(false));
 $('btn-busca').onclick = buscarReferencia;
@@ -7768,6 +7867,7 @@ $('btn-tirar').onclick = tirarPromessa;
 $('btn-fechar-modal').onclick = fecharModalImg;
 $('btn-baixar-img').onclick = baixarImagem;
 $('btn-trocar-fundo').onclick = trocarFundo;
+     
 $('btn-compartilhar-img').onclick = compartilharImagem;
 $('modal-img').onclick = e => { if(e.target === $('modal-img')) fecharModalImg(); };
 
@@ -7843,6 +7943,9 @@ const Foco = (() => {
 function abrirMenu(estado){
   $('gaveta').classList.toggle('aberta', estado);
   $('veu').classList.toggle('aberto', estado);
+  
+     document.body.style.overflow = estado ? 'hidden' : ''; 
+     
   /* o foco entra no primeiro item do menu, não no A− do cabeçalho: quem
      abriu a gaveta quer navegar, o tamanho da letra está ali de plantão */
   if(estado) Foco.prender($('gaveta'), {
@@ -7909,6 +8012,7 @@ function abrirPainelConta(estado){
   $('veu').classList.toggle('aberto', estado);
   $('gaveta').classList.remove('aberta');
   Foco.soltar($('gaveta'));
+       document.body.style.overflow = estado ? 'hidden' : '';
   if(estado){
     p.querySelector('.painel-corpo').scrollTop = 0;
     pintarPainel();
@@ -8840,6 +8944,136 @@ function alternarModoFoco(){
   });
 })();
 
+/* =========================================================
+   GESTOS DE LEITURA (SWIPE)
+   Permite avançar ou voltar capítulos deslizando a tela
+   ========================================================= */
+(function initSwipeLeitura() {
+  let touchstartX = 0;
+  let touchstartY = 0;
+  let touchendX = 0;
+  let touchendY = 0;
+
+  const area = document.getElementById('nivel-leitura');
+  if (!area) return;
+
+  area.addEventListener('touchstart', function(event) {
+    touchstartX = event.changedTouches[0].screenX;
+    touchstartY = event.changedTouches[0].screenY;
+  }, { passive: true });
+
+  area.addEventListener('touchend', function(event) {
+    touchendX = event.changedTouches[0].screenX;
+    touchendY = event.changedTouches[0].screenY;
+    handleSwipe();
+  }, { passive: true });
+
+  function handleSwipe() {
+    if (area.classList.contains('oculto')) return;
+
+    const deltaX = touchendX - touchstartX;
+    const deltaY = touchendY - touchstartY;
+
+    const thresholdX = 60; // Mínimo de movimento horizontal para ser swipe
+    const limiteY = 45;    // MÁXIMO de movimento vertical permitido
+
+    // O swipe agora só aciona se for intencionalmente reto (horizontal)
+    if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > thresholdX && Math.abs(deltaY) < limiteY) {
+      
+      const passos = area.querySelector('.passos');
+      if (!passos) return;
+
+      const botoes = passos.querySelectorAll('button');
+      let btnAnterior = null;
+      let btnProximo = null;
+
+      botoes.forEach(b => {
+        if (b.textContent.includes('Anterior')) btnAnterior = b;
+        if (b.textContent.includes('Próximo')) btnProximo = b;
+      });
+
+      if (deltaX < 0) {
+        if (btnProximo) btnProximo.click();
+      } else {
+        if (btnAnterior) btnAnterior.click();
+      }
+    }
+  }
+})();
+
+/* =========================================================
+   BARRA SUPERIOR DINÂMICA
+   Esconde ao rolar para baixo, mostra ao rolar para cima
+   ========================================================= */
+(function initBarraDinamica() {
+  let ultimoScroll = window.scrollY;
+  const barra = document.querySelector('header.barra');
+  let animando = false; // Controle de quadros para evitar travamentos
+  
+  if (!barra) return;
+
+  window.addEventListener('scroll', function() {
+    const atualScroll = window.scrollY;
+    
+    if (document.body.style.overflow === 'hidden') return;
+
+    // requestAnimationFrame sincroniza a leitura com a taxa de atualização da tela
+    if (!animando) {
+      window.requestAnimationFrame(function() {
+        if (atualScroll > ultimoScroll && atualScroll > 60) {
+          barra.classList.add('escondida');
+        } else if (atualScroll < ultimoScroll) {
+          barra.classList.remove('escondida');
+        }
+        ultimoScroll = atualScroll;
+        animando = false;
+      });
+      animando = true;
+    }
+  }, { passive: true });
+})();
+
+
+     
 </script>
+<!-- Importa a biblioteca do Supabase direto do CDN -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<!-- Script ninja do Supabase - Versão Direta com Ordenação -->
+<script>
+  async function carregarDevocionalSupabase() {
+    try {
+      const SUPABASE_URL = 'https://yzcxeleheanwnragxkfr.supabase.co';
+      const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl6Y3hlbGVoZWFud25yYWd4a2ZyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1MDExMjgsImV4cCI6MjEwMjA3NzEyOH0.jOObwRc_wd3L7BOTVQQ5w-4fCD6hPFalQAx7J5n98xA'; 
+      const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+      // Busca o mais recente da tabela
+      const { data } = await supabase
+        .from('devocionais')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(1);
+      
+      if (data && data.length > 0) {
+        const item = data[0];
+        
+        // Evita duplicar se já existir na tela
+        if (!document.getElementById('bloco-colombia')) {
+          const div = document.createElement('div');
+          div.id = 'bloco-colombia';
+          div.style.cssText = 'background: #fdf8f0; border-left: 4px solid #d4af37; padding: 15px; margin: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);';
+          div.innerHTML = `<strong style="color: #2c3e50; font-size: 16px;">${item.titulo}</strong><p style="margin: 8px 0 0 0; color: #555; font-size: 14px; line-height: 1.5;">${item.texto}</p>`;
+          
+          // Coloca no topo absoluto da página
+          document.body.prepend(div);
+        }
+      }
+    } catch (e) {
+      console.log("Erro:", e);
+    }
+  }
+  setTimeout(carregarDevocionalSupabase, 2000);
+</script>
+
 </body>
 </html>
