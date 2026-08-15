@@ -382,6 +382,19 @@ html[data-tema="escuro"] header.barra {
 
 .gaveta.aberta { transform: translateX(0); }
 
+/* o esmaecido do pé, aceso só quando ainda há menu abaixo da dobra */
+.gaveta::after {
+  content: '';
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  height: 46px;
+  background: linear-gradient(to top, var(--papel), transparent);
+  opacity: 0;
+  transition: opacity var(--trans);
+  pointer-events: none;   /* é aviso, não obstáculo: o toque passa direto */
+}
+.gaveta.tem-mais::after { opacity: 1; }
+
 .gaveta a {
   opacity: 0;
   transform: translateX(-12px);
@@ -391,11 +404,34 @@ html[data-tema="escuro"] header.barra {
   opacity: 1;
   transform: translateX(0);
 }
+/* contados dentro do rolador, onde os links agora moram: antes o
+   cabeçalho era o filho 1 e a escada começava no 2 */
+.gaveta.aberta a:nth-child(1) { transition-delay: 0.04s; }
+.gaveta.aberta a:nth-child(2) { transition-delay: 0.08s; }
+.gaveta.aberta a:nth-child(3) { transition-delay: 0.12s; }
+.gaveta.aberta a:nth-child(4) { transition-delay: 0.16s; }
 
-.gaveta.aberta a:nth-child(2) { transition-delay: 0.04s; }
-.gaveta.aberta a:nth-child(3) { transition-delay: 0.08s; }
-.gaveta.aberta a:nth-child(4) { transition-delay: 0.12s; }
-.gaveta.aberta a:nth-child(5) { transition-delay: 0.16s; }
+/* =========================================================
+   O MENU ROLA
+
+   A gaveta vai de `top:0` a `bottom:0`: a altura dela é a da tela,
+   e o conteúdo não cabe em tela curta. Numa de 360x640 são 727px
+   de conteúdo em 640 de gaveta, e em 320x568 sobram 159px — que,
+   sem rolagem, apenas sumiam para fora da borda.
+
+   O cabeçalho fica de fora do rolador de propósito: é onde mora o
+   tamanho da letra, e quem precisa dele é justamente quem teria
+   mais dificuldade de rolar até achá-lo.
+   ========================================================= */
+.gaveta-rolagem {
+  flex: 1;
+  min-height: 0;            /* sem isto o flex recusa encolher e não rola */
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;   /* rolar o menu não arrasta a página atrás */
+  display: flex;
+  flex-direction: column;
+}
 
 .gaveta header {
   background: var(--azul);
@@ -2934,6 +2970,11 @@ html[data-tema="escuro"] .painel-config header { background: #152238; }
       <button type="button" id="fonte-mais" aria-label="Aumentar a letra">A+</button>
     </div>
   </header>
+  <!-- O que rola é daqui para baixo; o cabeçalho, com o tamanho da letra,
+       fica parado. Numa tela de 360x640 estes itens somam 727px numa
+       gaveta de 640, e sem rolagem os 87px de sobra eram simplesmente
+       cortados na borda — a nota das versões terminava pela metade. -->
+  <div class="gaveta-rolagem">
   <a href="#sec-hoje" data-fecha>Devocional do dia</a>
   <a href="#sec-stats" data-fecha>Sua jornada</a>
   <a href="#sec-oracoes" data-fecha>Minhas orações</a>
@@ -2951,6 +2992,7 @@ html[data-tema="escuro"] .painel-config header { background: #152238; }
     </button>
   </div>
   <p class="nota">Somente versões de uso livre em português atual: Bíblia Livre (CC BY 3.0 Brasil) e Nova Bíblia Viva (Open).</p>
+  </div>
 </aside>
 
 <!-- Painel de configuração da leitura em voz — abre pelo menu lateral -->
@@ -7765,6 +7807,11 @@ function atenderLinkDeVerso(){
 atenderLinkDeVerso();
 
 $('btn-menu').onclick = () => abrirMenu(true);
+/* o esmaecido acompanha a rolagem e apaga ao chegar no fim */
+$('gaveta').querySelector('.gaveta-rolagem').addEventListener('scroll', marcarSobraDaGaveta, { passive: true });
+/* e ao mudar o tamanho da letra, que muda a altura de tudo dentro */
+document.querySelectorAll('.fonte-rapida button').forEach(b =>
+  b.addEventListener('click', () => setTimeout(marcarSobraDaGaveta, 60)));
  document.querySelector('.logo').onclick = () => irParaAba('hoje');
 $('veu').onclick = () => { abrirPainelVoz(false); abrirPainelConta(false); abrirMenu(false); };
 document.querySelectorAll('[data-fecha]').forEach(a => a.onclick = () => abrirMenu(false));
@@ -7906,6 +7953,25 @@ function abrirMenu(estado){
     focar: $('gaveta').querySelector('a[href^="#"]')
   });
   else Foco.soltar($('gaveta'));
+  if(estado) marcarSobraDaGaveta();
+}
+
+/* =========================================================
+   AVISAR QUE O MENU CONTINUA ABAIXO
+
+   Rolar resolveu o alcance, mas não a descoberta: numa tela de
+   360x640 a nota das versões fica abaixo da dobra e nada na tela
+   diz que existe mais coisa ali.
+
+   A classe acende um esmaecido no pé do menu, e some quando não
+   há mais o que rolar — inclusive ao chegar no fim, para não
+   prometer conteúdo que acabou.
+   ========================================================= */
+function marcarSobraDaGaveta(){
+  const r = $('gaveta').querySelector('.gaveta-rolagem');
+  if(!r) return;
+  const sobra = r.scrollHeight - r.clientHeight - r.scrollTop > 8;
+  $('gaveta').classList.toggle('tem-mais', sobra);
 }
 
 /* painel de configuração da leitura em voz (abre por cima da gaveta) */
