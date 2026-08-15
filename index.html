@@ -5362,7 +5362,17 @@ function renderOracoes(){
    ========================================================= */
 const Ditado = (function(){
   const Rec = window.SpeechRecognition || window.webkitSpeechRecognition;
-  const suporta = !!Rec;
+  /* Ter a API não basta: a Permissions-Policy do servidor pode barrar o
+     microfone para a própria origem, e aí o botão aparecia, a pessoa
+     tocava e nada acontecia. Um `microphone=()` no cabeçalho fazia
+     exatamente isso — o pior tipo de defeito, porque promete na tela o
+     que o navegador já decidiu recusar. */
+  function politicaPermite(){
+    const fp = document.featurePolicy || document.permissionsPolicy;
+    if(!fp || !fp.allowsFeature) return true;   /* navegador sem a API: não presume o pior */
+    try { return fp.allowsFeature('microphone'); } catch(_) { return true; }
+  }
+  const suporta = !!Rec && politicaPermite();
   let rec = null;
   let botaoAtivo = null;
 
