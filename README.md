@@ -93,6 +93,57 @@ próprio repositório. O conjunto de referências cruzadas é outro arquivo e
 merece a mesma conferência antes de entrar — mas agora se sabe onde olhar,
 e o gerador do mapa serve de molde para o que faltar.
 
+## O menu em tela curta
+
+A gaveta vai de `top: 0` a `bottom: 0` — a altura dela é a da tela — e o
+conteúdo não cabia em telas baixas. Sem rolagem, a sobra simplesmente
+saía pela borda: a nota das versões terminava no meio, sem o `(Open)`.
+
+| Tela | Conteúdo | Gaveta | Sobra |
+|---|---:|---:|---:|
+| 320×568 | 727px | 568px | **159px cortados** |
+| 360×640 | 727px | 640px | **87px cortados** |
+| 390×844 | 727px | 844px | cabia |
+
+Não era caso de encolher: em 320×568 faltavam 159px, e só se conseguiria
+isso apertando alvos de toque que a WCAG exige em 44px. O que faltava era
+**rolagem**.
+
+O que rola é um invólucro interno, não a gaveta. O cabeçalho fica de fora
+dele de propósito: é onde mora o tamanho da letra, e quem precisa dele é
+justamente quem teria mais dificuldade de rolar até achá-lo — a mesma
+razão pela qual esse controle saiu do rodapé um tempo atrás.
+
+```css
+.gaveta-rolagem {
+  flex: 1;
+  min-height: 0;      /* sem isto o flex recusa encolher e não rola */
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+```
+
+O `min-height: 0` é o detalhe que faz a coisa funcionar: um item flex tem
+tamanho mínimo automático igual ao conteúdo, e sem zerá-lo ele nunca
+encolhe abaixo dos 727px — a rolagem jamais aconteceria.
+
+### Rolar resolve o alcance, não a descoberta
+
+Com a rolagem a nota fica alcançável, mas continua abaixo da dobra sem
+nada dizendo que existe. Um esmaecido no pé do menu acende quando ainda
+há conteúdo abaixo e apaga ao chegar no fim, para não prometer o que
+acabou. Ele é `pointer-events: none` — é aviso, não obstáculo.
+
+O aviso é recalculado ao abrir o menu, ao rolar e ao mudar o tamanho da
+letra, que estica tudo por dentro e pode criar rolagem onde não havia.
+
+### O que o invólucro quase quebrou
+
+Os links deixaram de ser filhos da gaveta e viraram filhos do rolador. A
+escada de entrada era escrita como `a:nth-child(2)` a `(5)`, contando com
+o cabeçalho na posição 1 — sem corrigir para `(1)` a `(4)`, o primeiro
+item passaria a entrar sem atraso e a animação começaria no segundo.
+
 ## Tipografia
 
 O app tem **três vozes**, e a regra é qual delas fala:
