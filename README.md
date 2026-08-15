@@ -93,6 +93,99 @@ próprio repositório. O conjunto de referências cruzadas é outro arquivo e
 merece a mesma conferência antes de entrar — mas agora se sabe onde olhar,
 e o gerador do mapa serve de molde para o que faltar.
 
+## Lembrete na hora de quem recebe
+
+O cron era diário, num horário só do mundo: `0 11 * * *`. Isso é 8h em
+Brasília, **3h da manhã em Los Angeles e 19h em Manila**. Num produto de
+hábito diário, a hora da entrega é o produto — e num produto internacional
+um horário único é o mesmo que não ter lembrete.
+
+Agora o cron roda **de hora em hora** e cada execução entrega apenas a
+quem, no próprio fuso, está na hora que escolheu.
+
+| | Antes | Agora |
+|---|---|---|
+| Cron | `0 11 * * *` | `0 * * * *` |
+| Horário | 8h de Brasília, para todos | a hora que cada um escolhe |
+| Fuso | nenhum | o do aparelho, enviado na inscrição |
+
+### O fuso sai do Intl, não de uma conta de offset
+
+Guardar "menos 180 minutos" pareceria mais simples e estaria errado duas
+vezes por ano: o deslocamento muda com o horário de verão. O fuso vai
+como nome IANA (`America/Sao_Paulo`) e a hora local sai do
+`Intl.DateTimeFormat`, que já sabe as regras.
+
+Escrevendo o teste eu errei essa conta na primeira tentativa — esperava
+que 11h UTC fossem 3h em Los Angeles, e são 4h, porque em 10 de março de
+2026 o horário de verão americano já começou. É exatamente o erro que a
+conta com offset fixo cometeria o ano inteiro.
+
+### Ninguém pode receber duas vezes
+
+Com 24 execuções por dia, uma repetição da Vercel ou uma troca de fuso no
+meio do dia poderiam mandar o mesmo lembrete de novo — e quem recebe dois
+desliga a notificação. A trava é uma chave por pessoa **e por data
+local**, gravada com `SET NX`: a marcação e a checagem acontecem no mesmo
+passo, então duas execuções simultâneas não conseguem as duas vencer. A
+chave expira sozinha em dois dias.
+
+A data é a **local de quem recebe**, não a do servidor: quem está em
+Tóquio às 8h ainda é "ontem" no servidor, e receberia o versículo de
+véspera.
+
+### Quem já tinha o lembrete não perde nada
+
+Inscrição antiga não tem fuso nem hora, e cai em Brasília às 8h — o que
+ela já recebia. Há teste somando as 24 execuções de um dia e exigindo
+exatamente **uma entrega por inscrito**: nem zero, nem duas.
+
+Quem viaja leva o app junto, então o fuso é reconferido a cada abertura e
+a inscrição é reenviada se mudou.
+
+## Estatísticas de uso
+
+Não havia nenhuma. Sem isso não existe decisão comercial: não se sabe
+quantos voltam no dia seguinte, quantos terminam o devocional, se o
+lembrete traz alguém de volta.
+
+**Não usamos o Vercel Analytics.** Num app de aba única "pageviews" não
+responde nada; evento personalizado é recurso de plano pago; e seria mais
+um script de terceiro num app que tirou até a fonte do Google. As
+contagens ficam no mesmo Redis que já guarda as contas.
+
+| Chave | O que é |
+|---|---|
+| `lampada:m:<data>:<evento>` | contador inteiro |
+| `lampada:m:<data>:dau` | HyperLogLog de aparelhos distintos |
+
+Nove eventos, em lista fechada **do lado do servidor** — aceitar nome
+livre deixaria qualquer um encher o Redis de chaves inventadas: `abriu`,
+`devocional_visto`, `devocional_completo`, `push_ativado`,
+`compartilhou`, `imagem_gerada`, `plano_dia_lido`, `mapa_aberto`,
+`busca_feita`.
+
+Leitura em `GET /api/metricas?chave=<PUSH_SECRET>&dias=30` — fechada,
+porque número de usuário é informação do negócio.
+
+### Contar quantos sem guardar quais
+
+Para saber retorno diário é preciso distinguir aparelhos. O identificador
+é aleatório, nasce **no primeiro envio** (quem desligou ou usa *Do Not
+Track* nunca chega a ter um) e entra num **HyperLogLog** — um resumo
+probabilístico de tamanho fixo que responde "quantos" sem guardar
+"quais". Ele entra na contagem e não fica: não existe lista da qual
+pudesse ser recuperado.
+
+O que **nunca** sai do aparelho: o que a pessoa lê, escreve, marca, ora
+ou busca. Nem o texto da busca — só o fato de que uma busca aconteceu.
+Há teste que planta um pedido de oração no `localStorage` e exige que ele
+não apareça em nenhum envio.
+
+Tudo expira em 90 dias. O `Do Not Track` do navegador desliga a medição
+sozinho, e há desligamento na tela para quem não o usa. Endpoint fora do
+ar não vira erro na tela de quem só queria ler.
+
 ## O menu em tela curta
 
 A gaveta vai de `top: 0` a `bottom: 0` — a altura dela é a da tela — e o

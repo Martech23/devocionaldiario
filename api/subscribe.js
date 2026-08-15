@@ -1,4 +1,5 @@
 const { configured, addSub } = require('./lib/store');
+const { fusoValido, horaValida, FUSO_PADRAO, HORA_PADRAO } = require('./lib/agenda');
 
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -21,9 +22,14 @@ module.exports = async function handler(req, res) {
     if (!sub || !sub.endpoint || !sub.keys) {
       return res.status(400).json({ error: 'Subscription inválida' });
     }
+    /* O fuso e a hora vêm do aparelho e são validados aqui: é entrada de
+       fora, e um nome de fuso inventado quebraria o envio de todo mundo
+       na hora do cron, não só o de quem mandou. */
     await addSub({
       endpoint: sub.endpoint,
       keys: sub.keys,
+      fuso: fusoValido(body && body.fuso) ? body.fuso : FUSO_PADRAO,
+      hora: horaValida(body && body.hora) ? body.hora : HORA_PADRAO,
       createdAt: new Date().toISOString()
     });
     return res.status(200).json({ ok: true });
