@@ -145,7 +145,8 @@ td code, p code { font-size: 13.5px; background: var(--azul-suave); padding: 1px
       <li><b>A conta é opcional.</b> Ela existe para o seu histórico sobreviver à troca de celular.</li>
       <li><b>Seu histórico devocional é dado sensível.</b> Ele revela convicção religiosa, e por isso só é enviado ao servidor com a sua autorização explícita.</li>
       <li><b>Você pode apagar tudo</b> a qualquer momento, sozinho, pelo painel da conta.</li>
-      <li><b>Não vendemos, alugamos nem usamos seus dados para publicidade.</b> Não há anúncios nem rastreadores.</li>
+      <li><b>Não vendemos, alugamos nem usamos seus dados para publicidade.</b> Não há anúncios nem rastreadores de terceiros.</li>
+      <li><b>Contamos usos, não pessoas.</b> Guardamos quantas vezes o app foi aberto e o devocional foi lido — nunca o que você lê, escreve ou ora. Dá para desligar na tela.</li>
     </ul>
   </div>
 
@@ -245,8 +246,9 @@ td code, p code { font-size: 13.5px; background: var(--azul-suave); padding: 1px
   <h2>6. Terceiros que participam</h2>
   <p>
     Não vendemos, alugamos nem compartilhamos seus dados para publicidade. Não usamos
-    ferramentas de rastreamento ou de perfil de comportamento. Os terceiros abaixo
-    participam por necessidade técnica:
+    ferramentas de rastreamento ou de perfil de comportamento, nem serviço de análise de
+    terceiros — as estatísticas de uso são contagens agregadas no nosso próprio banco,
+    descritas mais abaixo. Os terceiros abaixo participam por necessidade técnica:
   </p>
   <div class="tabela">
     <table>
@@ -268,6 +270,40 @@ td code, p code { font-size: 13.5px; background: var(--azul-suave); padding: 1px
       </tr>
     </table>
   </div>
+
+  <h3>Estatísticas de uso</h3>
+  <p>
+    Para saber se o aplicativo está sendo útil — quantas pessoas abrem por dia, quantas
+    chegam ao fim do devocional, quantas ligam o lembrete — guardamos <b>contagens</b>,
+    e nada além disso. Não usamos nenhuma ferramenta de terceiros para essa medição: os
+    números ficam no nosso próprio banco, o mesmo da seção 3.
+  </p>
+  <p>O que é enviado quando você usa o aplicativo:</p>
+  <ul>
+    <li>o <b>nome</b> de um evento, de uma lista fixa: abriu, viu o devocional, terminou o
+      devocional, ativou o lembrete, compartilhou, gerou imagem, leu um dia de plano,
+      abriu o mapa, fez uma busca;</li>
+    <li>um <b>identificador aleatório</b> criado no seu aparelho, sem ligação com a sua
+      conta, com o seu e-mail ou com qualquer dado seu.</li>
+  </ul>
+  <p>
+    Esse identificador serve apenas para o servidor contar <b>quantos</b> aparelhos
+    distintos usaram o app num dia. Ele é somado a uma estrutura chamada
+    <i>HyperLogLog</i>, que é um resumo estatístico de tamanho fixo: ela responde
+    "quantos" sem guardar "quais". O identificador entra nessa contagem e <b>não fica
+    armazenado</b> — não existe lista da qual ele pudesse ser recuperado.
+  </p>
+  <p>
+    <b>Nunca é enviado</b> o que você lê, escreve, marca, ora ou busca. Nem o texto da
+    busca, nem o versículo aberto, nem o pedido de oração — só o fato de que uma busca
+    aconteceu. As contagens são apagadas automaticamente após <b>90 dias</b>.
+  </p>
+  <p>
+    Você pode desligar isso a qualquer momento em <b>Instalar app → Ajudar com
+    estatísticas anônimas de uso</b>. E se o seu navegador estiver configurado para pedir
+    que você não seja rastreado (<i>Do Not Track</i>), a medição já vem desligada, sem
+    você precisar fazer nada.
+  </p>
 
   <h3>Ditado por voz</h3>
   <p>

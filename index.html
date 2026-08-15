@@ -1768,6 +1768,41 @@ body.modo-foco #sec-biblia .voltar {
   margin-bottom: 12px;
 }
 .lugar-mencoes { font-size: 13px; color: var(--texto-3); margin-bottom: 12px; }
+
+/* escolha da hora do lembrete, ao lado do botão de ativar */
+.linha-hora {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 14px;
+}
+.linha-hora label { font-size: 14.5px; color: var(--texto-2); }
+.linha-hora select {
+  font-family: inherit;
+  font-size: 15px;
+  padding: 9px 12px;
+  min-height: 44px;      /* alvo de toque, como os outros controles */
+  border: 1px solid var(--linha-forte);
+  border-radius: var(--radius-sm);
+  background: var(--papel);
+  color: var(--texto);
+}
+.fuso-aviso { font-size: 12.5px; color: var(--texto-3); flex: 1 1 100%; }
+
+.linha-metricas {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  margin-top: 16px;
+  padding: 12px 0;      /* alvo de toque confortável na linha toda */
+  cursor: pointer;
+  font-size: 14.5px;
+  color: var(--texto-2);
+  line-height: 1.5;
+}
+.linha-metricas input { width: 20px; height: 20px; margin-top: 2px; flex: none; accent-color: var(--azul); }
+.linha-metricas small { display: block; font-size: 12.5px; color: var(--texto-3); margin-top: 3px; }
 .lugar-refs { display: flex; flex-wrap: wrap; gap: 8px; }
 
 /* ---------------- veja também ---------------- */
@@ -3254,7 +3289,16 @@ html[data-tema="escuro"] .painel-config header { background: #152238; }
         <button class="btn" id="btn-instalar-pwa" type="button">Instalar app</button>
         <button class="btn claro" id="btn-lembrete" type="button">Ativar lembrete diário</button>
       </div>
+      <div class="linha-hora oculto" id="linha-hora-lembrete">
+        <label for="hora-lembrete">Receber às</label>
+        <select id="hora-lembrete"></select>
+        <span class="fuso-aviso" id="fuso-aviso"></span>
+      </div>
       <p id="status-pwa" style="margin-top:12px;font-size:13px;color:var(--texto-3)"></p>
+      <label class="linha-metricas">
+        <input type="checkbox" id="opt-metricas" checked>
+        <span>Ajudar com estatísticas anônimas de uso<small id="metricas-nota"></small></span>
+      </label>
     </div>
   </section>
 
@@ -5969,6 +6013,7 @@ function montarPercurso(dados){
       registrarAtividade();
       const fim = document.createElement('div');
       fim.className = 'fim-percurso';
+      Metricas.anotar('devocional_completo');
       const streak = calcularStreak();
       fim.innerHTML =
         `<div class="selo" aria-hidden="true">✓</div>
@@ -6194,6 +6239,7 @@ async function versiculoDoDia(){
     w.appendChild(blocoErro(e.message, versiculoDoDia));
     alvo.appendChild(w);
   }
+  Metricas.anotar('devocional_visto');
 }
 
 /* ---------- promessas ---------- */
@@ -6257,6 +6303,7 @@ function carregarLidos(){
 function salvarLidos(map){ localStorage.setItem(CHAVE_LIDOS, JSON.stringify(map)); Conta.marcarSujo(); }
 function chaveCap(nr, cap){ return nr + ':' + cap; }
 function marcouLido(nr, cap){
+  Metricas.anotar('plano_dia_lido');
   const map = carregarLidos();
   map[chaveCap(nr, cap)] = true;
   salvarLidos(map);
@@ -7181,6 +7228,7 @@ function desenharFotoCover(ctx, img, W, H){
 }
 
 async function abrirGeradorImagem(texto, ref, versao, tema, onde){
+  Metricas.anotar('imagem_gerada');
   /* `onde` guarda de qual passagem a imagem saiu, para o link que vai
      junto dela levar a essa passagem e não à capa */
   imgAtual = { texto, ref, versao, tema: tema || '', onde: onde || null };
@@ -7497,6 +7545,7 @@ function baixarImagem(){
    então aí o endereço entra no texto à mão.
    ========================================================= */
 function compartilharTexto(texto, link){
+  Metricas.anotar('compartilhou');
   const url = link || LINK_SITE;
   if(navigator.share)
     return navigator.share({ text: texto, url }).catch(() => {});
@@ -7815,7 +7864,7 @@ document.querySelectorAll('.fonte-rapida button').forEach(b =>
  document.querySelector('.logo').onclick = () => irParaAba('hoje');
 $('veu').onclick = () => { abrirPainelVoz(false); abrirPainelConta(false); abrirMenu(false); };
 document.querySelectorAll('[data-fecha]').forEach(a => a.onclick = () => abrirMenu(false));
-$('btn-busca').onclick = buscarReferencia;
+$('btn-busca').onclick = () => { Metricas.anotar('busca_feita'); buscarReferencia(); };
 $('busca').onkeydown = e => { if(e.key === 'Enter') buscarReferencia(); };
 $('btn-livros').onclick = () => { mostrarNivel('livros'); mostrarSecao('sec-biblia'); };
 $('btn-mapa').onclick = function(){
@@ -7823,7 +7872,7 @@ $('btn-mapa').onclick = function(){
   const abrindo = sec.classList.contains('oculto');
   /* a seção sai do escondido antes do desenho: getBBox só mede rótulo
      que o navegador já tenha disposto na tela */
-  if(abrindo){ sec.classList.remove('oculto'); desenharMapa(); mostrarSecao('sec-mapa'); }
+  if(abrindo){ Metricas.anotar('mapa_aberto'); sec.classList.remove('oculto'); desenharMapa(); mostrarSecao('sec-mapa'); }
   else sec.classList.add('oculto');
   this.textContent = abrindo ? 'Mapa ⌃' : 'Mapa ⌄';
 };
@@ -8798,6 +8847,152 @@ async function obterChaveVapid(){
   return d.publicKey;
 }
 
+/* =========================================================
+   MÉTRICAS — só o suficiente para saber se o app serve
+
+   Sem isso não há decisão comercial possível: não se sabe quantos
+   voltam no dia seguinte, quantos terminam o devocional, se o lembrete
+   traz alguém de volta. Mas medir num app devocional pede cuidado.
+
+   O que sai daqui: uma lista de nomes de evento e um identificador
+   aleatório gerado no aparelho. Nada de conta, nada de versículo lido,
+   nada de oração escrita, nada de endereço de IP guardado.
+
+   O identificador serve só para o servidor contar aparelhos distintos
+   num HyperLogLog — um esboço que responde "quantos" sem guardar
+   "quais". Ele entra e não fica.
+
+   Respeita o "não me rastreie" do navegador e tem desligamento na tela.
+   ========================================================= */
+const CHAVE_METRICAS = 'lampada-metricas';
+const CHAVE_ID_ANON = 'lampada-id-anon';
+
+const Metricas = (() => {
+  const fila = [];
+  let enviando = null;
+
+  const naoRastrear = () =>
+    navigator.doNotTrack === '1' || window.doNotTrack === '1' ||
+    navigator.msDoNotTrack === '1';
+
+  /* opt-out explícito na tela, e o "não me rastreie" do navegador
+     também vale — quem já disse ao navegador não precisa repetir aqui */
+  const ligado = () => localStorage.getItem(CHAVE_METRICAS) !== '0' && !naoRastrear();
+
+  function id(){
+    let v = localStorage.getItem(CHAVE_ID_ANON);
+    if(!v){
+      v = (crypto.randomUUID ? crypto.randomUUID() : String(Math.random())).replace(/[^a-z0-9]/g, '').slice(0, 24);
+      localStorage.setItem(CHAVE_ID_ANON, v);
+    }
+    return v;
+  }
+
+  function anotar(evento){
+    if(!ligado()) return;
+    if(fila.includes(evento)) return;   /* uma vez por sessão basta */
+    fila.push(evento);
+    if(!enviando) enviando = setTimeout(despachar, 4000);
+  }
+
+  function despachar(){
+    enviando = null;
+    if(!fila.length || !ligado()) return;
+    const corpo = JSON.stringify({ eventos: fila.splice(0, fila.length), id: id() });
+    /* sendBeacon sobrevive ao fechamento da aba; o fetch é o plano B */
+    try {
+      if(navigator.sendBeacon &&
+         navigator.sendBeacon('/api/metricas', new Blob([corpo], { type: 'application/json' }))) return;
+    } catch(_) {}
+    fetch('/api/metricas', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: corpo, keepalive: true
+    }).catch(() => {});
+  }
+
+  addEventListener('pagehide', despachar);
+  addEventListener('visibilitychange', () => { if(document.visibilityState === 'hidden') despachar(); });
+
+  return { anotar, ligado, despachar,
+    desligar(v){ localStorage.setItem(CHAVE_METRICAS, v ? '1' : '0'); },
+    naoRastrear };
+})();
+
+Metricas.anotar('abriu');
+
+/* =========================================================
+   O LEMBRETE NA HORA DE QUEM RECEBE
+
+   O envio era um cron diário num horário só do mundo: 8h de Brasília,
+   que é 3h da manhã em Los Angeles e 19h em Manila. Num produto de
+   hábito diário, a hora da entrega é o produto.
+
+   O aparelho informa o próprio fuso; o servidor guarda e passa a rodar
+   de hora em hora, entregando só a quem está na hora escolhida.
+   ========================================================= */
+const CHAVE_HORA_LEMBRETE = 'lampada-hora-lembrete';
+
+function fusoDoAparelho(){
+  try { return Intl.DateTimeFormat().resolvedOptions().timeZone || ''; }
+  catch(_) { return ''; }
+}
+function horaDoLembrete(){
+  const h = parseInt(localStorage.getItem(CHAVE_HORA_LEMBRETE), 10);
+  return (h >= 0 && h <= 23) ? h : 8;
+}
+
+/* Quem viaja leva o app junto: o fuso guardado na inscrição fica para
+   trás e o lembrete passaria a chegar na hora do país de origem. A cada
+   abertura, se o fuso mudou, a inscrição é reenviada. */
+async function conferirFusoDoLembrete(){
+  if(localStorage.getItem('lampada-lembrete') !== '1') return;
+  const atual = fusoDoAparelho();
+  if(!atual || localStorage.getItem('lampada-fuso-enviado') === atual + '|' + horaDoLembrete()) return;
+  try {
+    const reg = await navigator.serviceWorker.ready;
+    const sub = await reg.pushManager.getSubscription();
+    if(!sub) return;
+    const r = await fetch('/api/subscribe', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ subscription: sub.toJSON(), fuso: atual, hora: horaDoLembrete() })
+    });
+    if(r.ok) localStorage.setItem('lampada-fuso-enviado', atual + '|' + horaDoLembrete());
+  } catch(_) { /* sem rede agora; tenta na próxima abertura */ }
+}
+
+/* Monta o seletor, mostra o fuso que o aparelho informa e reenvia a
+   inscrição quando a pessoa troca de horário. */
+function montarHoraLembrete(){
+  const linha = $('linha-hora-lembrete');
+  const sel = $('hora-lembrete');
+  if(!linha || !sel) return;
+  const ativo = localStorage.getItem('lampada-lembrete') === '1';
+  linha.classList.toggle('oculto', !ativo);
+  if(!ativo) return;
+
+  if(!sel.options.length){
+    for(let h = 0; h < 24; h++){
+      const o = document.createElement('option');
+      o.value = h;
+      o.textContent = String(h).padStart(2, '0') + ':00';
+      sel.appendChild(o);
+    }
+    sel.onchange = async () => {
+      localStorage.setItem(CHAVE_HORA_LEMBRETE, sel.value);
+      /* zera a marca para conferirFusoDoLembrete reenviar a inscrição */
+      localStorage.removeItem('lampada-fuso-enviado');
+      await conferirFusoDoLembrete();
+      avisar('Lembrete às ' + String(sel.value).padStart(2, '0') + ':00');
+    };
+  }
+  sel.value = String(horaDoLembrete());
+  const fuso = fusoDoAparelho();
+  $('fuso-aviso').textContent = fuso
+    ? 'No horário de ' + fuso.replace(/_/g, ' ') + ', o do seu aparelho.'
+    : 'No horário do seu aparelho.';
+}
+
 async function pedirLembrete(){
   if(!('Notification' in window) || !('serviceWorker' in navigator) || !('PushManager' in window)){
     avisar('Este navegador não suporta Web Push');
@@ -8824,27 +9019,57 @@ async function pedirLembrete(){
     const resp = await fetch('/api/subscribe', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ subscription: sub.toJSON() })
+      body: JSON.stringify({ subscription: sub.toJSON(), fuso: fusoDoAparelho(), hora: horaDoLembrete() })
     });
     const data = await resp.json().catch(() => ({}));
     if(!resp.ok){
       throw new Error(data.error || data.hint || ('Erro ' + resp.status));
     }
     localStorage.setItem('lampada-lembrete', '1');
+    localStorage.setItem('lampada-fuso-enviado', fusoDoAparelho() + '|' + horaDoLembrete());
     try {
       reg.showNotification('Bíblia Devocional', {
-        body: 'Web Push ativado. Você receberá o lembrete diário por volta das 8h.',
+        body: 'Web Push ativado. Você receberá o lembrete diário por volta das '
+              + horaDoLembrete() + 'h, no seu horário.',
         icon: '/icon-192.png',
         badge: '/icon-192.png'
       });
     } catch(_) {}
     avisar('Lembrete Web Push ativado');
+    Metricas.anotar('push_ativado');
+    montarHoraLembrete();
   } catch(e){
     console.info(e);
     avisar(e.message || 'Não foi possível ativar o Web Push');
   }
   atualizarStatusPWA();
 }
+
+/* Chamado aqui, e não lá em cima junto das outras inicializações:
+   `montarHoraLembrete` lê CHAVE_HORA_LEMBRETE, que é `const` e não sobe
+   com o içamento como as funções sobem. Chamando antes, quem tinha o
+   lembrete ligado — só quem — tomava um erro na abertura. */
+montarHoraLembrete();
+conferirFusoDoLembrete();
+
+/* o desligamento das métricas, e o aviso de que o navegador já disse não */
+(function ligarOptMetricas(){
+  const c = $('opt-metricas');
+  if(!c) return;
+  const nota = $('metricas-nota');
+  if(Metricas.naoRastrear()){
+    c.checked = false;
+    c.disabled = true;
+    nota.textContent = 'Desligado: o seu navegador pede para não ser rastreado, e isso é respeitado.';
+    return;
+  }
+  c.checked = Metricas.ligado();
+  nota.textContent = 'Só contagens: quantos abriram, quantos leram. Nunca o que você lê, escreve ou ora.';
+  c.onchange = () => {
+    Metricas.desligar(c.checked);
+    avisar(c.checked ? 'Obrigado por ajudar' : 'Estatísticas desligadas');
+  };
+})();
 
 async function desativarLembrete(){
   try {

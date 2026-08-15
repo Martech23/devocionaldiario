@@ -5,6 +5,8 @@
  *   UPSTASH_REDIS_REST_TOKEN
  */
 
+const crypto = require('crypto');
+
 const KEY = 'lampada:push:subs';
 
 function configured() {
@@ -67,4 +69,26 @@ async function removeSub(endpoint) {
   return removed;
 }
 
-module.exports = { configured, listSubs, addSub, removeSub };
+/**
+ * Trava de "já mandei hoje".
+ *
+ * O cron passou a rodar de hora em hora. Se uma execução falhar no meio
+ * e a Vercel repetir, ou se alguém trocar de fuso durante o dia, a mesma
+ * pessoa poderia receber o lembrete duas vezes — o pior defeito possível
+ * num aviso diário, porque quem recebe dois desliga a notificação.
+ *
+ * A chave carrega a data local de quem recebe, então ela vale para o dia
+ * dele e não para o do servidor. `NX` faz a marcação e a checagem no
+ * mesmo passo: se voltar nulo, alguém já marcou e não se envia. Duas
+ * execuções simultâneas não conseguem as duas vencer.
+ *
+ * `EX` de dois dias limpa sozinho — não existe faxina para esquecer.
+ */
+async function marcarEnvio(endpoint, dataLocal) {
+  const id = crypto.createHash('sha1').update(String(endpoint)).digest('hex').slice(0, 16);
+  const chave = `lampada:push:enviado:${id}:${dataLocal}`;
+  const r = await redis('SET', [chave, '1', 'NX', 'EX', String(60 * 60 * 48)]);
+  return r === 'OK';
+}
+
+module.exports = { configured, redis, listSubs, addSub, removeSub, marcarEnvio };

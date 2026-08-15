@@ -22,8 +22,9 @@ function iguais(a, b) {
   if (x.length !== y.length) return false;
   return crypto.timingSafeEqual(x, y);
 }
-const { configured, listSubs, removeSub } = require('./lib/store');
+const { configured, listSubs, removeSub, marcarEnvio } = require('./lib/store');
 const { versiculoDoDia } = require('./lib/versiculos');
+const { paraEnviarAgora } = require('./lib/agenda');
 
 /**
  * A notificação anunciava um versículo e o app mostrava outro: eram duas
@@ -31,8 +32,24 @@ const { versiculoDoDia } = require('./lib/versiculos');
  * Quem tocasse no lembrete abria o app e via coisa diferente do que tinha
  * acabado de ler na tela de bloqueio. Agora a fonte é a mesma.
  */
-async function montarMensagem() {
-  const { nr, cap, verso, livro } = versiculoDoDia();
+/* Uma mensagem por data local, e não uma por execução: quem está em
+   Tóquio às 8h ainda é "ontem" no servidor, e receberia o versículo de
+   véspera. O cache evita refazer a busca para cada inscrito do mesmo dia. */
+const cacheMensagem = new Map();
+async function mensagemDoDia(dataLocal) {
+  if (cacheMensagem.has(dataLocal)) return cacheMensagem.get(dataLocal);
+  const [a, m, d] = String(dataLocal).split('-').map(Number);
+  const msg = await montarMensagem(new Date(a, m - 1, d));
+  /* só o acerto é guardado. Guardar a mensagem de reserva congelaria
+     uma queda passageira da Bíblia para o resto da vida do contêiner:
+     todo mundo daquele fuso receberia "abra e medite" o dia inteiro,
+     mesmo depois de a fonte voltar. */
+  if (!msg.reserva) cacheMensagem.set(dataLocal, msg);
+  return msg;
+}
+
+async function montarMensagem(quando) {
+  const { nr, cap, verso, livro } = versiculoDoDia(quando);
   const ref = livro + ' ' + cap + ':' + verso;
   const url = 'https://api.getbible.net/v2/livre/' + nr + '/' + cap + '.json';
   try {
@@ -50,7 +67,8 @@ async function montarMensagem() {
     return {
       title: 'Bíblia Devocional · Devocional do dia',
       body: 'O devocional de hoje está em ' + ref + '. Abra e medite.',
-      url: '/'
+      url: '/',
+      reserva: true
     };
   }
 }
@@ -151,14 +169,6 @@ async function enviar(req, res) {
     });
   }
 
-  const msg = await montarMensagem();
-  const payload = JSON.stringify({
-    title: msg.title,
-    body: msg.body,
-    url: msg.url || '/',
-    tag: 'devocional-diario'
-  });
-
   /* Ler o Redis também estourava para fora: token errado, URL errada ou a
      Upstash fora do ar davam 500 sem explicação. */
   let subs;
@@ -173,12 +183,34 @@ async function enviar(req, res) {
     });
   }
 
+  /* De todos os inscritos, só os que estão na hora que escolheram, no
+     fuso deles. As outras 23 execuções do dia simplesmente não têm o
+     que fazer para essa pessoa. */
+  const agora = new Date();
+  const naHora = paraEnviarAgora(subs, agora);
+
   let sent = 0;
   let removed = 0;
+  let repetidos = 0;
   const errors = [];
+  let previa = null;
 
-  for (const sub of subs) {
+  for (const { sub, dataLocal } of naHora) {
     try {
+      /* a trava vem antes do envio: melhor não mandar por engano do que
+         mandar duas vezes e a pessoa desligar a notificação */
+      const primeiraVez = await marcarEnvio(sub.endpoint, dataLocal);
+      if (!primeiraVez) { repetidos++; continue; }
+
+      const msg = await mensagemDoDia(dataLocal);
+      if (!previa) previa = msg;
+      const payload = JSON.stringify({
+        title: msg.title,
+        body: msg.body,
+        url: msg.url || '/',
+        tag: 'devocional-diario'
+      });
+
       await webpush.sendNotification(
         { endpoint: sub.endpoint, keys: sub.keys },
         payload,
@@ -200,9 +232,17 @@ async function enviar(req, res) {
   return res.status(200).json({
     ok: true,
     total: subs.length,
+    naHora: naHora.length,
     sent: sent,
     removed: removed,
-    preview: { title: msg.title, body: msg.body },
+    repetidos: repetidos,
+    hora: agora.toISOString().slice(11, 16) + ' UTC',
+    preview: previa ? { title: previa.title, body: previa.body } : null,
     errors: errors.slice(0, 5)
   });
 }
+
+/* Só para teste: o cache de mensagem vive enquanto o contêiner vive, e
+   um teste que simula a Bíblia fora do ar precisa de um dia limpo. Não
+   é usado em produção. */
+module.exports._limparCacheMensagem = () => cacheMensagem.clear();
