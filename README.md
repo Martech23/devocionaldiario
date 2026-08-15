@@ -93,6 +93,35 @@ próprio repositório. O conjunto de referências cruzadas é outro arquivo e
 merece a mesma conferência antes de entrar — mas agora se sabe onde olhar,
 e o gerador do mapa serve de molde para o que faltar.
 
+## O microfone estava desligado no servidor
+
+O `vercel.json` trazia `Permissions-Policy: camera=(), microphone=(),
+geolocation=(), payment=()`. A lista vazia em `microphone=()` não bloqueia
+só terceiros — **bloqueia a própria origem**. O ditado por voz, que é a
+funcionalidade que existe para quem não escreve, estava morto em produção.
+
+E falhava do pior jeito possível: o botão continuava na tela, a pessoa
+tocava, e nada acontecia.
+
+Medido antes de mexer, servindo a mesma página com os dois cabeçalhos:
+
+| `Permissions-Policy` | Navegador permite o microfone | Botão de ditar |
+|---|---|---|
+| `microphone=()` | **não** | aparecia mesmo assim |
+| `microphone=(self)` | sim | aparece |
+
+Duas correções, porque eram dois defeitos:
+
+- **No servidor:** `microphone=(self)`. Câmera, localização e pagamento
+  continuam fechados — o app não usa nenhum dos três.
+- **No app:** o `Ditado` checava só se a API existe no navegador. Agora
+  checa também `featurePolicy.allowsFeature('microphone')`, então se
+  algum cabeçalho futuro barrar de novo, o botão some em vez de mentir.
+
+Há teste que lê o `vercel.json` e reprova se o microfone voltar a ser
+fechado, e outro que serve a página com cada um dos dois cabeçalhos e
+confere que o botão acompanha o que o navegador decidiu.
+
 ## Lembrete na hora de quem recebe
 
 O cron era diário, num horário só do mundo: `0 11 * * *`. Isso é 8h em
