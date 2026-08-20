@@ -268,8 +268,36 @@ td code, p code { font-size: 13.5px; background: var(--azul-suave); padding: 1px
         <td>Texto bíblico</td>
         <td>Endereço IP e qual capítulo foi pedido</td>
       </tr>
+      <tr>
+        <td>Supabase</td>
+        <td>Banco de onde vem o devocional extra publicado por nós</td>
+        <td>Endereço IP, ao buscar o texto</td>
+      </tr>
+      <tr>
+        <td>jsDelivr</td>
+        <td>Rede que entrega a biblioteca usada para falar com o Supabase</td>
+        <td>Endereço IP, ao carregar o arquivo</td>
+      </tr>
+      <tr>
+        <td>Pexels</td>
+        <td>Fotos de fundo para a imagem de compartilhar</td>
+        <td>Endereço IP, e o tema da busca de foto</td>
+      </tr>
     </table>
   </div>
+
+  <h3>Devocional extra e fotos de fundo</h3>
+  <p>
+    Além do devocional gerado no seu aparelho, o aplicativo busca no <b>Supabase</b> um
+    texto extra publicado por nós, e no <b>Pexels</b> as fotos usadas como fundo na
+    imagem de compartilhar. Nos dois casos, o que sai do seu aparelho é apenas o pedido
+    — <b>nenhum dado seu é enviado</b>: nem conta, nem favoritos, nem orações, nem o que
+    você leu. Esses serviços veem o seu endereço IP, como qualquer site que você abre.
+  </p>
+  <p>
+    Se você estiver sem internet, os dois simplesmente não aparecem, e o restante do
+    aplicativo continua funcionando por inteiro.
+  </p>
 
   <h3>Estatísticas de uso</h3>
   <p>
@@ -321,7 +349,7 @@ td code, p code { font-size: 13.5px; background: var(--azul-suave); padding: 1px
 
   <h3>Transferência internacional</h3>
   <p>
-    Vercel e Upstash são empresas sediadas fora do Brasil e podem armazenar ou
+    Vercel, Upstash, Supabase, jsDelivr e Pexels são empresas sediadas fora do Brasil e podem armazenar ou
     processar dados em outros países. Essa transferência ocorre nos termos do Art. 33 da
     LGPD, na medida necessária para a execução do serviço que você solicitou.
   </p>
