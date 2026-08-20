@@ -93,6 +93,75 @@ próprio repositório. O conjunto de referências cruzadas é outro arquivo e
 merece a mesma conferência antes de entrar — mas agora se sabe onde olhar,
 e o gerador do mapa serve de molde para o que faltar.
 
+## O devocional extra do Supabase
+
+O app passou a buscar no Supabase um devocional extra publicado por nós.
+O bloco original inseria o conteúdo da tabela com `innerHTML`:
+
+```js
+div.innerHTML = `<strong ...>${item.titulo}</strong><p ...>${item.texto}</p>`;
+```
+
+**Isso é execução de código, não exibição de texto.** Um
+`<img src=x onerror="...">` gravado na tabela viraria JavaScript rodando
+no navegador de todo visitante — e o CSP do projeto tem `unsafe-inline`,
+que deixaria executar. Testado com quatro cargas (`img/onerror`,
+`<script>`, `<svg onload>`, `iframe javascript:`): **as quatro
+executavam**.
+
+Agora o conteúdo entra por `textContent`. O pior que pode acontecer é
+uma tag aparecer escrita na tela.
+
+### A chave `anon` e a RLS
+
+A chave `anon` está no código-fonte da página, e isso é o desenho previsto
+do Supabase — ela é pública por natureza. O que a torna segura é a **Row
+Level Security** na tabela `devocionais`: sem política que proíba escrita
+anônima, qualquer um com essa chave escreve na tabela.
+
+O `textContent` fecha o buraco do lado do app **independentemente da
+RLS**. Mas a RLS continua sendo o que impede alguém de sujar o conteúdo
+que os leitores veem, e isso só se confere no painel do Supabase.
+
+### Mais dois defeitos no mesmo bloco
+
+- **Cores cravadas em claro.** Fundo `#fdf8f0` com o texto herdando o tema
+  escuro dava **1,14:1** de contraste — invisível. Saindo das variáveis,
+  passou para 7,29:1 no claro e 6,39:1 no escuro.
+- **`document.body.prepend()`** punha a caixa **acima da barra fixa**,
+  empurrando a tela inteira para baixo dois segundos depois de carregar.
+  Agora entra dentro da seção do dia.
+
+O `script.js` foi apagado: não era carregado por arquivo nenhum e, se
+fosse, quebraria — usava IDs (`titulo-dev`, `conteudo-dev`) que não
+existem no HTML, e lia um esquema de tabela diferente do usado no
+`index.html`.
+
+Supabase, jsDelivr e Pexels entraram na política de privacidade. São
+terceiros que recebem o IP de quem abre o app.
+
+## O gerador de imagem voltava em branco
+
+Canvas de 1080×1350 com **zero pixels opacos**. O recuo para o fundo
+desenhado tinha sido removido de `redesenharImagem`:
+
+```js
+catch(e){ avisar('Não foi possível carregar foto do Pexels…'); }
+```
+
+`desenharImagemArte()` continuava existindo, mas ficou inalcançável.
+Quem estivesse offline, com o Pexels bloqueado, sem chave ou com a cota
+estourada gerava uma imagem vazia — num app que se instala justamente
+para funcionar sem internet.
+
+O recuo voltou. E o "Trocar fundo" passou a girar **também** o fundo
+desenhado: sem isso, quem cai no recuo aperta o botão e vê a mesma cena,
+com o botão prometendo uma troca que não acontece.
+
+O merge também tinha apagado o **endereço desenhado no rodapé** da
+imagem, que a PR #40 havia acrescentado. Restaurado, com os mesmos
+6,33:1 no pior fundo.
+
 ## O microfone estava desligado no servidor
 
 O `vercel.json` trazia `Permissions-Policy: camera=(), microphone=(),

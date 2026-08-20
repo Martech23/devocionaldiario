@@ -1802,6 +1802,35 @@ body.modo-foco #sec-biblia .voltar {
   line-height: 1.5;
 }
 .linha-metricas input { width: 20px; height: 20px; margin-top: 2px; flex: none; accent-color: var(--azul); }
+
+/* =========================================================
+   DEVOCIONAL EXTRA (Supabase)
+   As cores estavam cravadas em claro: no tema escuro, texto claro
+   sobre fundo creme dava 1,14:1 de contraste — invisível. Saindo
+   das variáveis, os dois temas funcionam sozinhos.
+   ========================================================= */
+.bloco-extra {
+  margin-top: 16px;
+  border-left: 4px solid var(--destaque-borda);
+  animation: fadeUp 0.35s ease both;
+}
+.bloco-extra h3 {
+  font-family: var(--fonte-titulo);
+  font-size: 19px;
+  font-weight: 600;
+  letter-spacing: -.01em;
+  margin-bottom: 8px;
+  color: var(--texto);
+}
+.bloco-extra p {
+  font-family: var(--fonte-leitura);
+  font-size: calc(16px * var(--esc));
+  line-height: 1.7;
+  color: var(--texto-2);
+  /* o conteúdo vem de fora e pode ter palavra sem espaço; sem isto,
+     uma sequência longa estouraria a largura do cartão */
+  overflow-wrap: anywhere;
+}
 .linha-metricas small { display: block; font-size: 12.5px; color: var(--texto-3); margin-top: 3px; }
 .lugar-refs { display: flex; flex-wrap: wrap; gap: 8px; }
 
@@ -7320,6 +7349,14 @@ async function trocarFundo(){
   imgFotoObj = null;
   imgFotoIdx = 0;
   imgModo = 'foto';
+
+  /* Gira também o fundo desenhado. Sem isto, quem está offline — ou com
+     o Pexels fora — aperta "Trocar fundo", cai no recuo, e vê a mesma
+     cena de novo: o botão promete uma mudança e não entrega nenhuma. */
+  const atual = fundoAtual().id;
+  const i = FUNDOS.findIndex(f => f.id === atual);
+  imgFundo = FUNDOS[(i + 1) % FUNDOS.length].id;
+
   await redesenharImagem();
 }
 
@@ -7327,8 +7364,16 @@ async function redesenharImagem(){
   try {
     await desenharImagemFoto();
   } catch(e){
-    console.info('Pexels:', e.message);
-    avisar('Não foi possível carregar foto do Pexels. Toque em Trocar fundo para tentar de novo.');
+    /* Sem este recuo o canvas ficava em branco: 1080x1350 com zero
+       pixels opacos, e a pessoa recebia um aviso pedindo para tentar de
+       novo. Quem está offline, com o Pexels bloqueado, sem chave ou com
+       a cota estourada tentaria para sempre — num app que se instala
+       justamente para funcionar sem internet.
+       O fundo desenhado não depende de rede nenhuma e sempre serve. */
+    console.info('Pexels:', e && e.message);
+    imgModo = 'arte';
+    desenharImagemArte();
+    avisar('Sem foto agora — usando fundo desenhado.');
   }
   marcarOpcoes();
 }
@@ -7490,6 +7535,17 @@ function desenharTextoSobreFundo(ctx, W, H, claro){
   ctx.fillStyle = suave;
   ctx.font = '400 ' + Math.round(W * 0.023) + 'px "Source Sans 3", system-ui, sans-serif';
   ctx.fillText(imgAtual.versao, W / 2, topo + hTexto + gapOrn + gapRef + gapVer * 0.62);
+
+  /* O endereço, desenhado no rodapé.
+     Na legenda o link também vai, mas legenda não sobrevive ao
+     reencaminhamento: a imagem passa adiante sozinha e quem a recebe de
+     terceira mão não teria como saber de onde ela veio.
+     Cor própria, mais firme que a do crédito da foto: com a tinta de
+     enfeite, sobre os fundos com desenho, o endereço ficava em 3,6:1 —
+     abaixo dos 4,5 da WCAG AA. Endereço é para ser lido e digitado. */
+  ctx.fillStyle = claro ? 'rgba(42,36,24,0.82)' : 'rgba(255,255,255,0.88)';
+  ctx.font = '600 ' + Math.round(W * 0.021) + 'px "Source Sans 3", system-ui, sans-serif';
+  ctx.fillText(DOMINIO_SITE, W / 2, H * 0.945);
 
   /* O endereço, desenhado no rodapé.
      Na legenda o link também vai, mas legenda não sobrevive ao
@@ -9271,40 +9327,68 @@ function alternarModoFoco(){
 
      
 </script>
-<!-- Importa a biblioteca do Supabase direto do CDN -->
+<!-- Biblioteca do Supabase, do CDN. Nota: é o único terceiro que o app
+     carrega em tempo de execução, e ele não está no service worker — offline
+     este bloco simplesmente não aparece, e o resto do app continua inteiro. -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-<!-- Script ninja do Supabase - Versão Direta com Ordenação -->
-<script>
-  async function carregarDevocionalSupabase() {
-    try {
-      const SUPABASE_URL = 'https://yzcxeleheanwnragxkfr.supabase.co';
-      const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl6Y3hlbGVoZWFud25yYWd4a2ZyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1MDExMjgsImV4cCI6MjEwMjA3NzEyOH0.jOObwRc_wd3L7BOTVQQ5w-4fCD6hPFalQAx7J5n98xA'; 
-      const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+<!-- =========================================================
+     DEVOCIONAL EXTRA, VINDO DO SUPABASE
 
-      // Busca o mais recente da tabela
-      const { data } = await supabase
+     A chave `anon` é pública por natureza — está no código-fonte de
+     qualquer app Supabase, e isso é o desenho previsto. O que a torna
+     segura é a RLS (Row Level Security) na tabela `devocionais`: sem
+     política que proíba escrita anônima, qualquer um com esta chave
+     escreve na tabela.
+
+     Por isso o conteúdo entra por `textContent` e nunca por `innerHTML`.
+     Com `innerHTML`, um `<img src=x onerror=...>` gravado na tabela
+     viraria JavaScript rodando no navegador de todo visitante — e o CSP
+     do projeto tem `unsafe-inline`, que deixaria executar. Escrevendo
+     como texto, o pior que pode acontecer é aparecer uma tag na tela.
+     ========================================================= -->
+<script>
+  const SUPABASE_URL = 'https://yzcxeleheanwnragxkfr.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl6Y3hlbGVoZWFud25yYWd4a2ZyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1MDExMjgsImV4cCI6MjEwMjA3NzEyOH0.jOObwRc_wd3L7BOTVQQ5w-4fCD6hPFalQAx7J5n98xA';
+
+  async function carregarDevocionalSupabase() {
+    if (!window.supabase || !window.supabase.createClient) return;   /* offline, ou CDN fora */
+    if (document.getElementById('bloco-extra')) return;              /* já está na tela */
+    try {
+      const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      const { data } = await sb
         .from('devocionais')
         .select('*')
         .order('created_at', { ascending: false })
         .limit(1);
-      
-      if (data && data.length > 0) {
-        const item = data[0];
-        
-        // Evita duplicar se já existir na tela
-        if (!document.getElementById('bloco-colombia')) {
-          const div = document.createElement('div');
-          div.id = 'bloco-colombia';
-          div.style.cssText = 'background: #fdf8f0; border-left: 4px solid #d4af37; padding: 15px; margin: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);';
-          div.innerHTML = `<strong style="color: #2c3e50; font-size: 16px;">${item.titulo}</strong><p style="margin: 8px 0 0 0; color: #555; font-size: 14px; line-height: 1.5;">${item.texto}</p>`;
-          
-          // Coloca no topo absoluto da página
-          document.body.prepend(div);
-        }
-      }
+      if (!data || !data.length) return;
+
+      const item = data[0];
+      const titulo = String(item.titulo || '').trim();
+      const texto = String(item.texto || item.conteudo || '').trim();
+      if (!titulo && !texto) return;
+
+      /* Entra dentro da seção do dia, e não com `body.prepend`. Antes a
+         caixa nascia acima da barra fixa do app e empurrava a tela
+         inteira para baixo dois segundos depois de carregar. */
+      const secao = document.getElementById('sec-hoje');
+      if (!secao) return;
+
+      const caixa = document.createElement('div');
+      caixa.id = 'bloco-extra';
+      caixa.className = 'cartao bloco-extra';
+
+      const h = document.createElement('h3');
+      h.textContent = titulo;                 /* texto, nunca HTML */
+      const p = document.createElement('p');
+      p.textContent = texto;                  /* idem */
+
+      if (titulo) caixa.appendChild(h);
+      if (texto) caixa.appendChild(p);
+      secao.appendChild(caixa);
     } catch (e) {
-      console.log("Erro:", e);
+      /* o extra é extra: se falhar, o devocional do dia continua lá */
+      console.info('Supabase:', e && e.message);
     }
   }
   setTimeout(carregarDevocionalSupabase, 2000);
