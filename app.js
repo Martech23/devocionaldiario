@@ -3152,6 +3152,7 @@ function ligarMemoriaDaLeitura(){
       if(!aberta) return;
       const v = versoNoTopo();
       if(v) guardarParada(capituloNaTela.nr, capituloNaTela.cap, v);
+      pintarFioDoCapitulo();
     }, 400);
   };
   window.addEventListener('scroll', anotarParada, { passive: true });
@@ -3209,6 +3210,63 @@ function quandoFoi(iso){
   return 'em ' + d.toLocaleDateString('pt-BR');
 }
 
+/* =========================================================
+   O CABEÇALHO DA LEITURA
+
+   Ele substitui, enquanto se lê, a barra azul do app e os 258px de
+   busca e seletores. Nada some do app: a busca volta pela lupa, o
+   "Ouvir" aciona o mesmo botão que estava dentro do capítulo, e o Aa
+   usa a mesma escala de fonte da gaveta.
+   ========================================================= */
+function montarCabecaDaLeitura(nr, cap){
+  const livro = livroPorNr(nr);
+  const rot = $('cl-livro');
+  /* o rótulo do voltar diz para ONDE se volta, e não "voltar": quem lê
+     João 3 volta para a lista de capítulos de João */
+  if(rot) rot.textContent = livro ? livro.nome : 'Capítulos';
+  const ouvir = $('cl-ouvir');
+  if(ouvir) ouvir.classList.remove('tocando');
+  fecharBuscaDaLeitura();
+  pintarFioDoCapitulo();
+}
+
+/* O fio de 2px no pé do cabeçalho: quanto do capítulo já passou. */
+function pintarFioDoCapitulo(){
+  const fio = $('cl-fio');
+  const area = $('area-leitura');
+  if(!fio || !area || document.documentElement.dataset.lendo !== '1') return;
+  const r = area.getBoundingClientRect();
+  const alturaUtil = r.height - window.innerHeight;
+  /* Capítulo que cabe inteiro na tela não tem progresso: mostrar o fio
+     cheio ali seria um filete azul sem informação nenhuma, parecendo
+     borda do cabeçalho. Some. */
+  if(alturaUtil <= 0){
+    fio.style.width = '0';
+    fio.removeAttribute('aria-valuenow');
+    return;
+  }
+  const pct = Math.max(0, Math.min(100, (-r.top / alturaUtil) * 100));
+  fio.style.width = pct + '%';
+  fio.setAttribute('aria-valuenow', Math.round(pct));
+}
+
+function fecharBuscaDaLeitura(){
+  delete document.documentElement.dataset.buscaLeitura;
+  const b = $('cl-busca');
+  if(b) b.setAttribute('aria-expanded', 'false');
+  if(typeof BuscaMemoria === 'object') BuscaMemoria.fechar();
+}
+
+function alternarBuscaDaLeitura(){
+  const raiz = document.documentElement;
+  const b = $('cl-busca');
+  if(raiz.dataset.buscaLeitura === '1'){ fecharBuscaDaLeitura(); return; }
+  raiz.dataset.buscaLeitura = '1';
+  if(b) b.setAttribute('aria-expanded', 'true');
+  const campo = $('busca');
+  if(campo){ campo.focus(); BuscaMemoria.renderRecentes(); }
+}
+
 /* Reabrir o mesmo capítulo devolve ao ponto — mas nunca em silêncio.
    Rolar sozinho para o meio de um texto assusta; o aviso diz o que
    aconteceu e oferece a volta ao início, que é o outro caminho que a
@@ -3245,6 +3303,7 @@ async function abrirLeitura(nr, cap, destacar, autoOuvir){
     marcouLido(nr, cap);
     capituloNaTela = { nr, cap };
     ligarMemoriaDaLeitura();
+    montarCabecaDaLeitura(nr, cap);
     retomarSeForOCaso(nr, cap, destacar);
     if(autoOuvir){
       const b = alvo.querySelector('.linha-ouvir .btn-ouvir');
@@ -3374,7 +3433,26 @@ function desenharCapitulo(dados, nr, cap, destacar){
       }
     }
   }));
-  h.insertAdjacentElement('afterend', linhaOuvir);
+  /* O botão fica no PÉ do capítulo, não entre o título e o primeiro
+     versículo. Ali ele era o objeto mais alto da tela, mais saturado
+     que a Escritura. No pé ele vira o que faz sentido no fim de uma
+     leitura — ouvir de novo — e quem quer ouvir antes usa o "Ouvir" do
+     cabeçalho, que aciona este mesmo botão.
+
+     E ele continua VISÍVEL: escondê-lo com display:none deixava o
+     controle de verdade inalcançável por toque e fora da árvore de
+     acessibilidade, com o cabeçalho fingindo ser ele. */
+  linhaOuvir.classList.add('ouvir-no-pe');
+
+  /* A versão saiu de baixo do título do capítulo e foi para o pé da
+     folha. É crédito, não cabeçalho: quem abre João 3 quer ler João 3,
+     e a licença da tradução não precisa disputar a cabeça de página. */
+  frag.appendChild(linhaOuvir);
+
+  const credito = document.createElement('p');
+  credito.className = 'rodape-folha';
+  credito.textContent = versaoAtual.nome;
+  frag.appendChild(credito);
 
   const passos = document.createElement('div');
   passos.className = 'passos';
@@ -3428,6 +3506,10 @@ function mostrarNivelDireto(nivel){
   /* saiu da leitura: parar de anotar a posição, senão a rolagem da
      lista de capítulos gravaria um versículo que ninguém está lendo */
   if(nivel !== 'leitura') capituloNaTela = null;
+  /* o estado que troca o app inteiro pela folha — ver estilo.css */
+  const raiz = document.documentElement;
+  if(nivel === 'leitura'){ raiz.dataset.lendo = '1'; }
+  else { delete raiz.dataset.lendo; delete raiz.dataset.buscaLeitura; }
   NIVEIS.forEach(n =>
     $('nivel-' + n).classList.toggle('oculto', n !== nivel)
   );
@@ -3569,6 +3651,13 @@ async function mapPool(items, limit, worker){
 }
 
 async function buscarPalavra(termo){
+  /* Buscar uma palavra é sair da leitura: o resultado é uma lista, não
+     um capítulo, e a folha deixa de ser o assunto da tela. O nível
+     continua onde estava — quem fechar os resultados encontra o
+     capítulo logo abaixo, como antes desta mudança. */
+  if(typeof fecharBuscaDaLeitura === 'function') fecharBuscaDaLeitura();
+  delete document.documentElement.dataset.lendo;
+
   const q = norm(termo);
   if(q.length < 2) return avisar('Digite pelo menos 2 letras para buscar');
   if(!versaoAtual) versaoAtual = VERSOES[0];
@@ -5277,6 +5366,17 @@ function aplicarEscala(esc){
   return esc;
 }
 
+/* O Aa do cabeçalho tem um botão só, então ele dá a volta: parar no
+   maior deixaria o botão morto para quem já está no topo da escala. */
+function ciclarEscala(){
+  const atual = localStorage.getItem(CHAVE_ESC) || '1';
+  const i = Math.max(0, ESCALAS.indexOf(atual));
+  const novo = ESCALAS[(i + 1) % ESCALAS.length];
+  aplicarEscala(novo);
+  avisar('Letra ' + NOME_ESCALA[novo]);
+  if(Voz.prefs.modo) Voz.anunciar('Letra ' + NOME_ESCALA[novo]);
+}
+
 function passoEscala(dir){
   const atual = localStorage.getItem(CHAVE_ESC) || '1';
   const i = Math.max(0, ESCALAS.indexOf(atual));
@@ -5287,6 +5387,17 @@ function passoEscala(dir){
   avisar('Letra ' + NOME_ESCALA[novo]);
   if(Voz.prefs.modo) Voz.anunciar('Letra ' + NOME_ESCALA[novo]);
 }
+
+/* ---- os botões do cabeçalho da leitura ---- */
+if($('cl-voltar')) $('cl-voltar').onclick = () => mostrarNivel('capitulos');
+if($('cl-busca'))  $('cl-busca').onclick  = alternarBuscaDaLeitura;
+if($('cl-fonte'))  $('cl-fonte').onclick  = ciclarEscala;
+if($('cl-ouvir'))  $('cl-ouvir').onclick  = function(){
+  /* aciona o mesmo botão que ficava dentro do capítulo, em vez de
+     duplicar a lógica de montar as partes da voz */
+  const b = document.querySelector('#area-leitura .linha-ouvir .btn-ouvir');
+  if(b){ b.click(); this.classList.toggle('tocando'); }
+};
 
 if($('fonte-menos')) $('fonte-menos').onclick = () => passoEscala(-1);
 if($('fonte-mais'))  $('fonte-mais').onclick  = () => passoEscala(1);

@@ -359,6 +359,24 @@
         <div class="capitulos" id="lista-capitulos"></div>
       </div>
       <div id="nivel-leitura" class="oculto">
+        <!-- A leitura ganhou cabeçalho próprio. Medido antes: 640px dos
+             844 da tela vinham antes do primeiro versículo — busca, dois
+             seletores, barra de ferramentas, rótulo de seção, barra de
+             progresso e um comprimido azul de "Ouvir". Tudo isso some
+             enquanto se lê, e volta ao sair do capítulo. -->
+        <div class="cabeca-leitura" id="cabeca-leitura">
+          <button class="cl-voltar" id="cl-voltar" type="button">
+            <span aria-hidden="true">‹</span> <span id="cl-livro">Capítulos</span>
+          </button>
+          <div class="cl-acoes">
+            <button class="cl-btn" id="cl-busca" type="button" aria-label="Buscar" aria-expanded="false">
+              <svg class="i" aria-hidden="true"><use href="#i-busca"/></svg>
+            </button>
+            <button class="cl-btn cl-texto" id="cl-ouvir" type="button">Ouvir</button>
+            <button class="cl-btn cl-texto" id="cl-fonte" type="button" aria-label="Tamanho da letra">Aa</button>
+          </div>
+          <span class="cl-fio" id="cl-fio" role="progressbar" aria-label="Progresso do capítulo" aria-valuemin="0" aria-valuemax="100"></span>
+        </div>
         <button class="voltar" data-volta="capitulos">‹ Capítulos</button>
         <div id="area-leitura"></div>
       </div>
