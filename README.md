@@ -796,6 +796,70 @@ Link "pular para o conteúdo", e anunciar mudanças dinâmicas por
 a aba troca, o leitor de tela do sistema fica em silêncio. O modo áudio já
 fala essas coisas, mas com a voz do *app*, não com a do leitor de tela.
 
+## O botão voltar do celular
+
+O app tinha cinco camadas — aba, livro, capítulo, folha do versículo, menu
+lateral — e **nenhuma delas existia para o navegador**. Medido antes da
+correção: abrir a Bíblia, escolher um livro, um capítulo e tocar num
+versículo deixava o histórico exatamente como estava ao carregar a página.
+
+```
+entradas no histórico ao abrir:                              2
+depois de: aba → livro → capítulo → folha do versículo:      2
+depois de apertar VOLTAR:                          fora do app
+```
+
+No computador isso passa despercebido, porque lá se fecha tudo pelo X ou
+pelo Esc. No celular o voltar é o gesto mais usado do sistema, e perder o
+lugar da leitura por causa dele é caro. É a heurística 3 de Nielsen —
+controle e liberdade do usuário — na sua forma mais literal.
+
+### O contrato
+
+Cada camada aberta empilha uma entrada. O contrato é de mão única, e é o
+que evita laço infinito:
+
+| momento | o que acontece |
+|---|---|
+| abrir uma camada | `Navegacao.entrar(id, comoFechar)` |
+| fechar pelo app (X, toque fora, Esc) | `Navegacao.sair(id)` pede o voltar ao navegador |
+| fechar pelo voltar do sistema | `popstate` desempilha e chama `comoFechar` |
+
+Ninguém fecha nada direto: **quem fecha é sempre o `popstate`**. Assim o X,
+o toque fora, o Esc e o voltar do sistema consomem a mesma entrada, e nunca
+sobra uma exigindo dois toques para sair de um lugar só.
+
+As camadas são `aba`, `nivel` (uma por degrau da Bíblia), `folha`, `painel`
+(nota, comparar, referências), `gaveta`, `painel-voz`, `painel-conta` e
+`imagem`.
+
+### Três armadilhas que os testes seguram
+
+**Fechar e ir para outro lugar na mesma ação.** `history.go` é assíncrono.
+O link do menu lateral fechava a gaveta e trocava de aba na mesma linha: a
+troca de aba empilhava uma camada, o `popstate` chegava depois e levava as
+duas embora — o link não ia a lugar nenhum. Por isso `sair` aceita uma
+continuação, executada só depois de o desempilhamento terminar.
+
+**Passear pelas abas.** Se cada troca de aba empilhasse, sair do app
+custaria um voltar por aba visitada. A camada `aba` é `unica`: repõe-se em
+vez de empilhar. Os degraus da Bíblia são o oposto — livros → capítulos →
+leitura precisa de um voltar por degrau — então a repetição só vale para
+quem pede.
+
+**Dois toques rápidos no X.** O `popstate` só chega no quadro seguinte; sem
+uma marca de "já estou saindo", o segundo toque disparava outro
+`history.go` e levava junto a camada de baixo — fechar a folha fechava
+também o capítulo.
+
+### O que o voltar faz hoje
+
+Lendo João 3 com a folha do versículo aberta, os voltares são: fecha a
+folha → volta à lista de capítulos → volta à lista de livros → volta à aba
+Hoje → **só então** sai do app. Um link compartilhado (`?v=43.3.16`) abre
+direto na leitura e mesmo assim sobe pelos degraus, em vez de jogar a
+pessoa para fora de um app que ela acabou de abrir.
+
 ## Navegação em abas
 
 Tudo vivia numa página só, e a home tinha **8.004 px — 9,5 telas de

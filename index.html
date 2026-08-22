@@ -4939,6 +4939,20 @@ function pintarVerso(el, nr, cap, verso){
 let versoAberto = null;   // {nr, cap, verso, texto}
 
 function mostrarPaineFolha(qual){
+  /* Os painéis internos da folha — nota, comparar, referências — também
+     são um passo: o voltar traz de volta à folha principal antes de
+     fechá-la. Sem isso, quem abrisse a nota e apertasse voltar perdia a
+     folha inteira de uma vez. */
+  const principal = 'folha-principal';
+  if(qual !== principal){
+    Navegacao.entrar('painel', () => mostrarPaineFolhaDireto(principal));
+  } else if(Navegacao.sair('painel')){
+    return;
+  }
+  mostrarPaineFolhaDireto(qual);
+}
+
+function mostrarPaineFolhaDireto(qual){
   ['folha-principal', 'folha-nota', 'folha-comparar', 'folha-refs'].forEach(id =>
     $(id).classList.toggle('oculto', id !== qual)
   );
@@ -4965,15 +4979,24 @@ function abrirFolhaVerso(nr, cap, verso, texto){
   $('fa-nota').classList.toggle('ativo', !!nota);
   $('campo-nota-verso').value = nota ? nota.texto : '';
 
-  mostrarPaineFolha('folha-principal');
+  /* direto: a folha ainda nem entrou no histórico, não há painel a sair */
+  mostrarPaineFolhaDireto('folha-principal');
   $('folha-verso').classList.add('ver');
   $('folha-verso').setAttribute('aria-hidden', 'false');
   $('fundo-folha').classList.add('ver');
   Foco.prender($('folha-verso'));
+  Navegacao.entrar('folha', fecharFolhaDireto);
   if(Voz.prefs.modo) Voz.anunciar(ref);
 }
 
+/* O voltar do sistema fecha a folha antes de sair da leitura. Quem
+   fecha de verdade é sempre o popstate — ver o módulo Navegacao. */
 function fecharFolha(){
+  if(Navegacao.sair('folha')) return;
+  fecharFolhaDireto();
+}
+
+function fecharFolhaDireto(){
   /* =========================================================
      A NOTA NÃO PODE SUMIR POR UM TOQUE FORA
 
@@ -5317,7 +5340,12 @@ async function verReferencias(){
       x.textContent = texto || 'Toque para abrir a passagem.';
       item.appendChild(r);
       item.appendChild(x);
-      item.onclick = () => { fecharFolha(); abrirLeitura(n, c, v); };
+      /* a leitura espera a folha sair: aberta na linha seguinte, ela
+         seria desfeita pelo voltar que fecha a folha */
+      item.onclick = () => {
+        const ir = () => abrirLeitura(n, c, v);
+        if(!Navegacao.sair('folha', 1, ir)){ fecharFolhaDireto(); ir(); }
+      };
       alvo.appendChild(item);
     }
   }
@@ -6712,8 +6740,34 @@ function desenharCapitulo(dados, nr, cap, destacar){
   return frag;
 }
 
+/* Livros → capítulos → leitura são três telas, e cada descida vira um
+   passo no histórico. Subir pelo botão "Voltar" da tela e subir pelo
+   voltar do sistema passam pelo mesmo caminho, então nunca sobra uma
+   entrada pendurada pedindo dois toques. */
+const NIVEIS = ['livros', 'capitulos', 'leitura'];
+
 function mostrarNivel(nivel){
-  ['livros','capitulos','leitura'].forEach(n =>
+  const atual = nivelAtual();
+  const de = NIVEIS.indexOf(atual), para = NIVEIS.indexOf(nivel);
+  if(para > de){
+    /* descendo: uma entrada por degrau, para voltar degrau a degrau
+       mesmo quando se pula de livros direto para a leitura */
+    for(let k = Math.max(de, 0); k < para; k++){
+      const volta = NIVEIS[k];
+      Navegacao.entrar('nivel', () => mostrarNivelDireto(volta));
+    }
+  } else if(para < de && de > -1){
+    if(Navegacao.sair('nivel', de - para)) return;
+  }
+  mostrarNivelDireto(nivel);
+}
+
+function nivelAtual(){
+  return NIVEIS.find(n => !$('nivel-' + n).classList.contains('oculto'));
+}
+
+function mostrarNivelDireto(nivel){
+  NIVEIS.forEach(n =>
     $('nivel-' + n).classList.toggle('oculto', n !== nivel)
   );
 }
@@ -7475,6 +7529,7 @@ async function abrirGeradorImagem(texto, ref, versao, tema, onde){
   const modal = $('modal-img');
   modal.classList.add('aberto');
   Foco.prender(modal);
+  Navegacao.entrar('imagem', fecharModalImgDireto);
   montarOpcoesImagem();
   await redesenharImagem();
   if(document.fonts && document.fonts.ready){
@@ -7484,6 +7539,11 @@ async function abrirGeradorImagem(texto, ref, versao, tema, onde){
   }
 }
 function fecharModalImg(){
+  if(Navegacao.sair('imagem')) return;
+  fecharModalImgDireto();
+}
+
+function fecharModalImgDireto(){
   $('modal-img').classList.remove('aberto');
   Foco.soltar($('modal-img'));
   
@@ -8028,6 +8088,9 @@ const ABAS = {
 };
 const CHAVE_ABA = 'lampada-aba';
 const CHAVE_ABA_DIA = 'lampada-aba-dia';
+/* A aba de onde o voltar do sistema sai do app. É a mesma que o app abre
+   por padrão: voltar tem de levar para casa, não para uma aba qualquer. */
+const ABA_INICIAL = 'hoje';
 
 /* O navegador guarda a rolagem e devolve a pessoa onde ela parou. Num site
    comum isso ajuda; aqui atrapalha, porque quem abre o app de manhã caía
@@ -8038,8 +8101,122 @@ let abaAtual = null;
 
 const abaDe = id => Object.keys(ABAS).find(a => ABAS[a].includes(id));
 
+/* =========================================================
+   O BOTÃO VOLTAR DO CELULAR
+
+   O app tinha cinco camadas — aba, livro, capítulo, folha do versículo,
+   menu lateral — e nenhuma delas existia para o navegador. Medido: abrir
+   a Bíblia, escolher um livro, um capítulo e tocar num versículo deixava
+   o histórico exatamente como estava ao carregar a página. Apertar o
+   voltar do Android no meio de João 3 não subia um nível: fechava o app.
+
+   No computador isso passa despercebido, porque lá se fecha tudo pelo X
+   ou pelo Esc. No celular o voltar é o gesto mais usado do sistema, e
+   perder o lugar da leitura por causa dele é caro.
+
+   Cada camada aberta passa a empilhar uma entrada no histórico. O
+   contrato é de mão única, e é o que evita laço infinito:
+
+     • abrir uma camada  → Navegacao.entrar(id, comoFechar)
+     • fechar pelo app   → Navegacao.sair(id), que pede o voltar ao
+                           navegador e deixa o popstate fechar
+     • fechar pelo voltar→ popstate desempilha e chama comoFechar
+
+   Ou seja, ninguém fecha nada direto: quem fecha é sempre o popstate.
+   Assim o X, o toque fora, o Esc e o voltar do sistema consomem a mesma
+   entrada, e nunca sobra uma que exigisse dois toques para sair.
+   ========================================================= */
+const Navegacao = (function(){
+  const pilha = [];
+  const fila = [];          /* o que fazer assim que o voltar terminar */
+  let desempilhando = false;
+
+  /* `unica` é para a barra de abas: passear pelas cinco abas não pode
+     custar cinco voltares para sair do app, então a camada 'aba' se
+     repõe em vez de empilhar. Os degraus da Bíblia são o oposto —
+     livros → capítulos → leitura precisa de um voltar por degrau — e
+     por isso a repetição só vale para quem pede. */
+  function entrar(id, comoFechar, op){
+    const topo = pilha[pilha.length - 1];
+    if(op && op.unica && topo && topo.id === id){ topo.fechar = comoFechar; return; }
+    pilha.push({ id, fechar: comoFechar });
+    try { history.pushState({ camadas: pilha.length }, ''); } catch(_){}
+  }
+
+  /* Devolve true quando o fechamento ficou por conta do navegador.
+     False quer dizer "esta camada não está no histórico, feche você" —
+     acontece quando algo é fechado sem nunca ter sido aberto por aqui.
+
+     `quantas` existe por causa da Bíblia: o botão "Livros" sobe dois
+     degraus de uma vez, e voltar só um deixaria a pessoa na lista de
+     capítulos, não na de livros. */
+  function sair(id, quantas = 1, entaoFaca){
+    if(desempilhando) return false;      /* já estamos fechando */
+    let i = -1, achadas = 0;
+    for(let k = pilha.length - 1; k >= 0; k--){
+      if(pilha[k].id !== id || pilha[k].saindo) continue;
+      i = k;
+      if(++achadas === quantas) break;
+    }
+    if(i === -1) return false;
+    /* O popstate só chega no próximo quadro. Sem esta marca, dois toques
+       rápidos no X disparariam dois history.go e o segundo levaria junto
+       a camada de baixo — fechar a folha fecharia também o capítulo. */
+    for(let k = i; k < pilha.length; k++) pilha[k].saindo = true;
+    try { history.go(-(pilha.length - i)); }
+    catch(_){
+      for(let k = i; k < pilha.length; k++) pilha[k].saindo = false;
+      return false;
+    }
+    /* Fechar e ir para outro lugar na mesma ação — o link do menu que
+       leva a uma seção, a folha que vira o gerador de imagem. O que vem
+       depois TEM de esperar o popstate: feito na linha seguinte, ele
+       empilharia uma camada que o popstate desfaria logo em seguida.
+       Era exatamente isso que quebrava os links do menu lateral. */
+    if(entaoFaca) fila.push(entaoFaca);
+    return true;
+  }
+
+  function aoVoltar(){
+    const e = history.state;
+    const alvo = (e && typeof e.camadas === 'number') ? e.camadas : 0;
+    desempilhando = true;
+    try {
+      while(pilha.length > alvo){
+        const c = pilha.pop();
+        /* uma camada que falhe ao fechar não pode prender as de baixo */
+        try { c.fechar(); } catch(err){ console.info(err); }
+      }
+    } finally { desempilhando = false; }
+    while(fila.length){
+      const f = fila.shift();
+      try { f(); } catch(err){ console.info(err); }
+    }
+  }
+
+  window.addEventListener('popstate', aoVoltar);
+
+  return {
+    entrar, sair,
+    profundidade: () => pilha.length,
+    camadas: () => pilha.map(c => c.id)
+  };
+})();
+
 function irParaAba(nome, op = {}){
   if(!ABAS[nome]) nome = 'hoje';
+  /* Sair da aba inicial é entrar numa camada: o voltar do sistema
+     devolve para "Hoje" em vez de fechar o app. Uma entrada só para
+     todas as abas — passear entre elas não empilha nada novo. */
+  if(!op.doHistorico){
+    if(nome !== ABA_INICIAL && abaAtual === ABA_INICIAL){
+      Navegacao.entrar('aba',
+        () => irParaAba(ABA_INICIAL, { doHistorico: true, semRolar: true, silencioso: true }),
+        { unica: true });
+    } else if(nome === ABA_INICIAL && abaAtual !== ABA_INICIAL){
+      if(Navegacao.sair('aba')) return;
+    }
+  }
   if(nome === abaAtual) { if(!op.semRolar) window.scrollTo({ top: 0, behavior: 'smooth' }); return; }
   abaAtual = nome;
   for(const [aba, ids] of Object.entries(ABAS)){
@@ -8083,7 +8260,14 @@ if($('btn-comecar')) $('btn-comecar').onclick = () => mostrarSecao('sec-hoje');
 
 /* os links da gaveta agora trocam de aba além de rolar */
 document.querySelectorAll('.gaveta a[href^="#"]').forEach(a => {
-  a.addEventListener('click', e => { e.preventDefault(); mostrarSecao(a.getAttribute('href').slice(1)); });
+  a.addEventListener('click', e => {
+    e.preventDefault();
+    /* A gaveta sai antes da navegação. Feito ao contrário, trocar de aba
+       empilhava uma camada e o voltar que fecha a gaveta levava as duas
+       embora — o link do menu simplesmente não ia a lugar nenhum. */
+    const ir = () => mostrarSecao(a.getAttribute('href').slice(1));
+    if(!Navegacao.sair('gaveta', 1, ir)) ir();
+  });
 });
 
 /* A aba escolhida só vale enquanto o dia é o mesmo: quem estava na Bíblia
@@ -8258,6 +8442,12 @@ const Foco = (() => {
 })();
 
 function abrirMenu(estado){
+  if(estado) Navegacao.entrar('gaveta', () => abrirMenuDireto(false));
+  else if(Navegacao.sair('gaveta')) return;
+  abrirMenuDireto(estado);
+}
+
+function abrirMenuDireto(estado){
   $('gaveta').classList.toggle('aberta', estado);
   $('veu').classList.toggle('aberto', estado);
   
@@ -8293,6 +8483,17 @@ function marcarSobraDaGaveta(){
 
 /* painel de configuração da leitura em voz (abre por cima da gaveta) */
 function abrirPainelVoz(estado){
+  if(estado){
+    /* ele cobre a gaveta: a gaveta sai primeiro e o painel entra depois,
+       senão um toque custaria dois voltares e o segundo reabriria uma
+       gaveta que ninguém viu sair */
+    if(Navegacao.sair('gaveta', 1, () => abrirPainelVoz(true))) return;
+    Navegacao.entrar('painel-voz', () => abrirPainelVozDireto(false));
+  } else if(Navegacao.sair('painel-voz')) return;
+  abrirPainelVozDireto(estado);
+}
+
+function abrirPainelVozDireto(estado){
   const p = $('painel-voz');
   if(!p) return;
   p.classList.toggle('aberto', estado);
@@ -8322,6 +8523,14 @@ document.addEventListener('keydown', e => {
    Conta
    ========================================================= */
 function abrirPainelConta(estado){
+  if(estado){
+    if(Navegacao.sair('gaveta', 1, () => abrirPainelConta(true))) return;
+    Navegacao.entrar('painel-conta', () => abrirPainelContaDireto(false));
+  } else if(Navegacao.sair('painel-conta')) return;
+  abrirPainelContaDireto(estado);
+}
+
+function abrirPainelContaDireto(estado){
   const p = $('painel-conta');
   if(!p) return;
   p.classList.toggle('aberto', estado);
@@ -8472,9 +8681,11 @@ $('fa-copiar').onclick = () => {
 $('fa-imagem').onclick = () => {
   if(!versoAberto) return;
   const { nr, cap, verso, texto } = versoAberto;
-  fecharFolha();
-  abrirGeradorImagem(texto, livroPorNr(nr).nome + ' ' + cap + ':' + verso,
-                     versaoAtual.nome, '', [nr, cap, verso]);
+  /* mesma razão: o gerador só abre depois de a folha ter saído */
+  const gerar = () => abrirGeradorImagem(
+    texto, livroPorNr(nr).nome + ' ' + cap + ':' + verso,
+    versaoAtual.nome, '', [nr, cap, verso]);
+  if(!Navegacao.sair('folha', 1, gerar)){ fecharFolhaDireto(); gerar(); }
 };
 
 $('btn-nota-voz').onclick = function(){
