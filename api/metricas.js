@@ -20,7 +20,7 @@
  * Tudo expira em 90 dias sozinho.
  */
 
-const { configured, redis } = require('./lib/store');
+const { configured, redis } = require('../lib/store');
 
 /* Lista fechada, e do lado do servidor. Aceitar nome livre deixaria
    qualquer um encher o Redis de chaves inventadas. */

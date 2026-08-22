@@ -1141,6 +1141,29 @@ continuam intactos.
 3. Faça um **Redeploy** na Vercel
 4. No site → **Instalar app** → **Ativar lembrete diário**
 
+### Os dois tetos da conta Hobby
+
+O plano grátis da Vercel impõe dois limites que já derrubaram o deploy aqui.
+Ambos recusam o **build inteiro**, não só a parte que passou do limite:
+
+**Um cron por dia.** Ver a seção abaixo.
+
+**No máximo 12 Serverless Functions.** E a Vercel faz uma função de *cada*
+arquivo `.js` dentro de `api/`, inclusive dos que são só biblioteca. Com
+`api/lib/` ali dentro eram 14 — e, de quebra, `/api/lib/store` virava uma
+rota pública que ninguém jamais pensou como endpoint.
+
+Por isso as bibliotecas moram na **raiz, em `lib/`**, e os endpoints as
+alcançam por `require('../lib/…')`. A Vercel só transforma em função o que
+está em `api/`; o resto vem junto no pacote porque o build rastreia os
+`require`. Hoje são 10 funções, com folga de duas.
+
+Se um dia precisar de mais de 12, dá para juntar endpoints parecidos num só
+com um parâmetro de rota (`subscribe`/`unsubscribe`/`vapid-public` são
+candidatos naturais) — ou assinar o Pro.
+
+O `teste16.js` conta os arquivos de `api/` e falha antes do deploy.
+
 ### Quem chama o envio, e por que não é a Vercel
 
 O lembrete respeita o fuso de cada pessoa, e 8h da manhã acontece 24 vezes
@@ -1176,7 +1199,7 @@ pula uma execução. Se "está na hora" fosse igualdade exata, um atraso de
 cinco minutos passando das 8h para as 9h custaria o lembrete do dia inteiro.
 
 Por isso a janela é de três horas — a escolhida e as duas seguintes
-(`TOLERANCIA_HORAS` em `api/lib/agenda.js`). Mandar 9h20 quando a pessoa
+(`TOLERANCIA_HORAS` em `lib/agenda.js`). Mandar 9h20 quando a pessoa
 pediu 8h é uma imprecisão; não mandar é um lembrete perdido, que num produto
 de hábito diário é bem pior.
 
@@ -1198,7 +1221,7 @@ servidor e as 180 do devocional — então quem tocasse no lembrete abria o
 app e via coisa diferente do que tinha acabado de ler na tela de bloqueio.
 Todo dia, sem exceção.
 
-A lista agora vive em `api/lib/versiculos.js`, cópia da que o app usa. Está
+A lista agora vive em `lib/versiculos.js`, cópia da que o app usa. Está
 repetida porque o app é um arquivo único e a função de servidor não importa
 de dentro dele — e a cópia é **presa por teste**: a suíte compara as duas
 listas item por item e simula os 366 dias do ano conferindo se os dois
