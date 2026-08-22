@@ -1,9 +1,15 @@
 /* Service Worker — Bíblia Devocional PWA + Web Push */
-const CACHE = 'lampada-v57';
+const CACHE = 'lampada-v58';
 const PRECACHE = [
   '/',
   '/index.html',
+  /* o CSS e o JS saíram de dentro do index.html para a CSP poder recusar
+     script e estilo embutidos. Fora do precache, o app instalado abriria
+     offline como uma página sem estilo e sem nenhuma função. */
+  '/estilo.css',
+  '/app.js',
   '/privacidade.html',
+  '/privacidade.css',
   '/manifest.webmanifest',
   '/favicon.svg',
   '/favicon-32.png',

@@ -104,8 +104,10 @@ div.innerHTML = `<strong ...>${item.titulo}</strong><p ...>${item.texto}</p>`;
 
 **Isso é execução de código, não exibição de texto.** Um
 `<img src=x onerror="...">` gravado na tabela viraria JavaScript rodando
-no navegador de todo visitante — e o CSP do projeto tem `unsafe-inline`,
-que deixaria executar. Testado com quatro cargas (`img/onerror`,
+no navegador de todo visitante — e naquela altura o CSP do projeto ainda
+tinha `unsafe-inline`, que deixaria executar. Hoje não tem mais, mas as
+duas defesas ficam de pé: política é configuração de servidor, e
+configuração muda. Testado com quatro cargas (`img/onerror`,
 `<script>`, `<svg onload>`, `iframe javascript:`): **as quatro
 executavam**.
 
@@ -139,6 +141,71 @@ existem no HTML, e lia um esquema de tabela diferente do usado no
 
 Supabase, jsDelivr e Pexels entraram na política de privacidade. São
 terceiros que recebem o IP de quem abre o app.
+
+## A política de segurança fechou
+
+O `Content-Security-Policy` do projeto tinha duas brechas que anulavam boa
+parte do que ele prometia:
+
+```
+script-src 'self' 'unsafe-inline' 'unsafe-eval' …
+style-src  'self' 'unsafe-inline' …
+```
+
+`unsafe-inline` em `script-src` deixa executar qualquer `<script>` embutido
+ou `onerror=` que apareça na página — que é exatamente o que uma injeção
+precisa. Com ele ligado, a CSP não defendia de XSS; defendia só de scripts
+vindos de outro domínio.
+
+### O que era preciso para tirar
+
+`unsafe-eval` **não era usado por nada** — saiu de graça. As outras duas
+seguravam o desenho de arquivo único:
+
+| o que havia | quantos | para onde foi |
+|---|---|---|
+| bloco `<script>` embutido | 2 | `app.js`, `supabase-extra.js` |
+| bloco `<style>` embutido | 2 | `estilo.css`, `privacidade.css` |
+| atributo `style="…"` no HTML | 29 | classes no fim do `estilo.css` |
+| atributo `style="…"` em template do JS | 4 | as mesmas classes |
+| `onclick=` no HTML | **0** | — |
+
+Os zero manipuladores embutidos foram sorte de desenho: o app sempre ligou
+tudo por JavaScript. Fosse diferente, o trabalho seria muito maior.
+
+### O nome da classe vem repetido
+
+```css
+.w-75.w-75 { width: 75%; }
+```
+
+Não é engano. `style=` embutido vence qualquer seletor; a classe simples não
+vence. A largura do esqueleto de carregamento voltou sozinha para os 65% de
+`.skeleton-linha:last-child` no instante em que deixou de ser inline — e foi
+o teste que percebeu, comparando o valor calculado com o que o inline
+declarava. Repetir o nome dobra a especificidade e empata com aquele
+seletor; o desempate é a ordem, e o bloco é o último do arquivo.
+
+Estilo escrito por JavaScript (`el.style.width = …`) continua valendo: a CSP
+governa o atributo no HTML, não o CSSOM.
+
+### Como isso é testado
+
+O servidor local não manda cabeçalho nenhum. Um teste que abrisse a página
+como ela é servida em desenvolvimento passaria com o app quebrado — foi
+assim que o `unsafe-inline` sobreviveu tanto tempo sem ninguém notar que ele
+não estava protegendo nada.
+
+Por isso o `teste32.js` lê a política **do `vercel.json`** e a injeta nas
+respostas, depois percorre o app inteiro — capítulo, folha do versículo,
+gerador de imagem no canvas, sugestões de busca, gaveta — ouvindo o evento
+`securitypolicyviolation`. Qualquer recusa do navegador vira falha.
+
+### O que ainda passa por fora
+
+`https://cdn.jsdelivr.net`, em `script-src`, é a biblioteca do Supabase. É o
+único terceiro que o app carrega em tempo de execução. Trocá-lo por uma cópia
+local fecharia também isso, ao custo de manter a biblioteca atualizada à mão.
 
 ## O gerador de imagem voltava em branco
 
