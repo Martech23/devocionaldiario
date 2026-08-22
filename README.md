@@ -1227,6 +1227,82 @@ fariam a função chamar a si mesma sem fim.
 Por isso também o pequeno bônus para voz local: ele não derruba uma
 Premium de verdade, só desempata para a que funciona sem rede.
 
+## A leitura virou uma folha
+
+Medido no navegador, tela de 390×844, capítulo aberto e rolagem no topo:
+
+| | antes | agora |
+|---|---|---|
+| Antes do primeiro versículo | **640 px** | **166 px** |
+| Da primeira tela era mobília | **76%** | **20%** |
+| Versículos visíveis | **2** | **6** |
+
+Os 640px eram: barra azul (58), busca com dois seletores (258), barra de
+ferramentas (34), rótulo de seção (59), barra de progresso (103), cabeçalho
+do capítulo (68) e um comprimido azul de "Ouvir o capítulo" (60) — o objeto
+mais saturado da tela, mais alto que a própria Escritura, entre o título e o
+texto.
+
+### Nada foi removido: sai de cena
+
+`html[data-lendo="1"]`, posto por `mostrarNivelDireto`, troca o app pela
+folha enquanto se lê um capítulo, e sai ao voltar para a lista. A barra azul
+dá lugar a um cabeçalho de 48px cor de papel; a busca, os seletores, o rótulo
+e a barra de progresso recuam. As abas ficam — perder a navegação custaria
+mais do que os 59px que ela ocupa.
+
+O capítulo passa a repousar numa folha (`#FFFEFC` no claro, `#1C2129` no
+escuro) sobre uma mesa um tom mais funda, com sombra e sem cantos
+arredondados — canto redondo faria parecer cartão, não papel.
+
+### O cabeçalho da leitura
+
+`‹ João` diz **para onde se volta**, não "voltar". À direita, três botões de
+44px: a **lupa**, o **Ouvir** e o **Aa**.
+
+- A **lupa** traz de volta só a barra de busca — os seletores e a barra de
+  ferramentas continuam guardados, senão os 258px voltavam junto. As
+  sugestões e as buscas recentes funcionam ali dentro.
+- O **Ouvir** aciona o mesmo botão que estava no capítulo, em vez de duplicar
+  a lógica de montar as partes da voz.
+- O **Aa** dá a volta na escala em vez de parar no maior: com um botão só,
+  parar no topo deixaria o botão morto.
+
+O progresso do capítulo deixou de ser um bloco de 103px e virou um **fio de
+2px** no pé do cabeçalho. Capítulo que cabe inteiro na tela não mostra fio
+nenhum: ali não há progresso, e um filete cheio pareceria borda.
+
+### Os números na margem
+
+`.v` ganha `padding-left` e o `sup` vai para `position: absolute` na margem
+esquerda. É isso que dá a borda reta da mancha de texto — há teste conferindo
+que os versículos começam **todos na mesma coluna**, tenham número de um, dois
+ou três dígitos.
+
+A versão da Bíblia saiu de baixo do título e foi para o pé da folha: é
+crédito, não cabeçalho.
+
+### Três defeitos que apareceram no caminho
+
+**O `‹` cortado.** O cabeçalho vive dentro do cartão, que já é sangrado até a
+borda da tela; puxá-lo de novo com margem negativa jogava o chevron para fora.
+
+**Buscar de dentro da leitura parecia quebrado.** `#sec-busca` estava na
+lista do que a folha esconde, então uma busca por palavra não mostrava nada.
+Agora `buscarPalavra` desliga o `data-lendo` — quem busca deixou de estar
+lendo — e a seção não é mais escondida.
+
+**O "Ouvir o capítulo" escondido era mentira.** Escondê-lo com `display:none`
+e proxiar o clique pelo cabeçalho deixava o controle de verdade inalcançável
+por toque e fora da árvore de acessibilidade. Ele desceu para o **pé** do
+capítulo, visível e real, onde não fica entre o título e a primeira palavra.
+
+### O que custou
+
+A barra de ferramentas fica guardada enquanto se lê, e com ela o botão do
+**mapa** — ele continua alcançável pela lista de livros, um toque atrás. E o
+menu lateral, que morava na barra azul, também fica um nível acima.
+
 ## Continuar a leitura livre
 
 Medido: rolar até o meio de um capítulo, sair e voltar devolvia a pessoa ao

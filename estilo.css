@@ -3134,3 +3134,212 @@ html[data-tema="escuro"] .dica-verso { color: var(--texto); }
 .nota-media.nota-media { margin-top: 14px; font-size: 13.5px; color: var(--texto-2); line-height: 1.5; }
 .nota-curta.nota-curta { margin-top: 12px; font-size: 13px;   color: var(--texto-3); }
 .nota-mini.nota-mini   { font-size: 12px;  color: var(--texto-3); margin: 6px 0 0; line-height: 1.4; }
+
+/* =========================================================
+   A LEITURA VIRA UMA FOLHA
+
+   Medido antes, em 390x844 com o capítulo aberto e a rolagem no topo:
+   640px dos 844 vinham ANTES do primeiro versículo. 76% da primeira
+   tela era mobília — busca, dois seletores, barra de ferramentas,
+   rótulo de seção, barra de progresso — e cabiam dois versículos.
+   O objeto mais alto da tela era o comprimido azul "Ouvir o capítulo",
+   mais saturado que a própria Escritura, dentro do cartão de leitura.
+
+   Enquanto se lê, tudo isso recua. O capítulo passa a repousar numa
+   folha de papel, com cabeçalho próprio de 48px, e volta ao normal ao
+   sair do capítulo. Nada foi removido do app: só sai de cena.
+   ========================================================= */
+
+/* ---- o cabeçalho da leitura ---- */
+.cabeca-leitura {
+  display: none;
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  height: 48px;
+  /* Sem margem negativa aqui: ele vive DENTRO do cartão, que já foi
+     sangrado até a borda da tela. Puxar de novo jogava o "‹" para fora
+     e o cortava. */
+  padding: 0 8px 0 12px;
+  background: var(--papel);
+  border-bottom: 1px solid var(--linha);
+}
+html[data-lendo="1"] .cabeca-leitura { display: flex; }
+
+.cl-voltar {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 44px;
+  padding: 0 8px;
+  background: none;
+  border: 0;
+  font-family: var(--fonte-interface);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--azul);
+  cursor: pointer;
+}
+.cl-acoes { display: flex; align-items: center; gap: 2px; }
+.cl-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 8px;
+  background: none;
+  border: 0;
+  border-radius: var(--radius-sm);
+  font-family: var(--fonte-interface);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--texto-2);
+  cursor: pointer;
+}
+.cl-btn .i { width: 19px; height: 19px; stroke: currentColor; fill: none; stroke-width: 2; }
+.cl-btn:hover { background: var(--azul-suave); color: var(--azul); }
+.cl-btn:focus-visible,
+.cl-voltar:focus-visible { outline: 2px solid var(--azul); outline-offset: -2px; }
+.cl-btn[aria-expanded="true"] { background: var(--azul-claro-bg); color: var(--azul); }
+#cl-ouvir.tocando { color: var(--azul); }
+
+/* O progresso do capítulo deixou de ser um bloco de 103px e virou um
+   fio de 2px no pé do cabeçalho: a mesma informação, sem ocupar a
+   tela de quem está lendo. */
+.cl-fio {
+  position: absolute;
+  left: 0;
+  bottom: -1px;
+  height: 2px;
+  width: 0;
+  background: var(--azul);
+  transition: width 0.2s ease;
+}
+
+/* ---- o que sai de cena enquanto se lê ---- */
+html[data-lendo="1"] header.barra,
+html[data-lendo="1"] #controles,
+html[data-lendo="1"] #sec-biblia > .rotulo-secao,
+html[data-lendo="1"] #wrap-progresso-biblia,
+html[data-lendo="1"] #nivel-leitura > .voltar,
+html[data-lendo="1"] #sec-mapa { display: none; }
+/* #sec-busca NÃO entra nesta lista: buscar uma palavra de dentro do
+   capítulo mostra os resultados ali, e escondê-los deixava a busca
+   parecendo quebrada — foi o que os testes 12 e 31 pegaram. Quem busca
+   deixa de estar lendo, e é buscarPalavra que desliga o data-lendo. */
+
+/* a lupa traz a busca de volta, e só ela: os dois seletores e a barra
+   de ferramentas continuam guardados */
+html[data-lendo="1"][data-busca-leitura="1"] #controles { display: block; }
+html[data-lendo="1"][data-busca-leitura="1"] #controles .seletor-versao,
+html[data-lendo="1"][data-busca-leitura="1"] #controles .linha-ferramentas { display: none; }
+html[data-lendo="1"][data-busca-leitura="1"] #controles {
+  position: sticky;
+  top: 48px;
+  z-index: 29;
+  margin: 0 -20px;
+  padding: 12px 20px 4px;
+  background: var(--papel);
+  border-bottom: 1px solid var(--linha);
+  animation: fadeUp 0.2s ease both;
+}
+
+/* ---- a folha ---- */
+html[data-lendo="1"] { --fundo: #EDE8E0; }
+html[data-tema="escuro"][data-lendo="1"] { --fundo: #0D1014; }
+
+html[data-lendo="1"] .envolve { padding-left: 20px; padding-right: 20px; }
+html[data-lendo="1"] #sec-biblia { margin-top: 0; }
+html[data-lendo="1"] #sec-biblia > .cartao {
+  margin: 0 -20px;
+  padding: 0 0 40px;
+  border-radius: 0;
+  border-left: 0;
+  border-right: 0;
+  border-top: 0;
+  background: var(--papel-leitura, #FFFEFC);
+  box-shadow: 0 2px 14px rgba(28, 24, 18, 0.10);
+}
+@media (min-width: 560px) {
+  html[data-lendo="1"] #sec-biblia > .cartao { margin: 0 -28px; }
+}
+html[data-tema="escuro"] { --papel-leitura: #1C2129; }
+
+/* ---- a cabeça de página, como num livro ---- */
+html[data-lendo="1"] #area-leitura { padding: 0 36px; }
+html[data-lendo="1"] .cab-cartao {
+  /* o .cab-cartao normal é flex com space-between; na folha ele vira
+     bloco centrado, senão o text-align não tem efeito nenhum */
+  display: block;
+  margin: 30px 0 26px;
+  padding: 0;
+  border: 0;
+  text-align: center;
+}
+html[data-lendo="1"] .cab-cartao .referencia {
+  display: block;
+  font-family: var(--fonte-titulo);
+  font-size: 34px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.1;
+  color: var(--texto);
+}
+html[data-lendo="1"] .cab-cartao .referencia small {
+  display: block;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--linha);
+  width: 44px;
+  margin-left: auto;
+  margin-right: auto;
+  font-family: var(--fonte-interface);
+  font-size: 0;          /* o fio fica; o nome da versão sai do topo */
+}
+
+/* ---- os números pendurados na margem ---- */
+/* Tirar o número de dentro da mancha é o que faz o texto parecer um
+   livro: a coluna fica com uma borda esquerda reta, sem o degrau que
+   um sobrescrito no começo da linha cria. */
+html[data-lendo="1"] .v {
+  position: relative;
+  padding-left: 26px;
+  margin-bottom: 15px;
+}
+html[data-lendo="1"] .v sup {
+  position: absolute;
+  left: 0;
+  top: 0.35em;
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--texto-3);
+  vertical-align: baseline;
+}
+html[data-lendo="1"] .v.destaque,
+html[data-lendo="1"] .v[class*="marca-"] {
+  padding-left: 26px;
+  margin-left: -6px;
+  padding-right: 6px;
+}
+
+/* O "Ouvir o capítulo" mudou-se para o pé do capítulo. Não é escondido:
+   escondê-lo deixaria o controle de verdade inalcançável por toque, com
+   o "Ouvir" do cabeçalho fingindo ser ele. */
+html[data-lendo="1"] #area-leitura .ouvir-no-pe {
+  margin-top: 34px;
+  justify-content: center;
+}
+
+/* a versão da Bíblia, discreta, no pé da folha */
+.rodape-folha {
+  margin: 30px 0 0;
+  padding-top: 16px;
+  border-top: 1px solid var(--linha);
+  font-size: 12.5px;
+  color: var(--texto-3);
+  text-align: center;
+}
