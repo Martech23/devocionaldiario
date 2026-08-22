@@ -1022,16 +1022,60 @@ dele é que os quatro passos formam um caminho só.
 |---|---|---|
 | Versículos | 69 | **180** (18 por tema) |
 | Reflexões / meditações / orações | 12 de cada, soltas | **8 de cada por tema**, 240 no total |
-| Relação com o versículo | nenhuma | mesma do tema |
-| Volta a repetir a combinação | a cada 276 dias | **nunca dentro do ano** |
-
-O versículo dá a volta a cada 180 dias e as reflexões a cada 8. Se o índice
-fosse só o dia, os dois ciclos voltariam a coincidir no dia 361 e a última
-semana do ano repetiria a combinação da primeira; somar o número da volta
-desencontra os ciclos — 366 dias, 366 pares distintos.
+| Relação com o versículo | nenhuma | **os três são escritos para ele** |
 
 O devocional continua **determinístico pelo dia do ano**: o histórico dos
 últimos 30 dias precisa reencontrar exatamente o que foi mostrado.
+
+### O tema acertava o assunto, não o versículo
+
+Combinar por tema tirou o pior desencontro, mas não o desencontro. Dentro
+do tema, os três textos ainda eram escolhidos por rotação de calendário
+(`giro % 8`), sem olhar para o versículo — e **as três listas nunca foram
+paralelas**. A oração *"Jesus, Tu choraste"* está na posição 3 de Cura e
+consolo; a reflexão que fala do choro de Jesus diante do túmulo está na 2.
+Nunca se encontravam. Foi exatamente isso que apareceu na tela: uma oração
+sobre uma cena que a reflexão do dia não contava.
+
+Agora cada um dos 180 versículos tem em `PARES` os três índices que lhe
+cabem — `[reflexão, meditação, oração]`, escolhidos por sentido. Oito
+reflexões contam uma cena concreta, e cada uma foi presa ao versículo dessa
+cena:
+
+| Versículo | Reflexão |
+|---|---|
+| Mateus 5:4 | Jesus chorou diante de um túmulo — com a oração *"Jesus, Tu choraste"* |
+| Lucas 23:34 | Jesus perdoou de dentro da cruz — com *"Jesus, Tu perdoaste de dentro da dor"* |
+| Êxodo 16:4 | o maná caía de manhã, para o dia — com *"dá-me hoje o pão de hoje"* |
+| 1 Reis 17:14 | a viúva do punhado de farinha |
+| Lucas 17:15 | dos dez curados, um voltou |
+| Rute 1:16 | a família que se escolhe |
+
+**Nenhuma palavra dos textos foi reescrita.** Os dez temas continuam com 8
+reflexões, 8 meditações e 8 orações; o que mudou foi só qual delas cada
+versículo recebe.
+
+**O preço, que é real:** o ano tinha 366 combinações distintas de
+versículo+reflexão e passou a ter 180, que se repetem na segunda metade do
+ano. Prender o texto ao versículo e variá-lo a cada volta são coisas
+incompatíveis — trocou-se variedade por coerência.
+
+Não foram acrescentados versículos novos, embora João 11:35 fosse o par
+óbvio da reflexão do choro. `montarHistorico` **recalcula** o devocional a
+partir do número do dia em vez de guardar o que mostrou; mexer na lista
+reescreveria o que o histórico diz sobre dias já vividos. Mateus 5:4
+("bem-aventurados os que choram") já estava na lista e recebe a reflexão.
+
+Um versículo sem par definido — tema novo, lista que cresça — cai na
+rotação antiga em vez de ficar sem texto, e há teste para isso.
+
+### Por que não uma Bíblia de estudo de código aberto
+
+Os comentários clássicos (Matthew Henry, Barnes, Gill) são domínio público
+**em inglês**. As traduções para o português são obras protegidas — a de
+Matthew Henry é © 2008 CPAD. Fora a licença, prosa de sermão do século
+XVIII deixaria o texto menos natural, não mais: são parágrafos longos, em
+registro distante do "diga isso a Deus" que o app usa hoje.
 
 Um chip com o nome do tema aparece ao lado do rótulo do passo. Tocar nele
 seleciona esse tema na caixa de promessas e leva até lá — dá para continuar
