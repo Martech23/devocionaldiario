@@ -5504,25 +5504,82 @@ function renderOracoes(){
 /* =========================================================
    DITADO POR VOZ — para quem não escreve
    ========================================================= */
+/* =========================================================
+   DITADO POR VOZ
+
+   Três defeitos moravam aqui, e os três davam o mesmo sintoma: a
+   pessoa aperta o botão, fala, e nada é ouvido.
+
+   1. O AVISO VINHA ANTES DO MICROFONE ABRIR
+
+   `rec.start()` não abre o microfone na hora: o navegador ainda vai
+   pedir a permissão e ligar o aparelho de áudio, o que leva de alguns
+   décimos de segundo a vários segundos na primeira vez. "Pode falar…"
+   aparecia antes disso — então quem obedecia ao aviso e falava na hora
+   era, literalmente, não ouvido. O aviso agora espera o navegador
+   confirmar que a captação começou.
+
+   2. A DETECÇÃO DA POLÍTICA SÓ FUNCIONA NO CHROME
+
+   `document.featurePolicy` existe no Chrome, e lá um `microphone=()`
+   no cabeçalho some com o botão — que é o certo, melhor do que
+   prometer o que o navegador vai recusar.
+
+   Só que Safari e Firefox não têm essa API. Neles a verificação cai no
+   ramo "não sei, presumo que sim", o botão aparece, a pessoa toca e o
+   navegador recusa calado. Era o que estava acontecendo em produção,
+   onde o cabeçalho ficou barrando o microfone da própria origem.
+
+   Por isso agora existe também o diagnóstico na hora do erro, que
+   funciona em qualquer navegador: se fomos recusados mas a permissão
+   do microfone não está negada, quem está barrando é o próprio site.
+
+   3. FECHAR O MICROFONE PARECIA ERRO
+
+   Tocar no botão de novo para parar dispara `aborted`, que caía no
+   "Não deu para ouvir agora". Cancelar não é falhar.
+   ========================================================= */
 const Ditado = (function(){
   const Rec = window.SpeechRecognition || window.webkitSpeechRecognition;
-  /* Ter a API não basta: a Permissions-Policy do servidor pode barrar o
-     microfone para a própria origem, e aí o botão aparecia, a pessoa
-     tocava e nada acontecia. Um `microphone=()` no cabeçalho fazia
-     exatamente isso — o pior tipo de defeito, porque promete na tela o
-     que o navegador já decidiu recusar. */
+  /* Onde dá para perguntar, perguntamos: não adianta mostrar o botão se
+     a política do servidor já barrou o microfone para a própria origem.
+     Onde não dá (Safari, Firefox), não presumimos o pior — o botão
+     aparece e o diagnóstico fica para explicarRecusa(). */
   function politicaPermite(){
     const fp = document.featurePolicy || document.permissionsPolicy;
-    if(!fp || !fp.allowsFeature) return true;   /* navegador sem a API: não presume o pior */
+    if(!fp || !fp.allowsFeature) return true;
     try { return fp.allowsFeature('microphone'); } catch(_) { return true; }
   }
   const suporta = !!Rec && politicaPermite();
   let rec = null;
   let botaoAtivo = null;
+  let cancelando = false;   /* parada pedida por nós, não falha */
+
+  function soltarBotao(){
+    if(botaoAtivo){ botaoAtivo.classList.remove('ouvindo'); botaoAtivo = null; }
+  }
 
   function parar(){
-    if(rec){ try { rec.stop(); } catch {} }
-    if(botaoAtivo){ botaoAtivo.classList.remove('ouvindo'); botaoAtivo = null; }
+    if(rec){ cancelando = true; try { rec.stop(); } catch {} }
+    soltarBotao();
+  }
+
+  /* Quando o navegador recusa, ele não diz quem recusou. Estas são as
+     duas causas possíveis, e a diferença muda o que a pessoa deve
+     fazer: liberar no navegador, ou nada — porque o erro é nosso. */
+  async function explicarRecusa(){
+    try {
+      if(navigator.permissions && navigator.permissions.query){
+        const p = await navigator.permissions.query({ name: 'microphone' });
+        if(p.state === 'denied'){
+          avisar('O microfone está bloqueado para este site. Libere nas permissões do navegador.');
+          return;
+        }
+      }
+    } catch(_){ /* Firefox e Safari não sabem consultar 'microphone' */ }
+    /* permissão não está negada e mesmo assim fomos recusados: sobra a
+       Permissions-Policy do servidor */
+    avisar('O microfone foi bloqueado. Se acabou de permitir, recarregue a página.');
   }
 
   /* aoTexto recebe o que foi falado; botao só serve para o estado visual */
@@ -5541,22 +5598,46 @@ const Ditado = (function(){
     rec.maxAlternatives = 1;
     rec.continuous = false;
 
+    cancelando = false;
     botaoAtivo = botao;
     botao.classList.add('ouvindo');
-    avisar('Pode falar…');
+    /* nada de "Pode falar…" ainda: o microfone não está aberto */
+    avisar('Abrindo o microfone…');
+
+    /* `audiostart` é o momento em que a captação começa de verdade;
+       `start` é só o serviço no ar. Quem chegar primeiro serve, porque
+       nem todo navegador dispara os dois. */
+    let jaAvisou = false;
+    const podeFalar = () => {
+      if(jaAvisou) return;
+      jaAvisou = true;
+      avisar('Pode falar…');
+    };
+    rec.onaudiostart = podeFalar;
+    rec.onstart = podeFalar;
 
     rec.onresult = (e) => {
       const dito = Array.from(e.results).map(r => r[0].transcript).join(' ').trim();
       if(dito) aoTexto(dito);
     };
+
     rec.onerror = (e) => {
       const m = e && e.error;
-      if(m === 'not-allowed' || m === 'service-not-allowed') avisar('Permita o microfone para ditar');
-      else if(m === 'no-speech') avisar('Não ouvi nada. Tente de novo');
+      /* parada pedida por nós: o botão foi tocado de novo, ou outro
+         microfone assumiu. Não é falha e não merece aviso. */
+      if(m === 'aborted' && cancelando) return;
+      if(m === 'not-allowed' || m === 'service-not-allowed') explicarRecusa();
+      else if(m === 'no-speech') avisar('Não ouvi nada. Toque de novo e fale.');
+      else if(m === 'audio-capture') avisar('Não achei um microfone neste aparelho');
+      /* o ditado do Chrome manda o áudio para o servidor de fala: sem
+         internet ele não funciona, mesmo com o resto do app offline */
+      else if(m === 'network') avisar('O ditado precisa de internet para funcionar');
       else avisar('Não deu para ouvir agora');
     };
+
     rec.onend = () => {
-      if(botaoAtivo){ botaoAtivo.classList.remove('ouvindo'); botaoAtivo = null; }
+      soltarBotao();
+      cancelando = false;
     };
 
     try { rec.start(); }
