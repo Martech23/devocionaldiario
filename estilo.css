@@ -2888,31 +2888,70 @@ html[data-tema="escuro"] .painel-config header { background: #152238; }
 .voz-troca-txt { flex: 1 1 auto; }
 .voz-troca-txt b { display: block; font-size: 14.5px; color: var(--texto); }
 .voz-troca-txt small { font-size: 12.5px; color: var(--texto-3); line-height: 1.4; display: block; margin-top: 2px; }
+/* =========================================================
+   A CHAVE
+
+   Ela foi desenhada com 54x32. Depois, uma regra genérica de alvo de
+   toque pôs `min-height: 44px` em tudo que se toca — inclusive nela —
+   e a pista esticou para 54x44 enquanto o botão branco continuava
+   preso em `top: 3px`, com 26px de altura. Sobravam 12px de pista
+   vazia embaixo: a chave virava um borrão bege torto, sem parecer nem
+   ligada nem desligada.
+
+   O conserto separa as duas coisas que estavam empilhadas no mesmo
+   elemento. O <button> continua com 44px de altura, porque é ele que o
+   dedo acerta; a pista virou um ::before de 32px, centrado dentro
+   dele. E o botão passou a se centrar por porcentagem em vez de um
+   `top` fixo, para nenhuma mudança de altura futura o desalinhar de
+   novo.
+   ========================================================= */
 .chave {
   flex: 0 0 auto;
   width: 54px;
-  height: 32px;
-  border-radius: 99px;
+  height: 44px;              /* o alvo de toque; a pista é menor */
+  padding: 0;
   border: 0;
-  background: var(--linha-forte);
+  background: none;
   position: relative;
   cursor: pointer;
+}
+/* a pista */
+.chave::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 52px;
+  height: 32px;
+  margin-top: -16px;
+  border-radius: 99px;
+  background: var(--chave-off, #948D7E);
   transition: background var(--trans);
 }
+/* o botão */
 .chave::after {
   content: '';
   position: absolute;
-  top: 3px;
+  top: 50%;
   left: 3px;
   width: 26px;
   height: 26px;
+  margin-top: -13px;
   border-radius: 50%;
   background: #fff;
+  /* translateX sozinho apagaria a centragem, então ela entra no mesmo
+     transform em vez de ficar num translateY separado */
+  transform: translateX(0);
   transition: transform var(--trans-spring);
-  box-shadow: 0 1px 3px rgba(0,0,0,0.25);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.28);
 }
-.chave.ativo { background: var(--azul); }
-.chave.ativo::after { transform: translateX(22px); }
+.chave.ativo::before { background: var(--azul); }
+.chave.ativo::after { transform: translateX(20px); }
+.chave:focus-visible { outline: 2px solid var(--azul); outline-offset: 2px; border-radius: 99px; }
+/* O bege claro de antes (--linha-forte) lia como "desabilitado", não
+   como "desligado", e ficava em 2,1:1 contra o papel — abaixo dos 3:1
+   que a WCAG 1.4.11 pede para a borda de um controle. */
+html[data-tema="escuro"] { --chave-off: #707C8C; }
 
 /* Respeitar preferência de redução de movimento */
 /* =========================================================
