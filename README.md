@@ -1067,6 +1067,38 @@ Os destaques e as notas ficam no aparelho (`localStorage`) e reaparecem
 sempre que o capítulo é reaberto. As notas antigas, que só existiam presas a
 um favorito, são migradas na primeira abertura.
 
+### Como se sabe que dá para tocar?
+
+Não se sabia. Medido na linha do versículo, antes de mexer:
+
+```json
+{"cursor":"pointer","role":"button","tabindex":"0","ariaLabel":null,"temDica":false}
+```
+
+Era um botão sem descrição e sem sinal na tela. Quem usa leitor de tela
+ouvia o versículo inteiro e depois a palavra "botão" — sem nunca saber o que
+apertar faria. Quem enxerga não tinha pista nenhuma: cores, nota, favorito,
+comparar e ouvir dependiam de adivinhar o gesto.
+
+**Para o leitor de tela: `aria-describedby`, não `aria-label`.** O label
+*substitui* o conteúdo — com ele, o versículo deixaria de ser lido, e o preço
+de anunciar a ação seria perder a Palavra. A descrição soma, vem depois do
+texto, e um elemento `.so-leitor` só serve para os cento e tantos versículos
+de um capítulo.
+
+A classe `.so-leitor` esconde da tela sem esconder do leitor: `clip-path`,
+não `display: none` nem `visibility: hidden` — esses dois tirariam dos dois.
+
+**Na tela: uma dica que se aposenta.** Acima do capítulo, na primeira vez,
+"Toque num versículo para marcar com cor, favoritar, anotar ou ouvir." Ela
+sai **sozinha** assim que alguém abre a folha de um versículo: quem acabou de
+fazer não precisa ser ensinado, nem obrigado a dispensar um aviso sobre o que
+já sabe. E tem um X de 44px para quem quiser dispensar antes.
+
+**Resposta ao toque.** Havia `.v:hover`, que só existe no computador. No
+celular — onde o app é usado — encostar o dedo não dava retorno nenhum.
+Agora há `.v:active`, e `.v:focus-visible` para quem navega pelo teclado.
+
 ### A nota não some ao fechar a folha
 
 Fechar a folha descartava o que estivesse escrito no campo — e tocar no fundo

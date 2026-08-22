@@ -1402,6 +1402,9 @@ function mostrarPaineFolhaDireto(qual){
 }
 
 function abrirFolhaVerso(nr, cap, verso, texto){
+  /* quem abriu a folha aprendeu o gesto — a dica sai sozinha, sem
+     precisar que a pessoa a dispense */
+  dispensarDicaDoVerso();
   versoAberto = { nr, cap, verso, texto };
   const ref = livroPorNr(nr).nome + ' ' + cap + ':' + verso;
   $('folha-ref').textContent = ref;
@@ -3095,6 +3098,55 @@ async function abrirLeitura(nr, cap, destacar, autoOuvir){
   }
 }
 
+/* =========================================================
+   ENSINAR O TOQUE NO VERSÍCULO
+
+   Medido: a linha do versículo era `role="button"` com `tabindex="0"`,
+   mas sem descrição e sem dica na tela. O leitor de tela lia o
+   versículo inteiro e dizia "botão" — sem nunca dizer o que apertar
+   faria. E na tela não havia sinal nenhum: cores, nota, favorito,
+   comparar e ouvir dependiam de a pessoa adivinhar o gesto.
+   ========================================================= */
+const CHAVE_DICA_VERSO = 'lampada-dica-verso';
+const ID_DESCRICAO_VERSO = 'descricao-verso';
+
+/* aria-label substituiria o conteúdo e o versículo deixaria de ser
+   lido; describedby soma, vem depois do texto, e um elemento só serve
+   para os cento e tantos versículos de um capítulo. */
+function descricaoDoVerso(){
+  let el = $(ID_DESCRICAO_VERSO);
+  if(!el){
+    el = document.createElement('span');
+    el.id = ID_DESCRICAO_VERSO;
+    el.className = 'so-leitor';
+    el.textContent = 'Abre as ações do versículo: marcar com cor, favoritar, escrever nota, comparar versões, copiar, gerar imagem ou ouvir.';
+    document.body.appendChild(el);
+  }
+  return el.id;
+}
+
+const dicaJaVista = () => { try { return localStorage.getItem(CHAVE_DICA_VERSO) === '1'; } catch(_){ return false; } };
+function dispensarDicaDoVerso(){
+  try { localStorage.setItem(CHAVE_DICA_VERSO, '1'); } catch(_){}
+  document.querySelectorAll('.dica-verso').forEach(d => d.remove());
+}
+
+function montarDicaDoVerso(){
+  if(dicaJaVista()) return null;
+  const d = document.createElement('div');
+  d.className = 'dica-verso';
+  const t = document.createElement('span');
+  t.textContent = 'Toque num versículo para marcar com cor, favoritar, anotar ou ouvir.';
+  const x = document.createElement('button');
+  x.type = 'button';
+  x.setAttribute('aria-label', 'Dispensar esta dica');
+  x.textContent = '✕';
+  x.onclick = dispensarDicaDoVerso;
+  d.appendChild(t);
+  d.appendChild(x);
+  return d;
+}
+
 function desenharCapitulo(dados, nr, cap, destacar){
   const livro = livroPorNr(nr);
   const frag = document.createElement('div');
@@ -3103,6 +3155,9 @@ function desenharCapitulo(dados, nr, cap, destacar){
   h.className = 'cab-cartao';
   h.innerHTML = `<div class="referencia">${livro.nome} ${cap}<small>${versaoAtual.nome}</small></div>`;
   frag.appendChild(h);
+
+  const dica = montarDicaDoVerso();
+  if(dica) frag.appendChild(dica);
 
   /* partes da leitura em voz — um bloco por versículo, para
      destacar e acompanhar na tela enquanto é lido */
@@ -3128,6 +3183,7 @@ function desenharCapitulo(dados, nr, cap, destacar){
     p.tabIndex = 0;
     p.setAttribute('role', 'button');
     p.setAttribute('aria-haspopup', 'dialog');
+    p.setAttribute('aria-describedby', descricaoDoVerso());
     const s = document.createElement('sup');
     s.textContent = item.numero;
     p.appendChild(s);
