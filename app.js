@@ -375,8 +375,11 @@ const PROMESSAS = {
    do dia servir uma reflexão que fala do mesmo assunto do versículo. */
 const TODAS = [];
 const TEMA_DO_VERSO = [];
+/* a posição dentro do tema é a chave do pareamento: é ela que liga o
+   versículo aos três textos escritos para ele, em PARES */
+const POS_NO_TEMA = [];
 for(const [tema, versos] of Object.entries(PROMESSAS)){
-  for(const v of versos){ TODAS.push(v); TEMA_DO_VERSO.push(tema); }
+  versos.forEach((v, i) => { TODAS.push(v); TEMA_DO_VERSO.push(tema); POS_NO_TEMA.push(i); });
 }
 
 /* =========================================================
@@ -721,6 +724,74 @@ const DEVOCIONAL = {
 
 };
 
+/* =========================================================
+   O TEXTO PRESO AO VERSÍCULO
+
+   Reflexão, meditação e oração eram escolhidas por rotação de
+   calendário: `giro % 8`, independente de qual versículo era o do dia.
+   Três consequências, todas visíveis na tela:
+
+   1. O texto falava do TEMA, não da passagem. O mesmo versículo recebia
+      a reflexão nº 7 num semestre e a nº 4 no outro.
+   2. As três listas não são paralelas entre si. A oração "Jesus, Tu
+      choraste" (índice 3) aparecia ao lado de uma reflexão que não
+      menciona isso, enquanto a reflexão sobre Jesus chorando (índice 2)
+      saía com outra oração. As peças que combinam estavam espalhadas.
+   3. Oito reflexões citam uma cena concreta — Jesus na cruz, Rute
+      escolhendo, os dez curados, o maná, a viúva da farinha — e nenhuma
+      caía junto do versículo daquela cena, embora vários deles estejam
+      na lista.
+
+   Aqui cada versículo tem os três índices que lhe cabem: [reflexão,
+   meditação, oração]. A posição no vetor é a posição do versículo
+   dentro do tema, em PROMESSAS.
+
+   O preço: o devocional de um versículo passa a ser sempre o mesmo.
+   Trocou-se variedade por coerência, que é o que se pediu.
+   ========================================================= */
+const PARES = {
+  'Medo e ansiedade': [
+    [3,0,0],[5,0,1],[7,5,3],[4,3,3],[4,6,5],[5,5,4],[0,4,4],[2,2,2],[6,1,5],
+    [3,5,1],[1,1,0],[0,0,4],[3,7,7],[1,4,0],[7,5,3],[4,6,5],[2,7,2],[0,5,7]
+  ],
+  'Força': [
+    [2,3,0],[0,0,3],[6,4,4],[7,5,6],[0,6,7],[5,0,3],[6,4,4],[3,2,2],[5,3,3],
+    [1,3,6],[3,2,2],[1,7,6],[5,5,0],[7,1,1],[6,4,4],[4,4,4],[2,7,0],[5,1,5]
+  ],
+  'Provisão': [
+    [1,0,2],[3,2,3],[5,3,1],[5,5,5],[4,4,4],[4,6,4],[6,0,0],[1,0,1],[6,6,1],
+    [2,1,5],[7,5,7],[7,5,7],[0,1,6],[0,3,0],[4,4,4],[5,5,5],[2,0,2],[7,5,7]
+  ],
+  'Cura e consolo': [
+    [1,0,0],[6,2,5],[1,1,2],[3,1,1],[0,0,0],[7,7,7],[6,2,5],[1,5,2],[6,3,5],
+    [1,1,2],[0,0,0],[2,4,3],[5,5,4],[1,1,2],[6,2,5],[4,4,4],[7,6,6],[5,5,2]
+  ],
+  'Direção': [
+    [2,1,4],[3,3,4],[0,2,0],[1,2,0],[0,4,1],[6,6,2],[4,0,4],[5,7,3],[3,2,0],
+    [0,4,1],[5,7,3],[4,3,4],[7,6,2],[3,5,7],[2,0,1],[3,5,3],[0,4,0],[2,3,6]
+  ],
+  'Perdão': [
+    [5,5,2],[1,1,3],[1,1,3],[1,1,3],[1,6,3],[5,5,7],[1,1,3],[3,2,1],[3,0,0],
+    [0,6,3],[7,3,4],[1,1,3],[0,0,0],[1,1,3],[4,6,5],[6,2,6],[7,3,4],[0,4,0]
+  ],
+  'Fé e esperança': [
+    [1,0,0],[1,4,2],[7,5,3],[7,4,6],[4,4,6],[6,1,4],[4,6,5],[7,0,7],[1,5,7],
+    [3,2,1],[7,4,3],[2,2,1],[0,2,2],[6,1,4],[6,6,4],[7,0,6],[5,5,7],[3,2,1]
+  ],
+  'Gratidão': [
+    [1,0,0],[4,6,4],[0,0,7],[1,3,6],[3,3,2],[5,4,0],[1,5,6],[4,6,4],[5,4,5],
+    [5,4,5],[3,2,5],[7,4,0],[0,0,0],[2,1,1],[6,6,6],[7,7,6],[6,7,0],[5,2,5]
+  ],
+  'Família': [
+    [5,0,0],[1,4,3],[2,2,4],[4,3,1],[4,6,2],[0,5,4],[7,4,6],[1,1,3],[0,5,4],
+    [2,2,0],[6,2,5],[3,5,4],[5,7,0],[0,5,4],[1,0,3],[0,1,4],[4,0,2],[4,3,1]
+  ],
+  'Proteção': [
+    [3,3,3],[2,1,4],[7,5,7],[1,3,3],[5,0,5],[6,2,2],[4,0,0],[0,6,6],[0,0,6],
+    [3,6,5],[5,4,1],[1,3,3],[3,6,5],[5,6,6],[0,0,6],[2,1,4],[0,2,2],[7,5,6]
+  ]
+};
+
 /* Compatibilidade: o restante do app ainda pede uma lista solta em alguns
    pontos genéricos, e a folha do dia usa as do tema. */
 const REFLEXOES  = Object.values(DEVOCIONAL).flatMap(d => d.reflexoes);
@@ -735,16 +806,18 @@ function devocionalDoDia(dia){
   const [nr, cap, verso] = TODAS[idx];
   const tema = TEMA_DO_VERSO[idx];
   const d    = DEVOCIONAL[tema];
-  /* O versículo dá a volta a cada 180 dias e as reflexões a cada 8. Se o
-     índice fosse só o dia, os dois ciclos voltariam a coincidir no dia 361
-     e a última semana do ano repetiria a combinação da primeira. Somar a
-     volta desencontra os ciclos: 366 dias, 366 pares distintos. */
+  /* Os três textos vêm do pareamento, não do calendário. Sem par
+     definido — tema novo, versículo acrescentado — cai na rotação
+     antiga, que serve qualquer coisa do tema e nunca fica sem texto. */
+  const par = (PARES[tema] || [])[POS_NO_TEMA[idx]];
   const giro = dia + Math.floor(dia / TODAS.length);
+  const escolher = (lista, i) =>
+    lista[(typeof i === 'number' ? i : giro) % lista.length];
   return {
     nr, cap, verso, tema,
-    reflexao:  d.reflexoes[giro % d.reflexoes.length],
-    meditacao: d.meditacoes[giro % d.meditacoes.length],
-    oracao:    d.oracoes[giro % d.oracoes.length]
+    reflexao:  escolher(d.reflexoes,  par && par[0]),
+    meditacao: escolher(d.meditacoes, par && par[1]),
+    oracao:    escolher(d.oracoes,    par && par[2])
   };
 }
 
