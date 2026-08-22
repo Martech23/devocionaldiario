@@ -1124,6 +1124,64 @@ fariam a função chamar a si mesma sem fim.
 Por isso também o pequeno bônus para voz local: ele não derruba uma
 Premium de verdade, só desempata para a que funciona sem rede.
 
+## A busca que lembra
+
+Toda busca começava numa caixa em branco. Para reler um versículo era
+preciso lembrar a grafia exata — os acentos de "Gênesis", o espaço de
+"1 Coríntios", se é "Eclesiastes" ou "Eclesiástico" — e digitar tudo de
+novo. É a heurística 6 de Nielsen: **reconhecer em vez de lembrar**. Quem lê
+a Bíblia volta aos mesmos lugares, e o app não guardava nenhum deles.
+
+Duas coisas, no mesmo lugar e nunca ao mesmo tempo:
+
+| estado do campo | o que aparece |
+|---|---|
+| vazio | as últimas oito buscas, como atalho de um toque |
+| digitando | os livros que casam com o que já foi escrito |
+
+### As sugestões
+
+Começo de nome vem antes de "contém": quem escreve `jo` quer João, não Josué
+no meio de uma lista alfabética. O pedaço já digitado sai em negrito, para
+mostrar **por que** aquele item está ali — a comparação é sem acento dos dois
+lados, senão nenhum livro acentuado ficava marcado.
+
+Digitar um número vira sugestão de capítulo: `joão 3` oferece **João 3**. Um
+capítulo que não existe (`judas 40`) não é oferecido, mas o livro continua na
+lista, porque ainda é uma resposta útil.
+
+E quando nada casa, a última sugestão é **Buscar "…" no texto** — a busca por
+palavra era a função menos descoberta do app, porque nada na tela dizia que
+ela existia.
+
+Tudo navegável pelo teclado: `↓`/`↑` andam pela lista, `Enter` abre o item
+marcado (ou busca o que está escrito, se não houver marca), `Esc` fecha. O
+foco nunca sai do campo — quem marca um item é o `aria-activedescendant`,
+que é o que permite continuar digitando.
+
+### O Esc que apagava o campo
+
+`#busca` é `<input type="search">`, e nesse tipo de campo o Chrome apaga o
+texto quando se aperta Esc. Com a lista de sugestões aberta isso é perda:
+quem aperta Esc quer dispensar a sugestão, não jogar fora o que acabou de
+digitar. Então o Esc fecha a lista e chama `preventDefault()`; com a lista
+já fechada, o comportamento normal do navegador continua valendo.
+
+### As recentes
+
+Guardadas só quando a busca **de fato acontece** — registrar a cada tecla
+encheria a lista de metades de palavra. Repetir uma busca não duplica: ela
+sobe para o topo. Buscas de uma letra não entram. O limite é oito, e há um
+**Limpar** no fim da faixa.
+
+Todas as portas passam por `BuscaMemoria.executar`, para o registro nunca
+depender de quem chamou — atalho, sugestão, botão, Enter ou ditado.
+
+A lista fica no aparelho (`lampada-buscas`) e **não é sincronizada com a
+conta**: o que alguém procura na Bíblia diz mais do que o que ele marcou.
+Uma lista corrompida no `localStorage` é filtrada em vez de derrubar o app —
+o que presta continua aparecendo.
+
 ## Ditado por voz
 
 Quem não lê também não escreve. O microfone aparece na busca, na nota do
