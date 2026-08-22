@@ -1227,6 +1227,46 @@ fariam a função chamar a si mesma sem fim.
 Por isso também o pequeno bônus para voz local: ele não derruba uma
 Premium de verdade, só desempata para a que funciona sem rede.
 
+## A chave torta
+
+As três chaves do painel de voz apareciam como um borrão bege com o botão
+branco encostado no alto. Medido:
+
+```
+declarado no CSS  54 x 32
+real na tela      54 x 44      ← 12px de pista vazia embaixo do botão
+botão             26px em top: 3px
+```
+
+A causa foi uma regra minha, escrita para outra coisa: `min-height: 44px`
+aplicado a tudo que se toca, `.chave` inclusive. A pista esticou; o botão,
+preso num `top` fixo, ficou onde estava.
+
+O conserto separa as duas coisas que estavam empilhadas no mesmo elemento:
+
+- o `<button>` continua com **44px de altura**, porque é ele que o dedo acerta;
+- a **pista** virou um `::before` de 52×32, centrado dentro dele;
+- o **botão** passou a se centrar por **porcentagem** (`top: 50%` +
+  `margin-top: -13px`) em vez de um `top` fixo — assim nenhuma mudança de
+  altura futura pode desalinhá-lo de novo, que foi exatamente como o defeito
+  nasceu.
+
+O cinza de desligado também mudou. O bege anterior (`--linha-forte`) dava
+**2,1:1** contra o papel e lia como *desabilitado*, não como *desligado* —
+abaixo dos **3:1** que a WCAG 1.4.11 pede para a borda de um controle. Agora
+são 3,3:1 no claro e 3,8:1 no escuro.
+
+O estado não depende só da cor: o botão anda de um lado ao outro, e cada
+chave é um `role="switch"` com `aria-checked`.
+
+### Um detalhe do teste que vale guardar
+
+A primeira versão do teste lia a cor logo depois de trocar a classe e via os
+dois estados **idênticos**. A pista tem `transition`, e o navegador devolve o
+valor *de partida* da animação enquanto ela corre. Ou se espera a transição
+terminar, ou se desliga a transição antes de medir — o teste faz as duas
+coisas, conforme o caso.
+
 ## A leitura virou uma folha
 
 Medido no navegador, tela de 390×844, capítulo aberto e rolagem no topo:
