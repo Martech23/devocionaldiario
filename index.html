@@ -1426,7 +1426,31 @@ html[data-tema="escuro"] .erro b { color: #E88A7E; }
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.3s ease, transform 0.35s cubic-bezier(0.22, 1.2, 0.36, 1);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  max-width: calc(100vw - 32px);
 }
+/* só o aviso com botão recebe toque; o comum continua atravessável */
+.aviso.com-acao { pointer-events: auto; }
+.aviso-acao {
+  flex: none;
+  background: none;
+  border: 0;
+  color: #8FC0FF;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 8px 4px;
+  min-height: 44px;      /* alvo de toque, como o resto do app */
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+/* no tema escuro o aviso inverte: fundo claro. O azul claro que serve
+   no tema claro fica em 3,6:1 aqui — precisa de um azul escuro. */
+html[data-tema="escuro"] .aviso-acao { color: #12508F; }
+.aviso-acao:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
 html[data-tema="escuro"] .aviso {
   background: #EDEAE4;
   color: #1C1B19;
@@ -4322,10 +4346,27 @@ function alternarFavorito(dados){
   return true;
 }
 function removerFav(chave){
-  salvarFavs(carregarFavs().filter(f => f.chave !== chave));
+  const antes = carregarFavs();
+  salvarFavs(antes.filter(f => f.chave !== chave));
   renderFavoritos();
   atualizarStats();
-  avisar('Removido');
+  atualizarBotoesDoVerso();
+  avisar('Removido', {
+    aoTocar: () => { salvarFavs(antes); renderFavoritos(); atualizarStats(); atualizarBotoesDoVerso(); }
+  });
+}
+/* O botão da folha mostra o estado do favorito. Se a lista muda por baixo
+   dela — remoção, desfazer — ele precisa acompanhar, senão fica dizendo
+   "★ Favorito" para um versículo que já não está lá. */
+function atualizarBotoesDoVerso(){
+  if(!versoAberto) return;
+  const { nr, cap, verso } = versoAberto;
+  const fav = estaFavorito(nr, cap, verso);
+  const b = $('fa-fav');
+  if(!b) return;
+  b.textContent = fav ? '★ Favorito' : '☆ Favoritar';
+  b.classList.toggle('ativo', fav);
+  atualizarVersoNaTela();
 }
 
 const $ = id => document.getElementById(id);
@@ -4333,12 +4374,45 @@ const norm = s => (s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowe
 let versaoAtual = VERSOES[0];
 const cache = new Map();
 
-function avisar(msg){
+/* =========================================================
+   AVISO, COM SAÍDA DE EMERGÊNCIA
+
+   Remover um pedido de oração, um favorito ou uma nota era
+   instantâneo e definitivo — a palavra "Desfazer" não existia em
+   lugar nenhum do app. Erro de toque acontece, e o remédio padrão é
+   o desfazer no próprio aviso.
+
+   Quando há ação, o aviso fica 6 segundos em vez de 2,4: é o tempo
+   de ler, entender que errou e alcançar o botão. E ele precisa
+   receber toque, então `pointer-events` volta a valer — no aviso
+   comum continua desligado, para não bloquear a tela por baixo.
+   ========================================================= */
+function avisar(msg, acao){
   const a = $('aviso');
-  a.textContent = msg;
-  a.classList.add('ver');
+  a.textContent = '';
+  a.classList.toggle('com-acao', !!acao);
+
+  const txt = document.createElement('span');
+  txt.textContent = msg;
+  a.appendChild(txt);
+
   clearTimeout(a._t);
-  a._t = setTimeout(() => a.classList.remove('ver'), 2400);
+
+  if(acao){
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'aviso-acao';
+    b.textContent = acao.rotulo || 'Desfazer';
+    b.onclick = () => {
+      clearTimeout(a._t);
+      a.classList.remove('ver', 'com-acao');
+      try { acao.aoTocar(); } catch(e) { console.info(e); }
+    };
+    a.appendChild(b);
+  }
+
+  a.classList.add('ver');
+  a._t = setTimeout(() => a.classList.remove('ver', 'com-acao'), acao ? 6000 : 2400);
 }
 
 function diaDoAno(d){
@@ -4900,6 +4974,21 @@ function abrirFolhaVerso(nr, cap, verso, texto){
 }
 
 function fecharFolha(){
+  /* =========================================================
+     A NOTA NÃO PODE SUMIR POR UM TOQUE FORA
+
+     Fechar a folha descartava o que estava escrito, e tocar no fundo
+     escuro fecha também. Alguém escrevia uma reflexão sobre o
+     versículo, encostava o dedo fora sem querer, e acabou — sem
+     pergunta, sem aviso, sem volta.
+
+     Agora o que foi digitado é gravado ao fechar, como já acontecia
+     na nota do diário, que salva sozinha ao perder o foco. Salvar em
+     silêncio é melhor do que perguntar: ninguém precisa decidir se
+     quer guardar o que acabou de escrever.
+     ========================================================= */
+  guardarNotaPendente();
+
   $('folha-verso').classList.remove('ver');
   $('folha-verso').setAttribute('aria-hidden', 'true');
   $('fundo-folha').classList.remove('ver');
@@ -4931,12 +5020,25 @@ function definirCorDoVerso(cor){
   avisar(cor ? 'Versículo marcado' : 'Marca removida');
 }
 
-function salvarNotaDoVerso(){
+/* Grava o que estiver no campo, se mudou. Silencioso de propósito:
+   é rede de segurança, não uma ação que a pessoa pediu. */
+function guardarNotaPendente(){
+  if(!versoAberto) return;
+  const campo = $('campo-nota-verso');
+  if(!campo) return;
+  const { nr, cap, verso } = versoAberto;
+  const guardada = (carregarNotas()[chaveVerso(nr, cap, verso)] || {}).texto || '';
+  if(campo.value.trim() === guardada.trim()) return;   /* nada mudou */
+  salvarNotaDoVerso({ silencioso: true });
+}
+
+function salvarNotaDoVerso(op){
   if(!versoAberto) return;
   const { nr, cap, verso, texto } = versoAberto;
   const notas = carregarNotas();
   const k = chaveVerso(nr, cap, verso);
   const valor = $('campo-nota-verso').value.trim();
+  const antes = notas[k];
   if(valor){
     notas[k] = {
       texto: valor,
@@ -4944,10 +5046,20 @@ function salvarNotaDoVerso(){
       data: (notas[k] && notas[k].data) || new Date().toISOString(),
       nr, cap, verso, versiculo: texto
     };
-    avisar('Nota salva');
+    if(!(op && op.silencioso)) avisar('Nota salva');
   } else {
     delete notas[k];
-    avisar('Nota removida');
+    /* apagar uma nota escrita à mão é a perda mais cara do app:
+       vai embora sem confirmação, então damos o caminho de volta */
+    if(!(op && op.silencioso)) avisar('Nota removida', antes && {
+      aoTocar: () => { const n = carregarNotas(); n[k] = antes; salvarNotas(n);
+                       atualizarVersoNaTela(); renderFavoritos();
+                       const campo = $('campo-nota-verso');
+                       if(campo && versoAberto && chaveVerso(versoAberto.nr, versoAberto.cap, versoAberto.verso) === k)
+                         campo.value = antes.texto || '';
+                       $('fa-nota').textContent = '✎ Editar nota';
+                       $('fa-nota').classList.add('ativo'); }
+    });
   }
   salvarNotas(notas);
   atualizarVersoNaTela();
@@ -5369,9 +5481,12 @@ function renderOracoes(){
     apagar.className = 'btn-remover';
     apagar.textContent = 'Remover';
     apagar.onclick = () => {
-      salvarOracoes(carregarOracoes().filter(x => x.id !== o.id));
+      const antes = carregarOracoes();
+      salvarOracoes(antes.filter(x => x.id !== o.id));
       renderOracoes();
-      avisar('Pedido removido');
+      avisar('Pedido removido', {
+        aoTocar: () => { salvarOracoes(antes); renderOracoes(); }
+      });
     };
     meta.appendChild(apagar);
     corpo.appendChild(txt);
@@ -7777,10 +7892,16 @@ function renderFavoritos(){
 
       el.querySelector('.btn-remover').onclick = () => {
         const todas = carregarNotas();
-        delete todas[chaveVerso(n.nr, n.cap, n.verso)];
+        const k = chaveVerso(n.nr, n.cap, n.verso);
+        /* o que está no campo pode ser mais novo que o gravado: quem
+           digitou e apagou sem sair do campo perderia a última frase */
+        const antes = Object.assign({}, todas[k] || n, { texto: (ta.value || '').trim() || (todas[k] || n).texto });
+        delete todas[k];
         salvarNotas(todas);
         renderFavoritos();
-        avisar('Nota removida');
+        avisar('Nota removida', {
+          aoTocar: () => { const t = carregarNotas(); t[k] = antes; salvarNotas(t); renderFavoritos(); }
+        });
       };
       area.appendChild(el);
     });
@@ -8257,7 +8378,8 @@ $('fa-refs').onclick = verReferencias;
 $('btn-voltar-folha3').onclick = () => mostrarPaineFolha('folha-principal');
 $('btn-voltar-folha').onclick = () => mostrarPaineFolha('folha-principal');
 $('btn-voltar-folha2').onclick = () => mostrarPaineFolha('folha-principal');
-$('btn-salvar-nota').onclick = salvarNotaDoVerso;
+/* sem o wrapper, o clique chegaria como argumento e viraria as opções */
+$('btn-salvar-nota').onclick = () => salvarNotaDoVerso();
 
 $('fa-copiar').onclick = () => {
   if(!versoAberto) return;
