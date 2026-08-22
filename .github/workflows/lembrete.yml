@@ -1,0 +1,73 @@
+# O relógio do lembrete diário.
+#
+# Por que não é o cron da Vercel: conta Hobby aceita um cron por dia, e
+# o deploy inteiro é recusado com qualquer coisa mais frequente —
+# "Hobby accounts are limited to daily cron jobs". Mas o lembrete por
+# fuso precisa de uma execução por hora: 8h da manhã acontece 24 vezes
+# no mundo, uma para cada faixa horária.
+#
+# Então o relógio saiu de lá e veio para cá. O cron da Vercel continua
+# no vercel.json, uma vez por dia, como rede de segurança.
+#
+# PARA FUNCIONAR, PRECISA DE UM SEGREDO NO REPOSITÓRIO:
+#   Settings → Secrets and variables → Actions → New repository secret
+#   Nome:  CRON_SECRET
+#   Valor: o mesmo CRON_SECRET que está nas variáveis da Vercel
+#
+# Sem ele o endpoint devolve 401 e este workflow falha de propósito, com
+# a mensagem dizendo o que fazer — em vez de ficar rodando em silêncio
+# sem entregar nada.
+
+name: Lembrete diário
+
+on:
+  schedule:
+    # De hora em hora, duas vezes: :05 e :35. O cron do GitHub atrasa
+    # quando a fila está cheia e às vezes pula uma execução, então a
+    # segunda passada é a segunda chance. Mandar duas vezes não é risco:
+    # a trava no Redis (marcarEnvio) é por assinante e por data local, e
+    # o envio repetido é contado como "repetidos", não entregue.
+    - cron: '5,35 * * * *'
+  # para testar à mão, sem esperar a hora virar
+  workflow_dispatch:
+
+# Duas execuções ao mesmo tempo só brigariam pela mesma trava.
+concurrency:
+  group: lembrete
+  cancel-in-progress: false
+
+jobs:
+  enviar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Chamar o envio
+        env:
+          SEGREDO: ${{ secrets.CRON_SECRET }}
+          SITE: ${{ vars.SITE_URL || 'https://devocionaldiario-eosin.vercel.app' }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "${SEGREDO}" ]; then
+            echo "::error::O segredo CRON_SECRET não está configurado neste repositório."
+            echo "Settings → Secrets and variables → Actions → New repository secret"
+            echo "Nome: CRON_SECRET — Valor: o mesmo que está nas variáveis da Vercel."
+            exit 1
+          fi
+
+          # --max-time evita que uma função pendurada segure o runner.
+          # O corpo é guardado para poder ser lido no log quando dá erro:
+          # a função responde JSON explicando em que etapa parou.
+          codigo=$(curl -sS -o resposta.json -w '%{http_code}' \
+            --max-time 120 \
+            -H "Authorization: Bearer ${SEGREDO}" \
+            "${SITE}/api/daily-push")
+
+          echo "HTTP ${codigo}"
+          cat resposta.json
+          echo
+
+          if [ "${codigo}" != "200" ]; then
+            echo "::error::O envio respondeu ${codigo}. O corpo acima diz em que etapa parou."
+            exit 1
+          fi
