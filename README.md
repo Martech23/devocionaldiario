@@ -509,16 +509,20 @@ Link estragado não derruba nada: livro que não existe, capítulo além do
 fim do livro ou lixo no lugar dos números caem no devocional do dia, como
 uma abertura normal. São quatro asserções.
 
-### Na imagem, o endereço vai desenhado
+### O endereço saiu da imagem
 
-Legenda não sobrevive ao reencaminhamento. A imagem passa adiante sozinha,
-e quem a recebe de terceira mão não teria como saber de onde veio. Por
-isso o domínio é **escrito no rodapé da imagem**, além de ir na legenda.
+Ele já foi desenhado no rodapé da arte, com a ideia de viajar junto com a
+imagem reencaminhada — legenda não sobrevive ao repasse, e quem recebe de
+terceira mão não sabe de onde veio.
 
-Ele tem cor própria, mais firme que a do crédito da foto: com a tinta de
-enfeite, sobre os dois fundos que têm desenho — a oliveira e o pergaminho
-— o endereço ficava em **3,6:1**, abaixo dos 4,5 da WCAG AA. Endereço é
-para ser lido e digitado.
+Saiu. Endereço queimado na imagem é marca d'água: compete com o versículo,
+que é o motivo de a imagem existir; envelhece no dia em que o domínio mudar,
+e ninguém digita um endereço lido numa foto.
+
+O link continua indo no compartilhamento, ao lado da imagem, onde é clicável
+e leva **direto ao versículo** — ver `compartilharTexto` e `linkDoVerso`. O
+teste grava tudo que passa por `fillText` e confere que nada ali é o
+endereço, e que o versículo, a referência e a marca continuam.
 
 | | Antes | Agora |
 |---|---:|---:|
@@ -1222,6 +1226,44 @@ fariam a função chamar a si mesma sem fim.
 
 Por isso também o pequeno bônus para voz local: ele não derruba uma
 Premium de verdade, só desempata para a que funciona sem rede.
+
+## Continuar a leitura livre
+
+Medido: rolar até o meio de um capítulo, sair e voltar devolvia a pessoa ao
+**topo** — e não havia nada guardado no aparelho sobre onde ela estava.
+
+O cartão "Continuar de onde parou", da tela inicial, só aparece com um plano
+em andamento (`planoEmAndamento`). Quem lê por conta própria — que é como a
+maioria usa uma Bíblia — fechava o app no meio de Salmos 119 e no dia
+seguinte recomeçava procurando o lugar com o olho.
+
+### O que fica guardado é o versículo, não o pixel
+
+`lampada-leitura-parou` guarda `{nr, cap, verso, data}`. Altura de rolagem
+não sobrevive a mudar o tamanho da letra, girar o aparelho ou trocar de
+versão da Bíblia; versículo sobrevive a tudo isso. Há teste que muda `--esc`
+para 1,3 e confere que a parada não se mexe.
+
+O versículo anotado é **o primeiro cujo fundo já passou do cabeçalho** — o
+que a pessoa está lendo, não o que está entrando na tela por baixo. A
+gravação é adiada em 400ms, senão rolar seria uma escrita no disco por pixel.
+
+**O versículo 1 não é uma parada.** Estar no começo do capítulo não é ter
+parado no meio de nada, então voltar ao topo apaga o registro em vez de
+gravar "você parou no início".
+
+**Sair da leitura desliga a anotação** (`capituloNaTela = null`), senão
+rolar a lista de capítulos gravaria um versículo que ninguém está lendo.
+
+### Voltar ao ponto, mas nunca em silêncio
+
+Reabrir o mesmo capítulo rola até o versículo guardado — e mostra
+**"Voltamos ao versículo 25"** com um **Ir ao início**. Rolar sozinho para o
+meio de um texto assusta se nada explicar; o aviso diz o que aconteceu e
+oferece o outro caminho.
+
+Quem chega por link compartilhado ou por busca traz um `destacar`, e aí o
+destaque manda: ninguém que abriu "João 3:16" quer cair no versículo 25.
 
 ## A busca que lembra
 

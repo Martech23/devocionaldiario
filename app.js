@@ -11,7 +11,6 @@
 const LINK_SITE = (document.querySelector('link[rel="canonical"]') || {}).href
   || (location.origin + '/');
 /* versão curta, para caber desenhada no rodapé da imagem */
-const DOMINIO_SITE = LINK_SITE.replace(/^https?:\/\//, '').replace(/\/$/, '');
 
 /* O link levar à capa não bastaria: quem recebeu o versículo teria de
    procurá-lo. `?v=nr.capítulo.versículo` abre a passagem direto, com o
@@ -3076,6 +3075,163 @@ function abrirCapitulos(livro){
   mostrarSecao('sec-biblia');
 }
 
+/* =========================================================
+   CONTINUAR A LEITURA LIVRE
+
+   Medido: rolar até o meio de um capítulo, sair e voltar devolvia a
+   pessoa ao topo — e não havia nada guardado no aparelho sobre onde
+   ela estava. O cartão "Continuar de onde parou", da tela inicial, só
+   aparece com um plano em andamento (planoEmAndamento), então quem lê
+   por conta própria — que é como a maioria usa uma Bíblia — fechava o
+   app no meio de Salmos 119 e no dia seguinte recomeçava procurando o
+   lugar com o olho.
+
+   O que fica guardado é o versículo, não a altura da rolagem: pixel
+   não sobrevive a mudar o tamanho da letra, girar o aparelho ou trocar
+   de versão da Bíblia. Versículo sobrevive a tudo isso.
+   ========================================================= */
+const CHAVE_PARADA = 'lampada-leitura-parou';
+
+function lerParada(){
+  try {
+    const p = JSON.parse(localStorage.getItem(CHAVE_PARADA) || 'null');
+    if(!p || !livroPorNr(p.nr)) return null;
+    return p;
+  } catch(_){ return null; }
+}
+
+function guardarParada(nr, cap, verso){
+  /* o versículo 1 não é uma parada: é o começo, e não há o que retomar */
+  if(!verso || verso < 2){ esquecerParada(); return; }
+  try {
+    localStorage.setItem(CHAVE_PARADA, JSON.stringify({
+      nr, cap, verso, data: new Date().toISOString()
+    }));
+  } catch(_){ /* aparelho sem espaço: a leitura funciona, só não lembra */ }
+  montarRetomar();
+}
+
+function esquecerParada(){
+  try { localStorage.removeItem(CHAVE_PARADA); } catch(_){}
+  montarRetomar();
+}
+
+/* O primeiro versículo cujo topo já passou do cabeçalho: é o que a
+   pessoa está lendo, não o que está entrando na tela por baixo. */
+function versoNoTopo(){
+  const area = $('area-leitura');
+  if(!area) return null;
+  const barra = document.querySelector('header.barra');
+  const corte = (barra ? barra.getBoundingClientRect().bottom : 0) + 8;
+  let achado = null;
+  for(const el of area.querySelectorAll('.v')){
+    const r = el.getBoundingClientRect();
+    if(r.bottom > corte){ achado = el; break; }
+  }
+  if(!achado) return null;
+  const sup = achado.querySelector('sup');
+  const n = sup ? Number(sup.textContent) : NaN;
+  return Number.isFinite(n) ? n : null;
+}
+
+let capituloNaTela = null;   /* {nr, cap} do que está aberto agora */
+let anotarParada = null;
+
+function ligarMemoriaDaLeitura(){
+  if(anotarParada) return;
+  let esperando = false;
+  anotarParada = () => {
+    if(esperando || !capituloNaTela) return;
+    esperando = true;
+    /* uma gravação por quadro de rolagem seria uma escrita no disco a
+       cada pixel; o atraso junta o movimento inteiro numa só */
+    setTimeout(() => {
+      esperando = false;
+      if(!capituloNaTela) return;
+      const aberta = $('nivel-leitura') && !$('nivel-leitura').classList.contains('oculto');
+      if(!aberta) return;
+      const v = versoNoTopo();
+      if(v) guardarParada(capituloNaTela.nr, capituloNaTela.cap, v);
+    }, 400);
+  };
+  window.addEventListener('scroll', anotarParada, { passive: true });
+}
+
+function montarRetomar(){
+  const sec = $('sec-retomar');
+  const cx = $('cartao-retomar');
+  if(!sec || !cx) return;
+  const p = lerParada();
+  sec.classList.toggle('oculto', !p);
+  if(!p) return;
+
+  const livro = livroPorNr(p.nr);
+  const ref = livro.nome + ' ' + p.cap + ':' + p.verso;
+  cx.textContent = '';
+
+  const nome = document.createElement('div');
+  nome.className = 'continuar-nome';
+  nome.textContent = ref;
+  cx.appendChild(nome);
+
+  const meta = document.createElement('div');
+  meta.className = 'continuar-meta';
+  meta.textContent = 'Você parou aqui ' + quandoFoi(p.data) + '.';
+  cx.appendChild(meta);
+
+  const acoes = document.createElement('div');
+  acoes.className = 'continuar-acoes';
+  const ir = document.createElement('button');
+  ir.type = 'button';
+  ir.className = 'btn';
+  ir.textContent = 'Continuar em ' + ref;
+  ir.onclick = () => { irParaAba('biblia', { semRolar: true }); abrirLeitura(p.nr, p.cap, p.verso); };
+  acoes.appendChild(ir);
+  const sair = document.createElement('button');
+  sair.type = 'button';
+  sair.className = 'btn-remover';
+  sair.textContent = 'Dispensar';
+  sair.onclick = esquecerParada;
+  acoes.appendChild(sair);
+  cx.appendChild(acoes);
+}
+
+/* "hoje", "ontem" ou a data: dizer "há 19 horas" obriga a pessoa a
+   fazer a conta para saber se foi hoje de manhã ou ontem à noite */
+function quandoFoi(iso){
+  const d = new Date(iso);
+  if(isNaN(d)) return 'da última vez';
+  const dia = x => x.getFullYear() + '-' + x.getMonth() + '-' + x.getDate();
+  const agora = new Date();
+  const ontem = new Date(agora.getTime() - 86400000);
+  if(dia(d) === dia(agora)) return 'hoje';
+  if(dia(d) === dia(ontem)) return 'ontem';
+  return 'em ' + d.toLocaleDateString('pt-BR');
+}
+
+/* Reabrir o mesmo capítulo devolve ao ponto — mas nunca em silêncio.
+   Rolar sozinho para o meio de um texto assusta; o aviso diz o que
+   aconteceu e oferece a volta ao início, que é o outro caminho que a
+   pessoa pode querer. */
+function retomarSeForOCaso(nr, cap, destacar){
+  if(destacar) return;                    /* veio por link ou por busca */
+  const p = lerParada();
+  if(!p || p.nr !== nr || p.cap !== cap || p.verso < 2) return;
+  const alvo = [...$('area-leitura').querySelectorAll('.v')].find(el => {
+    const sup = el.querySelector('sup');
+    return sup && Number(sup.textContent) === p.verso;
+  });
+  if(!alvo) return;
+  alvo.scrollIntoView({ behavior: 'auto', block: 'center' });
+  avisar('Voltamos ao versículo ' + p.verso, {
+    rotulo: 'Ir ao início',
+    aoTocar: () => {
+      const primeiro = $('area-leitura').querySelector('.v');
+      if(primeiro) primeiro.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  });
+}
+
 async function abrirLeitura(nr, cap, destacar, autoOuvir){
   Voz.parar(true);   // trocou de capítulo: não continua lendo o anterior
   mostrarNivel('leitura');
@@ -3087,6 +3243,9 @@ async function abrirLeitura(nr, cap, destacar, autoOuvir){
     alvo.innerHTML = '';
     alvo.appendChild(desenharCapitulo(d, nr, cap, destacar));
     marcouLido(nr, cap);
+    capituloNaTela = { nr, cap };
+    ligarMemoriaDaLeitura();
+    retomarSeForOCaso(nr, cap, destacar);
     if(autoOuvir){
       const b = alvo.querySelector('.linha-ouvir .btn-ouvir');
       if(b) b.click();
@@ -3266,6 +3425,9 @@ function nivelAtual(){
 }
 
 function mostrarNivelDireto(nivel){
+  /* saiu da leitura: parar de anotar a posição, senão a rolagem da
+     lista de capítulos gravaria um versículo que ninguém está lendo */
+  if(nivel !== 'leitura') capituloNaTela = null;
   NIVEIS.forEach(n =>
     $('nivel-' + n).classList.toggle('oculto', n !== nivel)
   );
@@ -4291,27 +4453,15 @@ function desenharTextoSobreFundo(ctx, W, H, claro){
   ctx.font = '400 ' + Math.round(W * 0.023) + 'px "Source Sans 3", system-ui, sans-serif';
   ctx.fillText(imgAtual.versao, W / 2, topo + hTexto + gapOrn + gapRef + gapVer * 0.62);
 
-  /* O endereço, desenhado no rodapé.
-     Na legenda o link também vai, mas legenda não sobrevive ao
-     reencaminhamento: a imagem passa adiante sozinha e quem a recebe de
-     terceira mão não teria como saber de onde ela veio.
-     Cor própria, mais firme que a do crédito da foto: com a tinta de
-     enfeite, sobre os fundos com desenho, o endereço ficava em 3,6:1 —
-     abaixo dos 4,5 da WCAG AA. Endereço é para ser lido e digitado. */
-  ctx.fillStyle = claro ? 'rgba(42,36,24,0.82)' : 'rgba(255,255,255,0.88)';
-  ctx.font = '600 ' + Math.round(W * 0.021) + 'px "Source Sans 3", system-ui, sans-serif';
-  ctx.fillText(DOMINIO_SITE, W / 2, H * 0.945);
+  /* O endereço saiu da arte.
+     Ele era desenhado aqui no rodapé para viajar junto com a imagem
+     reencaminhada. Só que endereço queimado na imagem é marca d'água:
+     compete com o versículo, envelhece se o domínio mudar e não é
+     clicável — ninguém digita um endereço lido numa foto.
 
-  /* O endereço, desenhado no rodapé.
-     Na legenda o link também vai, mas legenda não sobrevive ao
-     reencaminhamento: a imagem passa adiante sozinha e quem a recebe
-     de terceira mão não tem como saber de onde ela veio. Escrito na
-     imagem, o endereço viaja junto para sempre. */
-  /* cor própria, mais firme que a do crédito: sobre os fundos com
-     desenho — a oliveira e o pergaminho — a tinta de enfeite deixava
-     o endereço em 3,6:1, e endereço é para ser lido e digitado */
-  ctx.fillStyle = claro ? 'rgba(42,36,24,0.82)' : 'rgba(255,255,255,0.88)';
-  ctx.font = '600 ' + Math.round(W * 0.021) + 'px "Source Sans 3", system-ui, sans-serif';
+     O link continua indo no compartilhamento, como texto ao lado da
+     imagem, e lá ele é clicável e leva direto ao versículo. Ver
+     compartilharTexto e linkDoVerso. */
 
   // crédito Pexels no rodapé (modo foto)
   if(imgModo === 'foto' && imgFotoLista[imgFotoIdx]){
@@ -6377,6 +6527,7 @@ montarTemas();
 desenharLivros();
 montarPlanos();
 montarContinuar();
+montarRetomar();
 saudar();
 versiculoDoDia();
 atualizarProgressoBiblia();
