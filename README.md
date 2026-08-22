@@ -1076,6 +1076,56 @@ Onde o navegador não implementa a API, os microfones somem em vez de
 oferecer um botão que só sabe avisar que não funciona — os mesmos campos
 continuam editáveis por escrito.
 
+### "Aperto para falar e ele não ouve"
+
+Três causas diferentes davam esse mesmo sintoma.
+
+**1. O cabeçalho do servidor barrava o microfone da própria origem.**
+`Permissions-Policy: microphone=()` não fecha o microfone só para terceiros:
+fecha para o site também. Está corrigido para `microphone=(self)` — mas o
+conserto ficou seis dias sem chegar à produção, preso atrás de um build que
+falhava por outro motivo (o cron de hora em hora). Nenhum deploy passou
+nesse intervalo, então o cabeçalho velho continuou no ar.
+
+No Chrome esse cabeçalho **some com o botão**, porque `document.featurePolicy`
+deixa perguntar antes. Safari e Firefox não têm essa API: lá o botão
+aparecia, a pessoa tocava, e o navegador recusava calado.
+
+**2. O aviso "Pode falar…" vinha antes de o microfone abrir.**
+`rec.start()` não abre o microfone quando retorna — o navegador ainda vai
+pedir permissão e ligar o áudio, o que leva de décimos de segundo a vários
+segundos na primeira vez. Quem obedecia ao aviso e falava na hora era,
+literalmente, não ouvido.
+
+Agora o toque mostra **"Abrindo o microfone…"**, e só quando o navegador
+confirma a captação (`audiostart`, ou `start` em quem não dispara o
+primeiro) é que aparece **"Pode falar…"**.
+
+**3. Parar parecia erro.** Tocar no botão de novo dispara `aborted`, que
+caía no genérico "Não deu para ouvir agora". Cancelar não é falhar.
+
+### Cada recusa diz o que fazer
+
+| Erro | Mensagem |
+|---|---|
+| `no-speech` | Não ouvi nada. Toque de novo e fale. |
+| `audio-capture` | Não achei um microfone neste aparelho |
+| `network` | O ditado precisa de internet para funcionar |
+| `not-allowed`, permissão **negada** | O microfone está bloqueado para este site. Libere nas permissões do navegador. |
+| `not-allowed`, permissão **não negada** | O microfone foi bloqueado. Se acabou de permitir, recarregue a página. |
+| `aborted` por toque nosso | (nenhuma) |
+
+A distinção nas duas últimas linhas importa: o navegador manda o mesmo
+`not-allowed` nos dois casos, mas mandar "libere o microfone" para quem já
+liberou é inútil — e era exatamente a situação em produção, onde quem
+barrava era o cabeçalho do próprio site. `navigator.permissions.query`
+resolve a dúvida onde existe; onde não existe, a mensagem fica na versão
+que não acusa a pessoa.
+
+Sobre `network`: o ditado do Chrome manda o áudio para o servidor de fala do
+navegador. É a única parte do app que **não funciona offline**, e agora ela
+diz isso em vez de falhar em silêncio.
+
 ## Conta e sincronização
 
 O app funciona inteiro **sem conta** — favoritos, notas, orações e progresso
