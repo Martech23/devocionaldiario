@@ -5,8 +5,14 @@
  * é 3h da manhã em Los Angeles e 19h em Manila. Num produto de hábito
  * diário, a hora da entrega é o produto.
  *
- * Agora o cron roda de hora em hora e cada execução envia apenas para
- * quem, no próprio fuso, está na hora que escolheu.
+ * Agora o envio é chamado de hora em hora e cada execução manda apenas
+ * para quem, no próprio fuso, está na hora que escolheu.
+ *
+ * O relógio de hora em hora não é o da Vercel: conta Hobby só aceita um
+ * cron por dia, e o deploy é recusado com qualquer coisa mais frequente.
+ * Quem chama é o GitHub Actions (.github/workflows/lembrete.yml), que
+ * bate no mesmo endpoint com o CRON_SECRET. O cron da Vercel continua
+ * lá como rede de segurança de uma vez por dia.
  *
  * Este arquivo é só decisão — nada de rede, nada de Redis — para poder
  * ser testado com relógio de mentira em vez de esperar amanhecer no
@@ -65,6 +71,25 @@ function horaValida(h) {
 }
 
 /**
+ * DE QUANTAS HORAS É A SEGUNDA CHANCE
+ *
+ * O relógio que dispara o envio não é pontual. O cron do GitHub atrasa
+ * quando a fila está cheia — minutos, às vezes muito mais — e pode
+ * simplesmente pular uma execução. Se "na hora" fosse só a igualdade
+ * exata, um atraso de cinco minutos passando das 8h para as 9h faria
+ * quem escolheu as 8h não receber nada naquele dia.
+ *
+ * Então a janela é de três horas: a hora escolhida e as duas seguintes.
+ * Mandar 9h20 quando a pessoa pediu 8h é uma imprecisão; não mandar é
+ * um lembrete perdido, que é bem pior num produto de hábito diário.
+ *
+ * Isso só é seguro porque a trava de envio (marcarEnvio, uma por
+ * endpoint e por data local) garante uma notificação por dia. A janela
+ * escolhe mais vezes, a trava entrega uma vez.
+ */
+const TOLERANCIA_HORAS = 2;
+
+/**
  * Está na hora de mandar para esta inscrição?
  *
  * Inscrição antiga não tem fuso nem hora: cai em Brasília às 8h, que é
@@ -75,7 +100,19 @@ function naHoraDe(sub, agora = new Date()) {
   const fuso = fusoValido(sub && sub.fuso) ? sub.fuso : FUSO_PADRAO;
   const hora = horaValida(sub && sub.hora) ? sub.hora : HORA_PADRAO;
   const local = momentoLocal(fuso, agora);
-  return { enviar: local.hora === hora, data: local.data, hora: local.hora, fuso };
+  /* A janela não dá a volta na meia-noite de propósito. Com resto de 24,
+     quem escolheu as 23h seria escolhido de novo à 0h e à 1h — outra
+     data local, trava nova, segunda notificação de madrugada com o
+     versículo do dia seguinte. O atraso só conta para frente e dentro
+     do mesmo dia. */
+  const atraso = local.hora - hora;
+  return {
+    enviar: atraso >= 0 && atraso <= TOLERANCIA_HORAS,
+    atraso: atraso,
+    data: local.data,
+    hora: local.hora,
+    fuso
+  };
 }
 
 /**
@@ -92,12 +129,13 @@ function paraEnviarAgora(subs, agora = new Date()) {
        para o meio do envio, contando como erro o que é lixo guardado */
     if (!sub || !sub.endpoint) continue;
     const d = naHoraDe(sub, agora_);
-    if (d.enviar) escolhidas.push({ sub, dataLocal: d.data, fuso: d.fuso });
+    if (d.enviar) escolhidas.push({ sub, dataLocal: d.data, fuso: d.fuso, atraso: d.atraso });
   }
   return escolhidas;
 }
 
 module.exports = {
   FUSO_PADRAO, HORA_PADRAO,
+  TOLERANCIA_HORAS,
   momentoLocal, fusoValido, horaValida, naHoraDe, paraEnviarAgora
 };

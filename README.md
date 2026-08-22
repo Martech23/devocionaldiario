@@ -1136,12 +1136,60 @@ continuam intactos.
 | `VAPID_SUBJECT` | `mailto:seu@email.com` |
 | `UPSTASH_REDIS_REST_URL` | URL do Upstash |
 | `UPSTASH_REDIS_REST_TOKEN` | Token do Upstash |
-| `CRON_SECRET` | senha opcional para teste manual |
+| `CRON_SECRET` | **obrigatório** — é ele que autoriza o relógio de hora em hora |
 
 3. Faça um **Redeploy** na Vercel
 4. No site → **Instalar app** → **Ativar lembrete diário**
 
-O cron em `vercel.json` chama `/api/daily-push` todo dia às **11:00 UTC** (8h em Brasília).
+### Quem chama o envio, e por que não é a Vercel
+
+O lembrete respeita o fuso de cada pessoa, e 8h da manhã acontece 24 vezes
+no mundo. Logo, o envio precisa ser chamado **de hora em hora**, entregando
+a cada passada só à fatia que está na hora escolhida.
+
+O cron da Vercel não pode fazer isso aqui. Conta **Hobby aceita um cron por
+dia** e recusa o deploy inteiro com qualquer coisa mais frequente:
+
+```
+Hobby accounts are limited to daily cron jobs. This cron expression
+(0 * * * *) would run more than once per day.
+```
+
+Então o relógio mudou-se para o **GitHub Actions**
+(`.github/workflows/lembrete.yml`), que roda `5,35 * * * *` e bate no mesmo
+`/api/daily-push` com o `CRON_SECRET` no cabeçalho. O cron do `vercel.json`
+continua lá, uma vez por dia, como rede de segurança.
+
+**Falta um passo manual:** o workflow precisa do segredo no repositório —
+*Settings → Secrets and variables → Actions → New repository secret*, nome
+`CRON_SECRET`, com o mesmo valor que está na Vercel. Sem ele o endpoint
+devolve 401 e o workflow falha de propósito, dizendo o que fazer, em vez de
+rodar em silêncio sem entregar nada.
+
+(Assinar o plano Pro da Vercel também resolve, e aí basta devolver o
+`0 * * * *` ao `vercel.json` e apagar o workflow.)
+
+### A janela de recuperação
+
+O cron do GitHub não é pontual: atrasa quando a fila está cheia e às vezes
+pula uma execução. Se "está na hora" fosse igualdade exata, um atraso de
+cinco minutos passando das 8h para as 9h custaria o lembrete do dia inteiro.
+
+Por isso a janela é de três horas — a escolhida e as duas seguintes
+(`TOLERANCIA_HORAS` em `api/lib/agenda.js`). Mandar 9h20 quando a pessoa
+pediu 8h é uma imprecisão; não mandar é um lembrete perdido, que num produto
+de hábito diário é bem pior.
+
+Isso só é seguro porque **quem garante a entrega única é a trava no Redis**
+(`marcarEnvio`, uma chave por assinante e por data local, com 48h de
+validade). A janela escolhe até três vezes, a trava entrega uma — as outras
+duas voltam contadas como `repetidos`. O `teste16.js` prova ponta a ponta:
+três passadas seguidas, `sent: [1, 0, 0]`, uma notificação no aparelho.
+
+A janela **não dá a volta na meia-noite**, de propósito. Com resto de 24,
+quem escolhesse 23h seria pego de novo à 0h e à 1h — outra data local, trava
+nova, e uma segunda notificação de madrugada com o versículo do dia
+seguinte. O atraso só conta para frente e dentro do mesmo dia.
 
 ### A notificação traz o versículo do dia
 
