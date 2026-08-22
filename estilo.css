@@ -3017,6 +3017,78 @@ html[data-tema="escuro"] .painel-config header { background: #152238; }
 }
 
 /* =========================================================
+   ENSINAR O TOQUE NO VERSÍCULO
+
+   Medido: a linha do versículo é `role="button"`, `tabindex="0"` e
+   `cursor: pointer`, mas sem `aria-label` e sem nenhuma dica na tela.
+   Quem usa leitor de tela ouvia o versículo inteiro e depois a palavra
+   "botão", sem nenhuma pista do que apertar faria. Quem enxerga não
+   tinha sinal nenhum: a função mais rica do app — cores, nota,
+   favorito, comparar, ouvir — dependia de adivinhar o gesto.
+
+   Três coisas, e nenhuma delas atrapalha quem já sabe:
+   ========================================================= */
+
+/* 1. O texto que só o leitor de tela lê.
+   `aria-label` estragaria: ele SUBSTITUI o conteúdo, e o versículo
+   deixaria de ser lido. `aria-describedby` soma, vem depois do texto,
+   e um elemento só serve para todos os versículos do capítulo. */
+.so-leitor {
+  position: absolute;
+  width: 1px; height: 1px;
+  margin: -1px; padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* 2. Resposta ao toque. O :hover existia e só vale no computador; no
+   celular, onde o app é usado, nada acontecia ao encostar o dedo. */
+.v:active { background: var(--azul-suave); border-radius: 3px; }
+.v:focus-visible {
+  outline: 2px solid var(--azul);
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+
+/* 3. A dica da primeira vez, acima do capítulo. Sai sozinha assim que
+   a pessoa abre a folha de um versículo — quem aprendeu não precisa
+   mais dela — e tem o X para quem quiser dispensar antes. */
+.dica-verso {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0 0 16px;
+  padding: 12px 14px;
+  background: var(--azul-claro-bg);
+  border: 1px solid var(--azul-suave);
+  border-radius: var(--radius-sm);
+  font-size: 13.5px;
+  line-height: 1.45;
+  color: var(--azul-esc);
+  animation: fadeUp 0.3s ease both;
+}
+html[data-tema="escuro"] .dica-verso { color: var(--texto); }
+.dica-verso span { flex: 1; }
+.dica-verso button {
+  flex: none;
+  width: 44px; height: 44px;      /* alvo de toque, como o resto do app */
+  margin: -12px -14px -12px 0;
+  background: none;
+  border: 0;
+  font-family: inherit;
+  font-size: 17px;
+  line-height: 1;
+  color: inherit;
+  opacity: 0.7;
+  cursor: pointer;
+}
+.dica-verso button:hover { opacity: 1; }
+.dica-verso button:focus-visible { outline: 2px solid currentColor; outline-offset: -4px; }
+
+/* =========================================================
    CLASSES QUE SUBSTITUEM O style= NO HTML E NOS TEMPLATES
 
    Não é organização: é a Content-Security-Policy. Sem
