@@ -936,6 +936,51 @@ Os destaques e as notas ficam no aparelho (`localStorage`) e reaparecem
 sempre que o capítulo é reaberto. As notas antigas, que só existiam presas a
 um favorito, são migradas na primeira abertura.
 
+### A nota não some ao fechar a folha
+
+Fechar a folha descartava o que estivesse escrito no campo — e tocar no fundo
+escuro fecha também. Alguém escrevia uma reflexão, encostava o dedo fora sem
+querer e acabou: sem pergunta, sem aviso, sem volta.
+
+Agora `fecharFolha()` chama `guardarNotaPendente()` antes de fechar. Ela
+compara o campo com o que está gravado e, se mudou, grava — em silêncio, com
+`salvarNotaDoVerso({ silencioso: true })`. É rede de segurança, não uma ação
+que a pessoa pediu, então não aparece o aviso "Nota salva". Vale para as três
+saídas: o X, o toque no fundo e o Esc.
+
+Salvar sem perguntar é melhor do que perguntar: ninguém precisa decidir se
+quer guardar o que acabou de escrever. É o mesmo comportamento que a nota do
+diário já tinha, que grava ao perder o foco.
+
+### Desfazer
+
+Remover um pedido de oração, um favorito ou uma nota era instantâneo e
+definitivo — a palavra "Desfazer" não existia em lugar nenhum do app.
+
+O aviso (`avisar`) passou a aceitar uma segunda opção:
+
+```js
+avisar('Pedido removido', { aoTocar: () => { salvarOracoes(antes); renderOracoes(); } });
+```
+
+O padrão é sempre o mesmo: guardar a lista inteira **antes** de remover e
+devolvê-la no `aoTocar`. Está ligado nas quatro remoções — favorito, pedido
+de oração, nota do versículo (esvaziando o campo) e nota da lista do diário.
+Na nota da lista, o que volta é o que estava no `textarea`, não só o gravado:
+quem digitou e apagou sem sair do campo perderia a última frase.
+
+Dois detalhes que os testes cobrem:
+
+- **6 segundos em vez de 2,4** quando há ação. É o tempo de ler, entender que
+  errou e alcançar o botão.
+- **`pointer-events` volta a valer só quando há botão** (`.aviso.com-acao`).
+  No aviso comum continua desligado, senão ele roubaria o toque de quem
+  quisesse tocar na tela por baixo.
+
+O botão tem 44px de altura, como o resto do app, e passa nos 4,5:1 da AA nos
+dois temas — no tema escuro o aviso inverte para fundo claro, então lá ele usa
+azul escuro (`#12508F`), não o azul claro do tema claro.
+
 ## Planos de leitura
 
 Nove planos escritos à mão (Provérbios em 31 dias, ansiedade, luto,
