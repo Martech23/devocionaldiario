@@ -5,7 +5,7 @@
  * em /api como uma função serverless e o plano tem limite.
  */
 
-const C = require('./lib/contas');
+const C = require('../lib/contas');
 
 const MIN_SENHA = 8;
 

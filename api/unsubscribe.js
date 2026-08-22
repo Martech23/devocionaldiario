@@ -1,4 +1,4 @@
-const { configured, removeSub } = require('./lib/store');
+const { configured, removeSub } = require('../lib/store');
 
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');

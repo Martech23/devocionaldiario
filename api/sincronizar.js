@@ -9,7 +9,7 @@
  * uma ida e volta a mais. O servidor guarda e devolve.
  */
 
-const C = require('./lib/contas');
+const C = require('../lib/contas');
 
 /* Só estas chaves trafegam. Uma lista fechada impede que um cliente
    adulterado use a conta como depósito de qualquer coisa. */

@@ -22,9 +22,9 @@ function iguais(a, b) {
   if (x.length !== y.length) return false;
   return crypto.timingSafeEqual(x, y);
 }
-const { configured, listSubs, removeSub, marcarEnvio } = require('./lib/store');
-const { versiculoDoDia } = require('./lib/versiculos');
-const { paraEnviarAgora } = require('./lib/agenda');
+const { configured, listSubs, removeSub, marcarEnvio } = require('../lib/store');
+const { versiculoDoDia } = require('../lib/versiculos');
+const { paraEnviarAgora } = require('../lib/agenda');
 
 /**
  * A notificação anunciava um versículo e o app mostrava outro: eram duas
