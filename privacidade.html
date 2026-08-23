@@ -36,7 +36,7 @@
 <main class="envolve">
 
   <h1>Política de Privacidade</h1>
-  <p class="atualizado">Última atualização: 9 de agosto de 2026</p>
+  <p class="atualizado">Última atualização: 23 de agosto de 2026</p>
 
   <div class="resumo">
     <h2>Em resumo</h2>
@@ -117,6 +117,19 @@
     </table>
   </div>
 
+  <h3>O endereço de onde vêm os pedidos</h3>
+  <p>
+    Para impedir que uma mesma origem fique tentando senhas, criando contas em massa ou
+    esgotando os nossos recursos, contamos quantas vezes cada origem bate na porta. Esse
+    controle vale para quem tem conta e para quem não tem.
+  </p>
+  <p>
+    <b>O endereço IP em si não é guardado.</b> Gravamos apenas um resumo criptográfico
+    truncado dele — que serve para comparar, não para reconstituir o endereço — e esse
+    resumo se apaga sozinho ao fim da janela de contagem, entre 10 minutos e uma hora
+    conforme o caso. Base legal: legítimo interesse em segurança (Art. 7º, IX).
+  </p>
+
   <h2>4. Dado pessoal sensível</h2>
   <div class="destaque">
     <p class="m-0">
@@ -182,7 +195,8 @@
       <tr>
         <td>Pexels</td>
         <td>Fotos de fundo para a imagem de compartilhar</td>
-        <td>Endereço IP, e o tema da busca de foto</td>
+        <td><b>Nada seu.</b> A busca e as fotos passam pelo nosso servidor, então
+            o Pexels vê o servidor, não você</td>
       </tr>
     </table>
   </div>
@@ -193,7 +207,14 @@
     texto extra publicado por nós, e no <b>Pexels</b> as fotos usadas como fundo na
     imagem de compartilhar. Nos dois casos, o que sai do seu aparelho é apenas o pedido
     — <b>nenhum dado seu é enviado</b>: nem conta, nem favoritos, nem orações, nem o que
-    você leu. Esses serviços veem o seu endereço IP, como qualquer site que você abre.
+    você leu.
+  </p>
+  <p>
+    A diferença entre os dois está em quem fala com quem. O <b>Supabase</b> é chamado
+    direto pelo seu navegador, e por isso vê o seu endereço IP, como qualquer site que
+    você abre. Já o <b>Pexels</b> é chamado pelo <b>nosso servidor</b>: tanto a busca
+    quanto as próprias fotos passam por ele. O Pexels vê o nosso servidor, e o seu
+    endereço nunca chega até lá.
   </p>
   <p>
     Se você estiver sem internet, os dois simplesmente não aparecem, e o restante do
@@ -228,6 +249,11 @@
     aconteceu. As contagens são apagadas automaticamente após <b>90 dias</b>.
   </p>
   <p>
+    <b>Base legal:</b> legítimo interesse em entender e melhorar o aplicativo
+    (Art. 7º, IX). Como não guardamos nada que identifique você, o tratamento não
+    restringe os seus direitos — e, ainda assim, ele é desligável.
+  </p>
+  <p>
     Você pode desligar isso a qualquer momento em <b>Instalar app → Ajudar com
     estatísticas anônimas de uso</b>. E se o seu navegador estiver configurado para pedir
     que você não seja rastreado (<i>Do Not Track</i>), a medição já vem desligada, sem
@@ -257,7 +283,7 @@
 
   <h2>7. Por quanto tempo guardamos</h2>
   <ul>
-    <li><b>Conta e histórico:</b> enquanto a conta existir. Ao excluí-la, os dados são apagados imediatamente do banco.</li>
+    <li><b>Conta e histórico:</b> enquanto a conta existir. Ao excluí-la, os dados são apagados imediatamente do banco. Há um teto de <b>1 MB</b> por conta — muito acima do que um histórico de anos ocupa.</li>
     <li><b>Sessões:</b> 30 dias sem uso, e são descartadas automaticamente.</li>
     <li><b>Tentativas de login:</b> 15 minutos.</li>
     <li><b>Registros técnicos de acesso:</b> pelo prazo de guarda praticado pela Vercel, conforme a política dela.</li>
@@ -292,6 +318,11 @@
     <li>O cookie de sessão é <code>HttpOnly</code>, <code>Secure</code> e <code>SameSite=Lax</code>, o que impede que scripts o leiam e reduz risco de requisições forjadas.</li>
     <li>O canal de sincronização aceita <b>apenas uma lista fechada de campos</b>, para que a conta não possa ser usada como depósito de conteúdo arbitrário.</li>
     <li>Excluir a conta <b>exige a senha novamente</b>: estar conectado não basta.</li>
+    <li>A resposta do login é <b>igual em conteúdo e em tempo</b> para e-mail que não
+      existe e para senha errada, para que ninguém descubra quem tem conta aqui.</li>
+    <li>Há <b>limite por origem</b> no login, no cadastro e nos demais endereços públicos,
+      além do limite por conta.</li>
+    <li>As mensagens de erro <b>não descrevem o funcionamento interno</b> do serviço.</li>
   </ul>
   <p>
     Nenhum sistema é infalível. Se ocorrer incidente de segurança com risco relevante,
@@ -321,7 +352,15 @@
     dados sensíveis serão comunicadas e dependerão de novo consentimento.
   </p>
 
-  <h2>13. Contato</h2>
+  <h2>13. Encarregado e contato</h2>
+  <p>
+    O Bíblia Devocional é mantido por uma pessoa física, sem fins lucrativos e sem
+    tratamento de alto risco. Nessa condição, a
+    <a href="https://www.gov.br/anpd/pt-br/assuntos/noticias/anpd-aprova-regulamento-de-aplicacao-da-lgpd-para-agentes-de-tratamento-de-pequeno-porte" target="_blank" rel="noopener">Resolução
+    CD/ANPD nº 2, de 27 de janeiro de 2022</a>, dispensa a indicação formal de encarregado,
+    <b>desde que exista um canal de comunicação com o titular</b> — o que este endereço é,
+    para todos os efeitos do Art. 41, § 2º, I:
+  </p>
   <p>
     Dúvidas, pedidos e reclamações: <a href="mailto:davidmartins1399@gmail.com"><b>davidmartins1399@gmail.com</b></a>.
   </p>

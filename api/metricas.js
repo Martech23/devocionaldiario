@@ -21,6 +21,7 @@
  */
 
 const { configured, redis } = require('../lib/store');
+const { excedeu } = require('../lib/limite');
 
 /* Lista fechada, e do lado do servidor. Aceitar nome livre deixaria
    qualquer um encher o Redis de chaves inventadas. */
@@ -89,9 +90,11 @@ async function resumo(dias) {
 }
 
 module.exports = async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, GET, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  /* Sem CORS aberto. E com teto: cada POST podia disparar até 42 comandos
+     no Redis, e o Redis é o MESMO das contas e da sincronização. Sem
+     limite, umas poucas centenas de chamadas esgotavam a cota do dia e
+     derrubavam junto o login de quem tem conta. */
+  res.setHeader('Cache-Control', 'no-store');
   if (req.method === 'OPTIONS') return res.status(204).end();
 
   if (!configured()) {
@@ -102,6 +105,11 @@ module.exports = async function handler(req, res) {
 
   try {
     if (req.method === 'POST') {
+      if (await excedeu('metricas', req, 120, 60 * 60)) {
+        /* devolve ok: métrica recusada nunca pode virar erro na tela de
+           quem só queria ler o devocional */
+        return res.status(200).json({ ok: true, ignorado: 'limite' });
+      }
       const body = typeof req.body === 'string' ? JSON.parse(req.body || '{}') : (req.body || {});
       const eventos = Array.isArray(body.eventos) ? body.eventos.map(String) : [];
       const contados = await registrar(eventos, body.id);
@@ -114,8 +122,11 @@ module.exports = async function handler(req, res) {
         ? req.query.chave
         : new URL(req.url, 'http://x').searchParams.get('chave');
       const segredo = process.env.PUSH_SECRET;
-      if (!segredo) return res.status(503).json({ error: 'PUSH_SECRET não configurado' });
-      if (!iguais(q, segredo)) return res.status(401).json({ error: 'Não autorizado' });
+      if (!segredo || !iguais(q, segredo)) {
+        /* uma resposta só para "não configurado" e "não confere": a
+           diferença dizia a quem perguntasse se o segredo existe */
+        return res.status(401).json({ error: 'Não autorizado' });
+      }
 
       const dias = Math.min(Math.max(parseInt(
         (req.query && req.query.dias) ||
@@ -125,8 +136,8 @@ module.exports = async function handler(req, res) {
 
     return res.status(405).json({ error: 'Method not allowed' });
   } catch (e) {
-    console.error(e);
-    return res.status(500).json({ error: e.message || 'Erro' });
+    console.error('metricas:', e);
+    return res.status(500).json({ error: 'Erro' });
   }
 };
 

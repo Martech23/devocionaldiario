@@ -2,21 +2,26 @@
  * Proxy Pexels — a chave fica só no servidor (PEXELS_API_KEY na Vercel).
  * GET /api/pexels?q=sunrise+mountains&per_page=12&orientation=portrait
  */
+const { excedeu } = require('../lib/limite');
+
 module.exports = async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  /* Sem CORS aberto: com Access-Control-Allow-Origin: * este endereço era
+     uma API de busca de fotos pública movida pela NOSSA chave do Pexels.
+     A cota gratuita são 200 pedidos por hora; qualquer site podia gastá-la
+     e deixar o gerador de imagem sem foto. */
   res.setHeader('Cache-Control', 's-maxage=3600, stale-while-revalidate=86400');
 
   if (req.method === 'OPTIONS') return res.status(204).end();
   if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
 
+  if (await excedeu('pexels', req, 40, 60 * 60)) {
+    return res.status(429).json({ error: 'muitos pedidos' });
+  }
+
   const key = process.env.PEXELS_API_KEY || process.env.PEXELS_KEY;
   if (!key) {
-    return res.status(503).json({
-      error: 'PEXELS_API_KEY não configurada',
-      hint: 'Adicione PEXELS_API_KEY nas variáveis de ambiente da Vercel (Production) e faça redeploy'
-    });
+    /* sem dizer qual variável falta nem em que painel: é desenho interno */
+    return res.status(503).json({ error: 'Fotos indisponíveis no momento' });
   }
 
   try {
@@ -62,7 +67,7 @@ module.exports = async function handler(req, res) {
       photos
     });
   } catch (e) {
-    console.error(e);
-    return res.status(500).json({ error: e.message || 'Falha ao buscar fotos' });
+    console.error('pexels:', e);
+    return res.status(500).json({ error: 'Falha ao buscar fotos' });
   }
 };

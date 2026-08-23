@@ -1857,6 +1857,105 @@ o nome da **escolhida** — atribuía a uma tradução um texto que não era del
 `buscarCapituloEm` passou a devolver junto qual versão respondeu, e
 `buscarVerso` assina com essa.
 
+## Auditoria de segurança e LGPD
+
+Revisão da política de privacidade contra a lei e do código contra a
+política, mais uma varredura da superfície exposta.
+
+### A política dizia uma coisa que o código não fazia
+
+A tabela de terceiros afirmava que o **Pexels** recebia o endereço IP de
+quem usa o app. Não recebe: tanto a busca (`/api/pexels`) quanto as
+próprias fotos (`/api/proxy-image`) passam pelo nosso servidor, e o Pexels
+vê o servidor. A CSP nem permitiria o contrário — `pexels` não está em
+`connect-src`. Uma política que descreve coisa diferente do sistema é, ela
+própria, falha de transparência (Art. 6º, VI), então isso é um defeito, não
+um detalhe. **`teste41.js` existe para que não se repita:** compara a
+política com o código item a item — terceiros, eventos medidos, prazos,
+campos sincronizados, nome e atributos do cookie, e cada chave de
+`localStorage`.
+
+Faltavam ainda três coisas que a lei pede e uma que o código passou a
+fazer:
+
+| | O que faltava |
+|---|---|
+| Art. 9º | as estatísticas de uso não declaravam **base legal** — agora legítimo interesse (Art. 7º, IX), com o direito de desligar |
+| Art. 41, § 2º | nada dizia sobre **encarregado**. A [Resolução CD/ANPD nº 2/2022](https://www.gov.br/anpd/pt-br/assuntos/noticias/anpd-aprova-regulamento-de-aplicacao-da-lgpd-para-agentes-de-tratamento-de-pequeno-porte) dispensa a indicação para agente de pequeno porte **desde que haja canal de comunicação** — agora está escrito que o e-mail é esse canal |
+| Art. 9º | o **teto de 1 MB** por conta não estava declarado |
+| Art. 7º, IX | o novo limite por origem trata **IP**, que é dado pessoal — declarado, com a ressalva de que só um resumo truncado é guardado |
+
+### O que estava exposto
+
+| Achado | Risco | O que se fez |
+|---|---|---|
+| **`/api/biblia.js`** — proxy sem autenticação para a getBible, CORS liberado, três parâmetros entrando na URL sem validação | o app **nunca o chamou**; era superfície de ataque pura, e ocupava um dos 12 lugares de função do plano Hobby | apagado |
+| **`Access-Control-Allow-Origin: *`** em oito endpoints | cada um virava serviço público movido pela nossa cota: a chave do Pexels (200 pedidos/hora), a largura de banda das fotos, o Redis **compartilhado com as contas** | removido de todos |
+| **O 401 do `daily-push` contava o segredo** | devolvia `tamanhoConfigurado` — o comprimento exato do `CRON_SECRET` — e confirmava que ele existe, a quem não tinha autorização nenhuma | 401 virou uma frase só |
+| **`?secret=` na URL** | query string entra no log de acesso da Vercel, no histórico e no `Referer` | só o cabeçalho `Authorization` autoriza |
+| **Pilha de execução na resposta** | caminhos de arquivo, versões de módulo e a forma do projeto | vai para o log |
+| **Mensagens nomeando variáveis de ambiente** | "defina `UPSTASH_REDIS_REST_TOKEN` na Vercel" descrevia o interior para quem procurava por onde entrar | mensagens genéricas |
+| **`proxy-image` seguia redirecionamento** | a lista de permissão valia só para o primeiro salto: 302 da origem e o proxy ia buscar noutro lugar, com o nosso servidor | `redirect: 'manual'`, tipo forçado a `image/*`, teto de 8 MB |
+
+### Força bruta: o teto por e-mail não bastava
+
+Havia trava de login, mas contava **por e-mail**. Duas coisas passavam por
+baixo dela:
+
+1. **Pulverização de senha.** Tentar *uma* senha comum contra dez mil
+   e-mails nunca chega a 10 tentativas em e-mail nenhum — o contador jamais
+   dispara.
+2. **Negação de serviço contra a pessoa.** Quem soubesse o seu e-mail
+   mandava 10 senhas erradas e trancava **você** por 15 minutos, quantas
+   vezes quisesse. O contador ficava na conta da vítima.
+
+`lib/limite.js` conta também por origem, no login, no cadastro, nas
+métricas, na inscrição de notificação e nos dois proxies. **Os números são
+folgados de propósito:** no Brasil boa parte do acesso móvel sai por CGNAT,
+e um prédio ou uma operadora inteira podem aparecer com o mesmo endereço —
+um teto apertado trancaria gente inocente. Varredura e pulverização usam
+milhares de tentativas, não dezenas.
+
+**O IP não é guardado.** Só um SHA-256 truncado em 24 caracteres, com prazo
+de 10 minutos a uma hora conforme o caso.
+
+### O relógio contava quem tem conta
+
+A resposta do login já era a mesma para e-mail inexistente e senha errada —
+de propósito, para não entregar quem tem conta num app religioso. **O tempo
+não era.** Sem usuário, o `scrypt` nem chegava a rodar e a resposta voltava
+num piscar; com usuário, demorava o custo do `scrypt`. Bastava cronometrar.
+Agora o trabalho acontece de todo jeito, sobre um sal descartável.
+
+### O que ficou de fora, e por quê
+
+- **`<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">`
+  sem SRI e com versão flutuante.** Se o pacote ou a CDN forem
+  comprometidos, roda script arbitrário na nossa origem, com acesso ao
+  `localStorage` inteiro — notas, orações, favoritos. A CSP não protege:
+  `cdn.jsdelivr.net` está em `script-src`. **O certo é hospedar o arquivo
+  aqui**, como já se faz com as fontes, e tirar o jsDelivr da CSP. Não foi
+  feito porque o ambiente onde esta revisão rodou bloqueia a saída para a
+  CDN — não deu para baixar o arquivo nem calcular o hash.
+- **O 409 "já existe uma conta com esse e-mail"** continua sendo um oráculo
+  de quem tem conta. Tirá-lo deixaria o cadastro incompreensível; o teto por
+  origem fecha a varredura, não o oráculo.
+- **Não há recuperação de senha.** Quem esquecer perde o acesso ao próprio
+  histórico, o que na prática limita o Art. 18.
+- **RLS na tabela `devocionais` do Supabase** continua pendente e é do lado
+  do painel, não do código. A chave `anon` está no cliente **de propósito** —
+  é o desenho do Supabase —, mas ela só é segura se a RLS estiver ligada.
+
+### Sobre "IP do servidor" e "porta aberta"
+
+Não há servidor seu para achar nem porta para bater. A Vercel roda funções
+sem servidor atrás da borda dela: o que responde no DNS é a rede da Vercel,
+compartilhada por milhares de projetos, e só a 443 atende. Não existe
+origem para descobrir nem SSH, banco ou painel expostos — o Upstash e o
+Supabase são falados por HTTPS com credencial que vive só nas variáveis de
+ambiente. **A superfície de ataque são os endpoints**, e é por isso que a
+auditoria é sobre eles.
+
 ## APIs bíblicas
 
 - getBible — Bíblia Livre

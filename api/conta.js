@@ -6,8 +6,23 @@
  */
 
 const C = require('../lib/contas');
+const { excedeu } = require('../lib/limite');
 
 const MIN_SENHA = 8;
+
+/* Tetos por origem, além do contador por e-mail que já existia. Ver o
+   comentário de lib/limite.js: o contador por e-mail não pega
+   pulverização de senha, e é ele mesmo a arma de quem quer trancar a
+   conta de outra pessoa. */
+/* Os números são folgados de propósito. No Brasil boa parte do acesso
+   móvel sai por CGNAT: um prédio, uma escola ou uma operadora inteira
+   podem aparecer aqui com o mesmo endereço. Um teto apertado trancaria
+   gente inocente que só dividiu a rede com outra pessoa. O que precisa
+   ser barrado — varredura de e-mails e pulverização de senha — usa
+   milhares de tentativas, não dezenas; e o teto por conta, mais estreito,
+   continua valendo por cima deste. */
+const TETO_ENTRAR    = { max: 30, janela: 10 * 60 };
+const TETO_REGISTRAR = { max: 15, janela: 60 * 60 };
 
 function corpo(req) {
   try {
@@ -22,10 +37,10 @@ module.exports = async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ erro: 'Método não permitido' });
 
   if (!C.configurado()) {
-    return res.status(503).json({
-      erro: 'Contas ainda não configuradas no servidor',
-      dica: 'Defina UPSTASH_REDIS_REST_URL e UPSTASH_REDIS_REST_TOKEN na Vercel'
-    });
+    /* sem dica sobre qual banco ou qual variável: quem chama de fora não
+       precisa saber o que roda aqui dentro, e a dica ia direto para quem
+       estivesse procurando por onde entrar */
+    return res.status(503).json({ erro: 'Contas indisponíveis no momento' });
   }
 
   const body = corpo(req);
@@ -34,6 +49,14 @@ module.exports = async function handler(req, res) {
   try {
     /* ---------- criar conta ---------- */
     if (acao === 'registrar') {
+      /* O 409 "já existe uma conta com esse e-mail" é necessário — sem ele
+         ninguém entende por que o cadastro falhou —, mas é também um
+         oráculo: dá para perguntar de e-mail em e-mail quem tem conta num
+         app religioso, o que por si só revela convicção (Art. 11). O teto
+         por origem não fecha o oráculo, fecha a varredura. */
+      if (await excedeu('registrar', req, TETO_REGISTRAR.max, TETO_REGISTRAR.janela)) {
+        return res.status(429).json({ erro: 'Muitos cadastros a partir daqui. Tente mais tarde.' });
+      }
       const email = C.normalizarEmail(body.email);
       const senha = String(body.senha || '');
 
@@ -57,6 +80,9 @@ module.exports = async function handler(req, res) {
 
     /* ---------- entrar ---------- */
     if (acao === 'entrar') {
+      if (await excedeu('entrar', req, TETO_ENTRAR.max, TETO_ENTRAR.janela)) {
+        return res.status(429).json({ erro: 'Muitas tentativas a partir daqui. Espere e tente de novo.' });
+      }
       const email = C.normalizarEmail(body.email);
       const senha = String(body.senha || '');
 
@@ -65,7 +91,11 @@ module.exports = async function handler(req, res) {
       }
 
       const usuario = await C.acharUsuario(email);
-      const ok = usuario && await C.senhaConfere(senha, usuario.sal, usuario.senha);
+      /* sem usuário, gasta-se o mesmo tempo mesmo assim: a mensagem já era
+         igual nos dois casos, faltava o relógio ser */
+      const ok = usuario
+        ? await C.senhaConfere(senha, usuario.sal, usuario.senha)
+        : await C.gastarOMesmoTempo();
 
       if (!ok) {
         await C.registrarFalha(email);

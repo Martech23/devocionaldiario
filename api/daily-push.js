@@ -80,19 +80,19 @@ module.exports = async function handler(req, res) {
   try {
     return await enviar(req, res);
   } catch (e) {
-    return res.status(500).json({
-      error: 'A função quebrou',
-      etapa: 'inesperada',
-      detalhe: String(e && e.message || e),
-      pilha: String(e && e.stack || '').split('\n').slice(0, 4)
-    });
+    /* a pilha ia inteira para quem chamasse: caminhos de arquivo, versões
+       de módulo e a forma do projeto. Fica no log da Vercel, onde só quem
+       tem acesso ao painel a lê. */
+    console.error('daily-push:', e);
+    return res.status(500).json({ error: 'A função quebrou', etapa: 'inesperada' });
   }
 };
 
 async function enviar(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Authorization, Content-Type');
+  /* Sem CORS: quem chama isto é o cron da Vercel ou a linha de comando,
+     nunca uma página. Com Access-Control-Allow-Origin: * qualquer site
+     podia sondar este endpoint pelo navegador de quem o visitasse. */
+  res.setHeader('Cache-Control', 'no-store');
   if (req.method === 'OPTIONS') return res.status(204).end();
 
   const isVercelCron = req.headers['x-vercel-cron'] === '1';
@@ -104,40 +104,25 @@ async function enviar(req, res) {
   const doBearer = auth.startsWith('Bearer ') ? auth.slice(7).trim() : '';
   const okAuth = !!secret && iguais(doBearer, secret);
 
-  /* req.query nem sempre vem preenchido, dependendo do runtime em que a
-     função roda. Sem esta reserva, o ?secret= era silenciosamente ignorado
-     e a chamada dava 401 mesmo com o segredo certo. */
-  let q = req.query;
-  if (!q || typeof q.secret === 'undefined') {
-    try {
-      q = Object.fromEntries(new URL(req.url, 'http://x').searchParams);
-    } catch (_) {
-      q = q || {};
-    }
-  }
-  const daUrl = String(q.secret || '').trim();
-  const recebido = daUrl || doBearer;
-  const enviouSegredo = !!recebido;
-  const okQuery = !!secret && iguais(daUrl, secret);
+  /* =========================================================
+     O SEGREDO SAIU DA URL, E O 401 PAROU DE CONTAR
 
-  if (!isVercelCron && !okAuth && !okQuery) {
-    /* Três coisas diferentes davam a mesma resposta, e quem chamava não
-       tinha como saber qual era a sua. O segredo não vaza em nenhuma. */
-    const motivo = !secret
-      ? 'CRON_SECRET não está definido nas variáveis de ambiente deste projeto na Vercel. Enquanto não estiver, não há chamada manual possível — só o cron automático.'
-      : !enviouSegredo
-        ? 'Nenhum segredo foi enviado. Acrescente ?secret=SEU_SECRET no fim do endereço, ou o cabeçalho Authorization: Bearer SEU_SECRET.'
-        : 'O segredo enviado não confere com o CRON_SECRET configurado na Vercel.';
-    return res.status(401).json({
-      error: 'Não autorizado',
-      motivo: motivo,
-      segredoConfigurado: !!secret,
-      segredoRecebido: enviouSegredo,
-      /* só os tamanhos, nunca os valores: é o que revela na hora um espaço
-         colado junto, um valor truncado ou aspas em volta */
-      tamanhoConfigurado: secret.length,
-      tamanhoRecebido: recebido.length
-    });
+     Duas coisas erradas moravam aqui.
+
+     A primeira: ?secret=... na barra de endereço. Query string entra
+     no log de acesso da Vercel, no histórico do navegador e no
+     cabeçalho Referer de qualquer link seguido a partir dali. Um
+     segredo em URL é um segredo escrito em vários lugares que
+     ninguém lembra de limpar. Só o cabeçalho Authorization vale
+     agora — que é o que o GitHub Actions e o README já usavam.
+
+     A segunda: a resposta de 401 devolvia tamanhoConfigurado, o
+     COMPRIMENTO EXATO do CRON_SECRET, a quem não tinha autorização
+     nenhuma. Junto com "segredoConfigurado", confirmava que existe e
+     dizia de que tamanho. Era ajuda de depuração deixada para trás.
+     ========================================================= */
+  if (!isVercelCron && !okAuth) {
+    return res.status(401).json({ error: 'Não autorizado' });
   }
 
   if (!configured()) {
@@ -158,14 +143,12 @@ async function enviar(req, res) {
   try {
     webpush.setVapidDetails(subject, publicKey, privateKey);
   } catch (e) {
+    console.error('daily-push VAPID:', e);
     return res.status(503).json({
       error: 'VAPID keys inválidas',
       etapa: 'configurar VAPID',
-      detalhe: String(e && e.message || e),
-      dica: 'Confira VAPID_PUBLIC_KEY e VAPID_PRIVATE_KEY na Vercel. A pública tem 87 caracteres e a privada 43, ambas em base64url. VAPID_SUBJECT precisa ser mailto: ou uma URL.',
-      tamanhoPublica: publicKey.length,
-      tamanhoPrivada: privateKey.length,
-      subject: subject
+      /* o detalhe vai para o log, não para a resposta */
+      dica: 'Confira as chaves VAPID no painel. A pública tem 87 caracteres e a privada 43, ambas em base64url; o subject precisa ser mailto: ou uma URL.'
     });
   }
 
@@ -175,11 +158,10 @@ async function enviar(req, res) {
   try {
     subs = await listSubs();
   } catch (e) {
+    console.error('daily-push Redis:', e);
     return res.status(502).json({
-      error: 'Não consegui ler as inscrições no Redis',
-      etapa: 'listar inscrições',
-      detalhe: String(e && e.message || e),
-      dica: 'Confira UPSTASH_REDIS_REST_URL e UPSTASH_REDIS_REST_TOKEN na Vercel.'
+      error: 'Não consegui ler as inscrições',
+      etapa: 'listar inscrições'
     });
   }
 
