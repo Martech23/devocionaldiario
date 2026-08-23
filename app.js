@@ -1167,17 +1167,71 @@ const Voz = (function(){
     }
     if(play){
       const pausado = estado === 'pausado';
-      play.textContent = pausado ? '▶' : '⏸';
+      /* o ícone é um <use>, não texto: escrever no botão apagaria o SVG */
+      const uso = play.querySelector('use');
+      if(uso) uso.setAttribute('href', pausado ? '#i-tocar' : '#i-pausar');
       play.setAttribute('aria-label', pausado ? 'Continuar leitura' : 'Pausar leitura');
       play.title = pausado ? 'Continuar' : 'Pausar';
     }
-    if(vel) vel.textContent = String(prefs.vel).replace('.', ',') + '×';
-
-    const pb = $('audio-prog-barra');
-    if(pb){
-      const pct = trechos.length ? Math.min(100, (idx / trechos.length) * 100) : 0;
-      pb.style.width = pct.toFixed(1) + '%';
+    if(vel){
+      vel.textContent = String(prefs.vel).replace('.', ',') + '×';
+      /* fora do normal, a velocidade se destaca: é a explicação mais
+         provável para "por que a voz está estranha hoje" */
+      vel.classList.toggle('rapido', Number(prefs.vel) !== 1);
     }
+
+    desenharProgresso();
+  }
+
+  /* =========================================================
+     UM TRAÇO POR TRECHO
+
+     Era uma linha contínua movida por idx/trechos.length — quatro
+     pixels que ninguém via, e que sugeriam uma linha do tempo que a
+     fala do navegador não tem: não dá para buscar posição, só pular
+     de trecho em trecho.
+
+     Agora cada parte da leitura é um traço, e o traço atual enche
+     conforme os pedaços dela são falados. Acima de doze partes os
+     traços ficariam finos demais para dizer alguma coisa, e a barra
+     volta a ser uma linha só.
+     ========================================================= */
+  const MAX_TRACOS = 12;
+
+  function desenharProgresso(){
+    const prog = $('audio-prog');
+    if(!prog) return;
+    const total = partes.length || 1;
+    const emTracos = total > 1 && total <= MAX_TRACOS;
+    const quantos = emTracos ? total : 1;
+
+    prog.classList.toggle('continua', !emTracos);
+    if(prog.children.length !== quantos){
+      prog.innerHTML = '';
+      for(let i = 0; i < quantos; i++){
+        const p = document.createElement('span');
+        p.className = 'audio-passo';
+        p.appendChild(document.createElement('span'));
+        prog.appendChild(p);
+      }
+    }
+
+    /* quanto do trecho atual já foi falado */
+    const dentro = trechos.length ? Math.min(1, idx / trechos.length) : 0;
+    const geral = ((parteAtual + dentro) / total) * 100;
+
+    [...prog.children].forEach((p, i) => {
+      const cheio = emTracos ? (i < parteAtual) : false;
+      p.classList.toggle('feito', cheio);
+      p.classList.toggle('atual', emTracos && i === parteAtual);
+      const dentroDele = emTracos
+        ? (i === parteAtual ? dentro * 100 : (i < parteAtual ? 100 : 0))
+        : geral;
+      p.firstChild.style.width = dentroDele.toFixed(1) + '%';
+    });
+    prog.setAttribute('aria-valuenow', String(Math.round(geral)));
+    prog.setAttribute('aria-valuetext',
+      total > 1 ? 'Trecho ' + (parteAtual + 1) + ' de ' + total : 'Lendo');
   }
 
   /* ---------- watchdog do Chrome no desktop ----------
