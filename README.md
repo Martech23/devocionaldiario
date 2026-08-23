@@ -1821,6 +1821,42 @@ Não há fonte reserva em português arcaico: quando todas as fontes falham, o
 app mostra um erro com "Tentar de novo", em vez de servir um texto de 1911
 sem avisar.
 
+### Metade do catálogo é só Novo Testamento
+
+Comparar as versões em Gênesis 1:1 devolvia **"Esta versão não respondeu
+agora"** em duas delas — a [Biblia Livre para Todos](https://ebible.org/details.php?id=porblt)
+e [A Bíblia Sagrada, Tradução para Tradutores](https://ebible.org/find/details.php?id=portft).
+Nenhuma das duas tinha problema de rede: **as duas só têm o Novo
+Testamento.** Pedir Gênesis devolve 404, e o app tratava 404 como falha
+passageira — dizia "agora", convidando a tentar de novo uma coisa que nunca
+vai dar certo.
+
+O 404 passou a ser lido pelo que é: `buscarCapituloEm` marca o erro com
+`semLivro` e o nome do livro que falta. A comparação agora separa **três
+motivos que antes eram uma frase só**:
+
+| Situação | Antes | Agora |
+|---|---|---|
+| A versão não traz o livro | "não respondeu agora" | sai da lista, e uma nota no pé diz quais e por quê |
+| O capítulo veio, o versículo não | "não respondeu agora" | "Esta versão junta este versículo a outro." |
+| A fonte caiu mesmo | "não respondeu agora" | a mesma frase, **e um "Tentar de novo"** |
+
+Quem não traz o livro **sai da lista, não sai da verdade**: uma linha morta
+no meio atrapalha a leitura das que têm texto, então vira uma nota no pé que
+continua nomeando as duas. E a exclusão é **por livro** — em João as duas
+voltam a aparecer, com texto.
+
+O "Tentar de novo" só aparece quando repetir pode mudar alguma coisa. Para
+uma versão que não tem o livro, o botão seria uma promessa falsa.
+
+### O texto assina quem serviu, não quem foi escolhido
+
+Achado no mesmo caminho: a leitura já caía para a Bíblia Livre quando a
+versão do momento não trazia o livro, mas o cartão continuava assinando com
+o nome da **escolhida** — atribuía a uma tradução um texto que não era dela.
+`buscarCapituloEm` passou a devolver junto qual versão respondeu, e
+`buscarVerso` assina com essa.
+
 ## APIs bíblicas
 
 - getBible — Bíblia Livre
