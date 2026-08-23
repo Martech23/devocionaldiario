@@ -879,9 +879,34 @@ function atualizarBotoesDoVerso(){
   const fav = estaFavorito(nr, cap, verso);
   const b = $('fa-fav');
   if(!b) return;
-  b.textContent = fav ? '★ Favorito' : '☆ Favoritar';
-  b.classList.toggle('ativo', fav);
+  pintarFavNaFolha(fav);
   atualizarVersoNaTela();
+}
+
+/* =========================================================
+   O RÓTULO TROCA, O ÍCONE FICA
+
+   Estes botões eram texto puro ("☆ Favoritar"), e quatro pontos do app
+   trocavam o estado escrevendo por cima com textContent. Agora que o
+   ícone é um <svg> irmão do rótulo, escrever no botão inteiro apagaria
+   o desenho. Só o <span> muda.
+   ========================================================= */
+function rotularBotaoDaFolha(id, texto, ativo, dica){
+  const b = $(id);
+  if(!b) return;
+  const alvo = b.querySelector('span') || b;
+  alvo.textContent = texto;
+  b.classList.toggle('ativo', !!ativo);
+  if(dica) b.setAttribute('aria-label', dica);
+  else b.removeAttribute('aria-label');
+}
+function pintarFavNaFolha(fav){
+  rotularBotaoDaFolha('fa-fav', fav ? 'Favorito' : 'Favoritar', fav,
+    fav ? 'Tirar dos favoritos' : 'Guardar nos favoritos');
+}
+function pintarNotaNaFolha(temNota){
+  rotularBotaoDaFolha('fa-nota', temNota ? 'Editar nota' : 'Nota', temNota,
+    temNota ? 'Editar a nota deste versículo' : 'Escrever uma nota neste versículo');
 }
 
 const $ = id => document.getElementById(id);
@@ -1468,7 +1493,7 @@ function mostrarPaineFolha(qual){
 }
 
 function mostrarPaineFolhaDireto(qual){
-  ['folha-principal', 'folha-nota', 'folha-comparar', 'folha-refs'].forEach(id =>
+  ['folha-principal', 'folha-nota', 'folha-comparar', 'folha-refs', 'folha-enviar'].forEach(id =>
     $(id).classList.toggle('oculto', id !== qual)
   );
 }
@@ -1487,14 +1512,12 @@ function abrirFolhaVerso(nr, cap, verso, texto){
   document.querySelectorAll('#folha-cores button').forEach(b =>
     b.classList.toggle('ativo', (b.dataset.cor || '') === (cor || ''))
   );
+  mostrarBorrachaDaCor(!!cor);
 
-  const fav = estaFavorito(nr, cap, verso);
-  $('fa-fav').textContent = fav ? '★ Favorito' : '☆ Favoritar';
-  $('fa-fav').classList.toggle('ativo', fav);
+  pintarFavNaFolha(estaFavorito(nr, cap, verso));
 
   const nota = carregarNotas()[k];
-  $('fa-nota').textContent = nota ? '✎ Editar nota' : '✎ Nota';
-  $('fa-nota').classList.toggle('ativo', !!nota);
+  pintarNotaNaFolha(!!nota);
   $('campo-nota-verso').value = nota ? nota.texto : '';
 
   /* direto: a folha ainda nem entrou no histórico, não há painel a sair */
@@ -1557,8 +1580,17 @@ function definirCorDoVerso(cor){
   document.querySelectorAll('#folha-cores button').forEach(b =>
     b.classList.toggle('ativo', (b.dataset.cor || '') === (cor || ''))
   );
+  mostrarBorrachaDaCor(!!cor);
   atualizarVersoNaTela();
   avisar(cor ? 'Versículo marcado' : 'Marca removida');
+}
+
+/* A borracha só existe quando há marca. Um ✕ permanente numa fileira de
+   cores promete uma ação que na maior parte das vezes não faz nada — e,
+   dentro de uma folha, lê como "fechar" antes de ler como "apagar". */
+function mostrarBorrachaDaCor(temCor){
+  const b = $('folha-limpar-cor');
+  if(b) b.classList.toggle('oculto', !temCor);
 }
 
 /* Grava o que estiver no campo, se mudou. Silencioso de propósito:
@@ -1598,16 +1630,14 @@ function salvarNotaDoVerso(op){
                        const campo = $('campo-nota-verso');
                        if(campo && versoAberto && chaveVerso(versoAberto.nr, versoAberto.cap, versoAberto.verso) === k)
                          campo.value = antes.texto || '';
-                       $('fa-nota').textContent = '✎ Editar nota';
-                       $('fa-nota').classList.add('ativo'); }
+                       pintarNotaNaFolha(true); }
     });
   }
   salvarNotas(notas);
   atualizarVersoNaTela();
   renderFavoritos();
   mostrarPaineFolha('folha-principal');
-  $('fa-nota').textContent = valor ? '✎ Editar nota' : '✎ Nota';
-  $('fa-nota').classList.toggle('ativo', !!valor);
+  pintarNotaNaFolha(!!valor);
 }
 
 /* ---------- comparação entre versões ---------- */
@@ -5772,8 +5802,7 @@ $('fa-fav').onclick = function(){
   const { nr, cap, verso, texto } = versoAberto;
   const ref = livroPorNr(nr).nome + ' ' + cap + ':' + verso;
   const ativo = alternarFavorito({ nr, cap, verso, texto, versao: versaoAtual.nome, ref });
-  this.textContent = ativo ? '★ Favorito' : '☆ Favoritar';
-  this.classList.toggle('ativo', ativo);
+  pintarFavNaFolha(ativo);
 };
 
 $('fa-nota').onclick = () => mostrarPaineFolha('folha-nota');
@@ -5785,21 +5814,33 @@ $('btn-voltar-folha2').onclick = () => mostrarPaineFolha('folha-principal');
 /* sem o wrapper, o clique chegaria como argumento e viraria as opções */
 $('btn-salvar-nota').onclick = () => salvarNotaDoVerso();
 
-$('fa-copiar').onclick = () => {
+$('fa-enviar').onclick = () => mostrarPaineFolha('folha-enviar');
+$('btn-voltar-folha4').onclick = () => mostrarPaineFolha('folha-principal');
+
+$('fa-enviar-texto').onclick = () => {
   if(!versoAberto) return;
   const { nr, cap, verso, texto } = versoAberto;
   const ref = livroPorNr(nr).nome + ' ' + cap + ':' + verso;
   compartilharTexto(`"${texto}"\n${ref} — ${versaoAtual.nome}`, linkDoVerso(nr, cap, verso));
+  /* a bandeja do sistema abre por cima; ao voltar, a folha não pode estar
+     parada na tela de escolha, como se o envio não tivesse acontecido */
+  mostrarPaineFolha('folha-principal');
 };
 
-$('fa-imagem').onclick = () => {
+$('fa-enviar-imagem').onclick = () => {
   if(!versoAberto) return;
   const { nr, cap, verso, texto } = versoAberto;
-  /* mesma razão: o gerador só abre depois de a folha ter saído */
+  /* O gerador só abre depois de a folha ter saído. Daqui há duas camadas
+     no histórico — o painel de envio por cima da folha — e sair('folha')
+     leva as duas: ele volta até a camada nomeada, não um degrau. */
   const gerar = () => abrirGeradorImagem(
     texto, livroPorNr(nr).nome + ' ' + cap + ':' + verso,
     versaoAtual.nome, '', [nr, cap, verso]);
-  if(!Navegacao.sair('folha', 1, gerar)){ fecharFolhaDireto(); gerar(); }
+  if(!Navegacao.sair('folha', 1, gerar)){
+    mostrarPaineFolhaDireto('folha-principal');
+    fecharFolhaDireto();
+    gerar();
+  }
 };
 
 $('btn-nota-voz').onclick = function(){
