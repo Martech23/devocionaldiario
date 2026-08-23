@@ -9,7 +9,24 @@ module.exports = async function handler(req, res) {
      uma API de busca de fotos pública movida pela NOSSA chave do Pexels.
      A cota gratuita são 200 pedidos por hora; qualquer site podia gastá-la
      e deixar o gerador de imagem sem foto. */
-  res.setHeader('Cache-Control', 's-maxage=3600, stale-while-revalidate=86400');
+  /* =========================================================
+     O TETO QUE APERTA É O DO MÊS, NÃO O DA HORA
+
+     O plano gratuito do Pexels dá 200 pedidos por hora e 20 mil por
+     mês. Como a borda da Vercel guarda a resposta, o custo real não
+     é "quantas pessoas usaram" e sim "quantos endereços distintos
+     existem": 10 temas × 2 orientações × 4 páginas = 80.
+
+     Com uma hora de cache, 80 endereços × 24 horas dariam 1.920
+     chamadas por dia — 57 mil por mês, quase três vezes o teto.
+     Com 24 horas, são 80 por dia: 2.400 por mês, 12% da cota,
+     independentemente de quantas pessoas usem o app.
+
+     Foto de banco não muda; guardar por um dia não custa nada a
+     ninguém. Este número é o que segura a conta, não o limite por
+     IP — esse é contra abuso, não contra volume legítimo.
+     ========================================================= */
+  res.setHeader('Cache-Control', 's-maxage=86400, stale-while-revalidate=604800');
 
   if (req.method === 'OPTIONS') return res.status(204).end();
   if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
@@ -28,7 +45,12 @@ module.exports = async function handler(req, res) {
     const q = String((req.query && req.query.q) || 'peaceful nature sunrise')
       .slice(0, 100)
       .trim();
-    const perPage = Math.min(Math.max(parseInt((req.query && req.query.per_page) || '12', 10) || 12, 1), 30);
+    const perPage = Math.min(Math.max(parseInt((req.query && req.query.per_page) || '12', 10) || 12, 1), 40);
+    /* Sem página, "buscar outras fotos" pedia sempre a mesma primeira
+       página e recebia as mesmas fotos — e a borda nem chegava a
+       encaminhar o pedido. O teto de 4 é o que mantém a conta do mês
+       fechada; ver o comentário do cache acima. */
+    const page = Math.min(Math.max(parseInt((req.query && req.query.page) || '1', 10) || 1, 1), 4);
     const orientation = ['landscape', 'portrait', 'square'].includes(req.query && req.query.orientation)
       ? req.query.orientation
       : 'portrait';
@@ -38,6 +60,8 @@ module.exports = async function handler(req, res) {
       encodeURIComponent(q) +
       '&per_page=' +
       perPage +
+      '&page=' +
+      page +
       '&orientation=' +
       orientation;
 
@@ -63,6 +87,10 @@ module.exports = async function handler(req, res) {
 
     return res.status(200).json({
       query: q,
+      page,
+      /* o cliente precisa saber se ainda há o que pedir: sem isto ele
+         só descobriria o fim recebendo uma página vazia */
+      ultima: page >= 4 || photos.length < perPage,
       total: data.total_results || photos.length,
       photos
     });

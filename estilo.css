@@ -1025,6 +1025,10 @@ button.copiar:hover img { opacity: 1; }
   padding: 4px;
 }
 .fundo-op.mais:hover { border-color: var(--azul); color: var(--azul); }
+/* acabaram as páginas: o botão diz isso em vez de tentar de novo à toa */
+.fundo-op.mais.fim { opacity: 0.5; cursor: default; }
+.fundo-op.mais.fim:hover { border-color: var(--linha-forte); color: var(--texto-3); transform: none; }
+.fundo-op.mais[disabled] { cursor: default; }
 .fundo-op.mais .i { width: 18px; height: 18px; }
 /* separa as fotos dos fundos desenhados sem precisar de rótulo */
 .fita-corte {

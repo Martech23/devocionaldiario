@@ -1844,6 +1844,51 @@ Dois ganhos que vieram junto:
 - **Sem Pexels, a fita fica só com os dez desenhados** — o que já explica a
   ausência de foto sem precisar de aviso na tela.
 
+### "Outras fotos" trazia sempre as mesmas
+
+O botão apagava o cache do aparelho e pedia de novo — com a **mesma
+consulta, o mesmo `per_page` e sem página nenhuma**. O Pexels devolvia as
+mesmas fotos, e a borda da Vercel nem chegava a encaminhar o pedido. Logo
+depois, `imgFotoIdx = 0` saltava para a primeira dessa lista idêntica: era
+isso que se via como *"voltou para a foto do início"*. Apertar de novo não
+mudava nada, porque já estava na primeira.
+
+Agora cada toque pede a **página seguinte** e **acrescenta** à fita:
+
+| | Antes | Agora |
+|---|---|---|
+| O que o botão pedia | sempre a página 1 | a página seguinte |
+| O que acontecia com a fita | trocava inteira | cresce no fim |
+| A foto escolhida | voltava para a primeira | continua escolhida |
+| Fotos por tema | 15 | **96** (4 × 24) |
+
+O acumulado fica em cache por consulta, com a orientação da primeira busca
+— trocar Feed por Quadrado não joga fora o que a pessoa já viu, porque o
+recorte dá conta da diferença. Quando as páginas acabam, o botão vira
+**"Fim"** e para de responder, em vez de oferecer o que já não existe.
+
+### O teto que aperta é o do mês, não o da hora
+
+O plano gratuito do Pexels dá **200 pedidos por hora e 20 mil por mês**
+([documentação](https://www.pexels.com/api/documentation/)). Como a borda da
+Vercel guarda a resposta, o custo real não é *quantas pessoas usaram* e sim
+**quantos endereços distintos existem**:
+
+```
+10 temas × 2 orientações × 4 páginas = 80 endereços
+```
+
+Com o cache de uma hora que havia antes, 80 endereços × 24 horas dariam
+1.920 chamadas por dia — **57 mil por mês, quase três vezes o teto.** O
+`s-maxage` passou para **24 horas**: 80 por dia, **2.400 por mês, 12% da
+cota**, independentemente de quantas pessoas usem o app. Foto de banco não
+muda; guardar por um dia não custa nada a ninguém.
+
+É esse número que segura a conta — não o limite por IP em `/api/pexels`,
+que existe contra abuso e não contra volume legítimo. E o teste calcula a
+conta a partir do próprio código, então mexer no teto de páginas ou no
+cache sem refazer a matemática quebra a suíte.
+
 E o crédito da foto, que aparecia **duas vezes** (gravado na imagem e
 repetido solto abaixo do botão, onde lia como rótulo do "Formato"), virou
 uma legenda única logo abaixo da prévia. O gravado na imagem continua: é

@@ -4414,17 +4414,61 @@ function fundoAtual(){
   return FUNDOS[Math.floor(r() * FUNDOS.length)];
 }
 
-async function buscarFotosPexels(query){
-  if(imgFotoCache[query]) return imgFotoCache[query];
-  const orient = imgFormato === 'quadrado' ? 'square' : 'portrait';
+/* =========================================================
+   AS FOTOS SE ACUMULAM, NÃO SE SUBSTITUEM
+
+   "Outras fotos" apagava o cache e pedia de novo — com a MESMA
+   consulta, o MESMO per_page e sem página nenhuma. O Pexels devolvia
+   as mesmas quinze fotos, e a borda da Vercel nem chegava a
+   encaminhar o pedido. Depois disso, imgFotoIdx = 0 saltava para a
+   primeira dessa lista idêntica: era isso que se via como "voltou
+   para a foto do início", e apertar de novo não mudava nada porque
+   já estava na primeira.
+
+   Agora cada toque pede a PÁGINA SEGUINTE e ACRESCENTA à fita. Nada
+   do que já estava lá desaparece, a foto escolhida continua
+   escolhida, e o índice segue valendo porque a lista só cresce no
+   fim.
+
+   O cache guarda o acumulado por consulta, com a orientação da
+   primeira busca: trocar Feed por Quadrado não joga fora as fotos
+   que a pessoa já viu — o recorte dá conta da diferença.
+   ========================================================= */
+const FOTOS_POR_PAGINA = 24;
+
+async function buscarFotosPexels(query, pagina){
+  const guardado = imgFotoCache[query];
+  if(!pagina || pagina === 1){
+    if(guardado && guardado.fotos.length) return guardado.fotos;
+    pagina = 1;
+  }
+  const orient = (guardado && guardado.orient) ||
+    (imgFormato === 'quadrado' ? 'square' : 'portrait');
   const r = await fetch('/api/pexels?q=' + encodeURIComponent(query) +
-    '&per_page=15&orientation=' + orient);
+    '&per_page=' + FOTOS_POR_PAGINA + '&page=' + pagina + '&orientation=' + orient);
   const d = await r.json().catch(() => ({}));
-  if(!r.ok) throw new Error(d.error || d.hint || ('Pexels ' + r.status));
-  const photos = d.photos || [];
-  if(!photos.length) throw new Error('Nenhuma foto encontrada para este tema');
-  imgFotoCache[query] = photos;
-  return photos;
+  if(!r.ok) throw new Error(d.error || ('Pexels ' + r.status));
+  const novas = d.photos || [];
+  if(!novas.length && pagina === 1) throw new Error('Nenhuma foto encontrada para este tema');
+
+  const antes = guardado ? guardado.fotos : [];
+  /* o mesmo id pode voltar entre páginas quando o acervo muda de ordem */
+  const vistos = new Set(antes.map(f => f.id));
+  const acumulado = antes.concat(novas.filter(f => !vistos.has(f.id)));
+  imgFotoCache[query] = {
+    orient,
+    pagina,
+    ultima: !!d.ultima || !novas.length,
+    fotos: acumulado
+  };
+  return acumulado;
+}
+
+/* quantas fotos entraram desde a última vez, para a fita poder mostrar
+   as novas em vez de deixar a pessoa achar que nada aconteceu */
+function haMaisFotos(query){
+  const c = imgFotoCache[query];
+  return !c || !c.ultima;
 }
 
 function carregarImagemUrl(url){
@@ -4567,14 +4611,22 @@ function montarFitaDeFundos(){
   });
 
   /* o que o "Trocar fundo" fazia de útil — pedir outras fotos ao Pexels —
-     continua existindo, mas dito com todas as letras e sem apagar a
-     escolha de quem já achou a sua */
-  const mais = opcao('Buscar outras fotos');
-  mais.className = 'fundo-op mais';
+     continua existindo, mas acrescentando à fita em vez de trocar tudo */
+  const q = consultaFotoPorTema(imgAtual.tema, imgAtual.texto);
+  const acabou = !haMaisFotos(q);
+  const mais = opcao(acabou ? 'Não há mais fotos deste tema' : 'Buscar outras fotos');
+  mais.className = 'fundo-op mais' + (acabou ? ' fim' : '');
   mais.removeAttribute('role');
-  mais.innerHTML = '<svg class="i" aria-hidden="true"><use href="#i-imagem"/></svg><span>Outras fotos</span>';
+  mais.disabled = acabou;
+  mais.innerHTML = '<svg class="i" aria-hidden="true"><use href="#i-imagem"/></svg><span>' +
+    (acabou ? 'Fim' : 'Outras fotos') + '</span>';
   mais.onclick = buscarOutrasFotos;
   fita.appendChild(mais);
+
+  /* remontar a fita apaga as marcas junto com os botões antigos: sem
+     isto, depois de "Outras fotos" a escolha continuava valendo por
+     dentro e nenhuma miniatura aparecia marcada */
+  marcarOpcoes();
 }
 
 async function escolherFundo(escolha){
@@ -4592,22 +4644,44 @@ async function escolherFundo(escolha){
 
 async function buscarOutrasFotos(){
   const q = consultaFotoPorTema(imgAtual.tema, imgAtual.texto);
-  delete imgFotoCache[q];
-  const palco = $('palco-img');
-  if(palco) palco.classList.add('carregando');
+  if(!haMaisFotos(q)) return avisar('Estas são todas as fotos deste tema.');
+
+  const botao = document.querySelector('#img-fundos .fundo-op.mais');
+  if(botao) botao.disabled = true;
+  const quantasTinha = imgFotoLista.length;
+  const proxima = ((imgFotoCache[q] && imgFotoCache[q].pagina) || 1) + 1;
+
   try {
-    imgFotoLista = await buscarFotosPexels(q);
-    imgFotoIdx = 0;
-    imgFotoObj = null;
-    imgModo = 'foto';
+    imgFotoLista = await buscarFotosPexels(q, proxima);
+    /* a escolha de quem já achou a sua não se mexe: a lista só cresceu
+       no fim, então o índice continua apontando para a mesma foto */
     montarFitaDeFundos();
-    await redesenharImagem();
+    const novas = imgFotoLista.length - quantasTinha;
+    if(novas > 0){
+      /* sem isto, a fita continua mostrando as de antes e o toque parece
+         não ter feito nada — as novas entraram lá longe, à direita */
+      mostrarFotoNaFita(quantasTinha);
+      avisar('Mais ' + novas + (novas === 1 ? ' foto' : ' fotos') + ' no fim da fita');
+    } else {
+      avisar('Estas são todas as fotos deste tema.');
+    }
   } catch(e){
     console.info('Pexels:', e && e.message);
     avisar('Não deu para buscar outras fotos agora.');
   } finally {
-    if(palco) palco.classList.remove('carregando');
+    /* só reabilita se ainda houver o que pedir: reabilitar sempre
+       desfazia o estado de "Fim" que a própria fita tinha acabado de
+       montar, e o botão voltava a oferecer o que já não existe */
+    const b = document.querySelector('#img-fundos .fundo-op.mais');
+    if(b) b.disabled = !haMaisFotos(q);
   }
+}
+
+/* leva a fita até uma foto, sem trocar o que está escolhido */
+function mostrarFotoNaFita(indice){
+  const alvo = document.querySelector('#img-fundos .fundo-op[data-foto="' + indice + '"]');
+  if(alvo && alvo.scrollIntoView)
+    alvo.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'start' });
 }
 
 function marcarOpcoes(){
