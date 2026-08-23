@@ -1,19 +1,23 @@
 const { configured, addSub } = require('../lib/store');
 const { fusoValido, horaValida, FUSO_PADRAO, HORA_PADRAO } = require('../lib/agenda');
+const { excedeu } = require('../lib/limite');
 
 module.exports = async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  /* Sem CORS aberto, e com teto. Cada inscrição nova lê o conjunto
+     inteiro antes de gravar, então inscrições falsas ficam mais caras à
+     medida que se acumulam — e nada as expira. Sem limite, dava para
+     encher o Redis e fazer o envio diário estourar o tempo. */
+  res.setHeader('Cache-Control', 'no-store');
 
   if (req.method === 'OPTIONS') return res.status(204).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   if (!configured()) {
-    return res.status(503).json({
-      error: 'Push ainda não configurado no servidor',
-      hint: 'Defina UPSTASH_REDIS_REST_URL e UPSTASH_REDIS_REST_TOKEN na Vercel'
-    });
+    return res.status(503).json({ error: 'Lembrete indisponível no momento' });
+  }
+
+  if (await excedeu('subscribe', req, 20, 60 * 60)) {
+    return res.status(429).json({ error: 'muitos pedidos' });
   }
 
   try {
@@ -34,7 +38,7 @@ module.exports = async function handler(req, res) {
     });
     return res.status(200).json({ ok: true });
   } catch (e) {
-    console.error(e);
-    return res.status(500).json({ error: e.message || 'Erro ao salvar' });
+    console.error('subscribe:', e);
+    return res.status(500).json({ error: 'Erro ao salvar' });
   }
 };
