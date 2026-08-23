@@ -1789,9 +1789,20 @@ Dez fundos — amanhecer, noite estrelada, montanhas, águas, trigal, deserto,
 raios de luz, ramo de oliveira, vereda e pergaminho — em três formatos: feed
 (1080×1350), story (1080×1920) e quadrado.
 
-**Os fundos são desenhados no canvas, não são fotos.** Banco de fotos
-exigiria licença e chave de API, e mataria o funcionamento offline. Desenhado,
-o app segue estático, sem dependência externa e sem risco de direito autoral.
+**Quem se escolhe são as fotos do Pexels.** Os dez fundos desenhados no
+canvas saíram da fita: a escolha é entre imagens de verdade.
+
+**Mas eles não saíram do app** — são o socorro. Sem internet, com a cota do
+mês estourada, sem chave ou com o Pexels fora do ar, é o desenho que faz a
+imagem existir, e um app que se instala para funcionar offline não pode
+responder "não deu" a quem só queria compartilhar um versículo. Nesse caso o
+fundo entra sozinho, **nenhuma miniatura fica marcada** (não foi escolha de
+ninguém) e a legenda da prévia diz *"Sem foto agora — fundo provisório do
+app"*, em vez de anunciar um estilo que já não se oferece. Quando a rede
+volta, tocar em **Outras fotos** traz as fotos e a primeira assume sozinha.
+
+Os desenhos continuam valendo a pena por serem gratuitos, sem licença a
+respeitar e sem dependência de rede — o mesmo motivo pelo qual existiam.
 
 O fundo de partida é escolhido a partir da referência, então o mesmo
 versículo abre sempre com a mesma imagem. O tamanho da fonte se ajusta

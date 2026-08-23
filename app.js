@@ -4561,13 +4561,6 @@ function montarOpcoesImagem(){
    e são eles que sobram quando não há rede — o que também explica,
    sem precisar de aviso, por que só há desenho na tela.
    ========================================================= */
-function miniaturaDesenhada(fundo){
-  const c = document.createElement('canvas');
-  /* pequeno de propósito: dez destes são desenhados a cada abertura */
-  c.width = 116; c.height = 148;
-  try { fundo.desenhar(c.getContext('2d'), c.width, c.height); } catch(_){}
-  return c;
-}
 
 function montarFitaDeFundos(){
   const fita = $('img-fundos');
@@ -4595,20 +4588,27 @@ function montarFitaDeFundos(){
     fita.appendChild(b);
   });
 
-  if(imgFotoLista.length){
-    const corte = document.createElement('span');
-    corte.className = 'fita-corte';
-    corte.setAttribute('aria-hidden', 'true');
-    fita.appendChild(corte);
-  }
+  /* =========================================================
+     OS DESENHADOS SAÍRAM DA ESCOLHA, NÃO DO APP
 
-  FUNDOS.forEach(f => {
-    const b = opcao(f.nome + ' — fundo desenhado');
-    b.dataset.arte = f.id;
-    b.appendChild(miniaturaDesenhada(f));
-    b.onclick = () => escolherFundo({ modo: 'arte', id: f.id });
-    fita.appendChild(b);
-  });
+     A fita mostrava dez paisagens desenhadas no canvas junto das
+     fotos. Elas saíram daqui: quem escolhe, escolhe foto de verdade.
+
+     Mas continuam existindo como SOCORRO. Sem internet, com a cota
+     do mês estourada, sem chave ou com o Pexels fora do ar, é o
+     desenho que faz a imagem existir — e um app que se instala para
+     funcionar offline não pode responder "não deu" a quem só queria
+     compartilhar um versículo. Nesse caso o fundo entra sozinho e a
+     legenda da prévia diz por quê; ninguém o escolhe.
+     ========================================================= */
+  if(!imgFotoLista.length){
+    /* fita vazia sem explicação parece defeito. Aqui ela diz o que
+       houve, e o botão ao lado é a tentativa de novo. */
+    const vazio = document.createElement('p');
+    vazio.className = 'fita-vazia';
+    vazio.textContent = 'Nenhuma foto agora.';
+    fita.appendChild(vazio);
+  }
 
   /* o que o "Trocar fundo" fazia de útil — pedir outras fotos ao Pexels —
      continua existindo, mas acrescentando à fita em vez de trocar tudo */
@@ -4629,15 +4629,11 @@ function montarFitaDeFundos(){
   marcarOpcoes();
 }
 
+/* só foto se escolhe: o desenho é socorro, e socorro não se escolhe */
 async function escolherFundo(escolha){
-  if(escolha.modo === 'arte'){
-    imgModo = 'arte';
-    imgFundo = escolha.id;
-  } else {
-    imgModo = 'foto';
-    imgFotoIdx = escolha.indice;
-    imgFotoObj = null;
-  }
+  imgModo = 'foto';
+  imgFotoIdx = escolha.indice;
+  imgFotoObj = null;
   marcarOpcoes();
   await redesenharImagem();
 }
@@ -4653,8 +4649,16 @@ async function buscarOutrasFotos(){
 
   try {
     imgFotoLista = await buscarFotosPexels(q, proxima);
-    /* a escolha de quem já achou a sua não se mexe: a lista só cresceu
-       no fim, então o índice continua apontando para a mesma foto */
+    /* Se estávamos no socorro, é porque não havia foto nenhuma — então
+       a primeira que chega assume. Fora daí, a escolha de quem já achou
+       a sua não se mexe: a lista só cresceu no fim, e o índice continua
+       apontando para a mesma foto. */
+    if(imgModo === 'arte' && imgFotoLista.length){
+      imgModo = 'foto';
+      imgFotoIdx = 0;
+      imgFotoObj = null;
+      await redesenharImagem();
+    }
     montarFitaDeFundos();
     const novas = imgFotoLista.length - quantasTinha;
     if(novas > 0){
@@ -4696,18 +4700,22 @@ function marcarOpcoes(){
         : '';
     }
   } else {
+    /* Antes esta linha dizia "Fundo artístico (desenhado no app)", como
+       se fosse um estilo à escolha. Deixou de ser: agora ela só aparece
+       quando o banco de fotos falhou, e tem de dizer isso — o aviso de
+       rodapé some em segundos, a legenda fica. */
     if(nome) nome.textContent = fundoAtual().nome;
-    if(cred) cred.textContent = 'Fundo artístico (desenhado no app)';
+    if(cred) cred.textContent = 'Sem foto agora — fundo provisório do app.';
   }
   document.querySelectorAll('#img-formatos .chip-img').forEach(b => {
     const ativo = b.dataset.formato === imgFormato;
     b.classList.toggle('ativo', ativo);
     b.setAttribute('aria-checked', ativo ? 'true' : 'false');
   });
+  /* no socorro nenhuma miniatura fica marcada, e é o certo: não foi
+     escolha de ninguém */
   document.querySelectorAll('#img-fundos .fundo-op[role="radio"]').forEach(b => {
-    const ativo = b.dataset.arte
-      ? (imgModo === 'arte' && fundoAtual().id === b.dataset.arte)
-      : (imgModo === 'foto' && Number(b.dataset.foto) === imgFotoIdx);
+    const ativo = imgModo === 'foto' && Number(b.dataset.foto) === imgFotoIdx;
     b.classList.toggle('ativo', ativo);
     b.setAttribute('aria-checked', ativo ? 'true' : 'false');
   });
