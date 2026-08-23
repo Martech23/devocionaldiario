@@ -609,21 +609,14 @@ button.copiar {
   justify-content: center;
   gap: 0;
 }
-button.copiar img,
-#fa-copiar img {
+button.copiar img {
   width: 18px;
   height: 18px;
   display: block;
   opacity: 1 !important;
   filter: none;
 }
-button.copiar:hover img,
-#fa-copiar:hover img { opacity: 1; }
-#fa-copiar {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
+button.copiar:hover img { opacity: 1; }
 
 .seletor-versao {
   position: relative;
@@ -1585,7 +1578,6 @@ button.ouvir {
   justify-content: center;
 }
 button.ouvir img,
-#fa-ouvir img,
 .btn-ouvir .ico img {
   width: 20px;
   height: 20px;
@@ -1597,28 +1589,20 @@ button.ouvir {
   opacity: 1 !important;
 }
 html[data-tema="escuro"] button.ouvir img,
-html[data-tema="escuro"] #fa-ouvir img,
 html[data-tema="escuro"] .btn-ouvir .ico img {
   filter: brightness(0) invert(1);
 }
-/* O compartilhar ficava preto sobre o fundo escuro nos três lugares onde
-   aparece — cartão do versículo, folha de ações e leitura. A regra pelo
-   arquivo pega qualquer lugar novo onde ele venha a ser usado; o #fa-copiar
-   precisa vir junto porque a regra dele tem id e venceria por
-   especificidade. */
+/* O compartilhar ficava preto sobre o fundo escuro onde ainda é PNG —
+   cartão do versículo e leitura. A regra pelo arquivo pega qualquer lugar
+   novo onde ele venha a ser usado. Na folha do versículo já não há PNG:
+   os ícones de lá viraram SVG e herdam a cor do texto sozinhos. */
 html[data-tema="escuro"] img[src$="icon-share.png"],
-html[data-tema="escuro"] img[src$="icon-mic.png"],
-html[data-tema="escuro"] #fa-copiar img {
+html[data-tema="escuro"] img[src$="icon-mic.png"] {
   filter: brightness(0) invert(1);
 }
 button.ouvir.tocando img,
 .btn-ouvir.tocando .ico img {
   filter: brightness(0) invert(1);
-}
-#fa-ouvir {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
 }
 .ouvir-mini {
   display: inline-flex;
@@ -2221,7 +2205,14 @@ html[data-tema="escuro"] {
   color: var(--texto-2);
   line-height: 1.5;
   margin-bottom: 16px;
-  max-height: 5.5em;
+  /* Eram 5,5 linhas cortadas a seco: um versículo longo terminava no meio
+     de uma letra, sem nada dizendo que continuava. Três linhas com
+     reticências ocupam metade da altura e avisam que há mais — e o
+     versículo inteiro continua na página, atrás da folha. */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
   overflow: hidden;
 }
 .folha-cores {
@@ -2241,7 +2232,28 @@ html[data-tema="escuro"] {
   transition: transform var(--trans), border-color var(--trans);
 }
 .folha-cores button:hover { transform: scale(1.1); }
+/* =========================================================
+   MARCADO E EM FOCO NÃO PODEM SER O MESMO ANEL
+
+   O único sinal de "esta é a cor posta" era a moldura azul — e o anel
+   do foco pelo teclado é igualmente um anel azul. Abrir a folha põe o
+   foco no primeiro círculo, então o amarelo parecia sempre marcado.
+   Agora o marcado leva um ✓ dentro: sobrevive ao foco, e sobrevive a
+   quem não distingue as cores pastel umas das outras.
+   ========================================================= */
+.folha-cores button { position: relative; }
 .folha-cores button.ativo { border-color: var(--azul); }
+.folha-cores button.ativo:not(.c-limpar)::after {
+  content: '✓';
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--texto);
+}
 .folha-cores .c-amarelo { background: var(--mc-amarelo); }
 .folha-cores .c-verde   { background: var(--mc-verde); }
 .folha-cores .c-azul    { background: var(--mc-azul); }
@@ -2278,6 +2290,58 @@ html[data-tema="escuro"] {
 }
 .folha-acoes button:hover { background: var(--azul-claro-bg); border-color: var(--azul); color: var(--azul); }
 .folha-acoes button.ativo { background: var(--azul-suave); border-color: var(--azul); color: var(--azul); }
+/* o ícone acompanha o rótulo em tamanho e cor, e não tem tamanho próprio
+   como tinham os PNG de antes */
+.folha-acoes .i { width: 17px; height: 17px; flex: none; }
+/* favorito e nota guardados: o desenho enche, não só a moldura muda de cor
+   — quem não distingue as duas cores continua vendo o estado */
+.folha-acoes button.ativo .i { fill: currentColor; fill-opacity: 0.22; }
+
+/* =========================================================
+   O QUE ABRE PAINEL DIZ QUE ABRE PAINEL
+
+   Dos seis botões, dois agem na hora (Ouvir, Favoritar) e quatro
+   trocam o conteúdo da folha. Nada distinguia os dois grupos: quem
+   tocava em Comparar esperando ouvir alguma coisa levava a folha
+   inteira trocada sem aviso. O ‹›› é a mesma convenção que o menu
+   lateral já usa para "isto leva a outro lugar".
+   ========================================================= */
+.folha-acoes button.abre-painel { position: relative; padding-right: 20px; }
+.folha-acoes button.abre-painel::after {
+  content: '›';
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-52%);
+  font-size: 17px;
+  line-height: 1;
+  color: var(--texto-3);
+}
+.folha-acoes button.abre-painel:hover::after { color: var(--azul); }
+
+/* as duas formas de mandar o versículo para fora */
+.folha-escolha { display: grid; gap: 8px; margin-top: 14px; }
+.folha-escolha button {
+  font-family: inherit;
+  text-align: left;
+  background: var(--papel-alt);
+  color: var(--texto);
+  border: 1px solid var(--linha);
+  border-radius: var(--radius-sm);
+  padding: 14px;
+  min-height: 60px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: all var(--trans);
+}
+.folha-escolha button:hover { background: var(--azul-claro-bg); border-color: var(--azul); color: var(--azul); }
+.folha-escolha button:focus-visible { outline: 2px solid var(--azul); outline-offset: 2px; }
+.folha-escolha .i { width: 22px; height: 22px; flex: none; }
+.folha-escolha b { display: block; font-size: 15px; font-weight: 700; }
+.folha-escolha small { display: block; font-size: 13px; color: var(--texto-3); margin-top: 2px; }
+.folha-escolha button:hover small { color: inherit; }
 
 .folha-nota { margin-top: 14px; }
 .folha-nota textarea {

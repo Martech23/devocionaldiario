@@ -1108,12 +1108,83 @@ aberturas.
 ## Toque num versículo
 
 Dentro de um capítulo, tocar num versículo abre a folha de ações: marcar com
-uma das quatro cores, favoritar, escrever uma nota, comparar as versões,
-copiar, gerar imagem ou ouvir.
+uma das quatro cores, favoritar, escrever uma nota, comparar as versões, ver
+referências cruzadas, ouvir ou compartilhar.
 
 Os destaques e as notas ficam no aparelho (`localStorage`) e reaparecem
 sempre que o capítulo é reaberto. As notas antigas, que só existiam presas a
 um favorito, são migradas na primeira abertura.
+
+### A folha tinha sete botões e uma fileira pela metade
+
+Sete ações numa grade de duas colunas dão três fileiras cheias e uma quarta
+com um botão só, metade da largura vazia ao lado. E os sete não se pareciam
+entre si: os ícones vinham de **três famílias** no mesmo bloco.
+
+| | Antes | Agora |
+|---|---|---|
+| Ações | 7 | **6** |
+| Fileiras no celular | 3 cheias + 1 órfã | **3 cheias** |
+| Altura da folha (390×844) | 433px | **377px** |
+| Famílias de ícone | 3 | **1** |
+
+**Uma família só.** Eram dois PNG (Ouvir, Compartilhar), um SVG (Imagem) e
+quatro glifos de texto (`☆ ✎ ⇄ ↔`). Os glifos vêm da fonte do sistema: peso,
+tamanho e linha de base mudam de aparelho para aparelho, e o PNG é preto —
+precisava de `filter: brightness(0) invert(1)` para sobreviver ao tema
+escuro, remendo que já tinha falhado uma vez. Os seis agora são `<symbol>`
+do mesmo sprite, com o mesmo traço, herdando a cor do texto. As regras de
+filtro que existiam só para eles saíram do CSS.
+
+**`⇄` e `↔` eram duas setas quase iguais** para duas ações diferentes.
+Comparar virou duas colunas lado a lado — que é o que a tela faz — e Veja
+também virou dois elos de corrente.
+
+**Compartilhar e Imagem faziam a mesma coisa por dois caminhos:** mandar o
+versículo para fora, um como texto, outro como cartão. Viraram um botão só
+que pergunta em que forma, com as duas opções explicadas. É o que fechou a
+grade em seis. **Custa um toque a mais** para quem só queria mandar o texto
+— é o preço da fileira que deixou de ficar pela metade.
+
+### O que abre painel diz que abre painel
+
+Dos seis botões, dois agem na hora (Ouvir, Favoritar) e quatro trocam o
+conteúdo da folha (Nota, Comparar, Veja também, Compartilhar). Nada
+distinguia os dois grupos: quem tocava em Comparar levava a folha inteira
+trocada sem aviso. Os quatro ganharam o `›` que o menu lateral já usa.
+
+### Marcado e "em foco" eram o mesmo anel
+
+O único sinal de qual cor estava posta era uma moldura azul — e o anel do
+foco pelo teclado também é azul. Abrir a folha põe o foco no primeiro
+círculo, então **o amarelo parecia sempre marcado**. Agora a cor posta leva
+um `✓` dentro: sobrevive ao foco e sobrevive a quem não distingue os quatro
+pastéis entre si, que era o outro furo — a moldura fina era o único sinal.
+
+E a borracha (`✕`) passou a aparecer **só quando há marca para tirar**. Um
+`✕` permanente numa fileira de cores promete uma ação que quase sempre não
+faz nada e, dentro de uma folha, lê como "fechar" antes de ler como
+"apagar".
+
+### Duas armadilhas no caminho
+
+**O rótulo trocava apagando o ícone.** Quatro pontos do app escreviam o
+estado com `textContent` no botão inteiro (`'★ Favorito'`). Com o ícone
+virando um `<svg>` irmão do rótulo, escrever no botão apagaria o desenho.
+Passaram todos por `rotularBotaoDaFolha`, que só toca no `<span>` — e de
+quebra o `aria-label` passou a dizer o que o toque *fará* ("Tirar dos
+favoritos"), não o estado em que está.
+
+**Sair para o gerador de imagem virou duas camadas.** Imagem era um botão
+da folha e saía com `Navegacao.sair('folha')`; agora sai de dentro do
+painel de envio, com uma camada a mais no histórico. Não foi preciso mudar
+a chamada: `sair` volta **até a camada nomeada**, levando o que estiver por
+cima — mas o teste prende isso, porque um `sair` de um degrau só deixaria o
+painel pendurado.
+
+**O texto do versículo** parava em 5,5 linhas cortadas a seco, terminando no
+meio de uma letra. São três linhas com reticências: metade da altura, e
+avisando que continua.
 
 ### Como se sabe que dá para tocar?
 

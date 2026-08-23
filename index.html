@@ -65,6 +65,39 @@
   <symbol id="i-relogio" viewBox="0 0 24 24">
     <circle cx="12" cy="12" r="8.5"/><path d="M12 7v5.2l3.4 2"/>
   </symbol>
+  <!-- Ícones da folha do versículo. Eram três famílias no mesmo bloco de
+       sete botões: dois PNG (Ouvir, Compartilhar), um SVG (Imagem) e
+       quatro glifos de texto (☆ ✎ ⇄ ↔). Os glifos vêm da fonte do
+       sistema — peso, tamanho e linha de base mudam de aparelho para
+       aparelho, e ⇄ e ↔ são duas setas quase iguais para duas ações
+       diferentes. Aqui todos têm o mesmo traço e a mesma cor. -->
+  <symbol id="i-som" viewBox="0 0 24 24">
+    <path d="M4 9.5h3.5L12 5.5v13L7.5 14.5H4z"/>
+    <path d="M15.5 9.2a4 4 0 010 5.6M18.2 6.5a7.8 7.8 0 010 11"/>
+  </symbol>
+  <symbol id="i-estrela" viewBox="0 0 24 24">
+    <path d="M12 3.8l2.6 5.3 5.8.85-4.2 4.1 1 5.8-5.2-2.73-5.2 2.73 1-5.8-4.2-4.1 5.8-.85z"/>
+  </symbol>
+  <symbol id="i-nota" viewBox="0 0 24 24">
+    <path d="M15.5 4.2l4.3 4.3L9 19.3l-5 .7.7-5z"/><path d="M13.4 6.3l4.3 4.3"/>
+  </symbol>
+  <!-- comparar: duas colunas lado a lado, que é o que a tela faz -->
+  <symbol id="i-comparar" viewBox="0 0 24 24">
+    <rect x="3.5" y="4.5" width="7.5" height="15" rx="1.6"/>
+    <rect x="13" y="4.5" width="7.5" height="15" rx="1.6"/>
+  </symbol>
+  <!-- veja também: dois elos de corrente, não mais uma seta de duas pontas -->
+  <symbol id="i-refs" viewBox="0 0 24 24">
+    <path d="M10.2 13.8a3.6 3.6 0 010-5.1l2.9-2.9a3.6 3.6 0 015.1 5.1l-1.3 1.3"/>
+    <path d="M13.8 10.2a3.6 3.6 0 010 5.1l-2.9 2.9a3.6 3.6 0 01-5.1-5.1l1.3-1.3"/>
+  </symbol>
+  <symbol id="i-compartilhar" viewBox="0 0 24 24">
+    <path d="M12 3.6v11"/><path d="M8.2 7.4L12 3.6l3.8 3.8"/>
+    <path d="M6 12.5H4.8v7.9h14.4v-7.9H18"/>
+  </symbol>
+  <symbol id="i-texto" viewBox="0 0 24 24">
+    <path d="M4.5 6.5h15M4.5 11h15M4.5 15.5h9.5"/>
+  </symbol>
   <symbol id="i-paleta" viewBox="0 0 24 24">
     <path d="M12 3.5a8.5 8.5 0 100 17c1.2 0 1.9-.8 1.9-1.7 0-.5-.2-.9-.5-1.2-.3-.3-.5-.7-.5-1.2 0-.9.8-1.7 1.7-1.7h1.6a4.8 4.8 0 004.3-4.8C20.5 6.4 16.6 3.5 12 3.5z"/>
     <circle cx="7.5" cy="11" r="1.1" fill="currentColor" stroke="none"/>
@@ -581,16 +614,41 @@
       <button type="button" class="c-verde"   data-cor="verde"   aria-label="Marcar de verde"></button>
       <button type="button" class="c-azul"    data-cor="azul"    aria-label="Marcar de azul"></button>
       <button type="button" class="c-rosa"    data-cor="rosa"    aria-label="Marcar de rosa"></button>
-      <button type="button" class="c-limpar"  data-cor=""        aria-label="Tirar a marca">✕</button>
+      <!-- a borracha só aparece quando há marca para tirar: mostrar
+           "tirar" quando não há nada posto é oferecer o que não existe,
+           e um ✕ dentro de uma folha lê como "fechar" -->
+      <button type="button" class="c-limpar oculto" data-cor="" id="folha-limpar-cor" aria-label="Tirar a marca">✕</button>
     </div>
+    <!-- Seis ações fecham a grade: no celular são três fileiras de dois,
+         e a partir de 520px duas fileiras de três. Eram sete, e a sétima
+         ficava sozinha na última fileira. -->
     <div class="folha-acoes">
-      <button type="button" id="fa-ouvir"><img src="/icon-speaker.png" alt="" width="16" height="16" decoding="async"> Ouvir</button>
-      <button type="button" id="fa-fav">☆ Favoritar</button>
-      <button type="button" id="fa-nota">✎ Nota</button>
-      <button type="button" id="fa-comparar">⇄ Comparar</button>
-      <button type="button" id="fa-refs">↔ Veja também</button>
-      <button type="button" id="fa-copiar"><img src="/icon-share.png" alt="" width="16" height="16" decoding="async"> Compartilhar</button>
-      <button type="button" id="fa-imagem"><svg class="i" aria-hidden="true"><use href="#i-imagem"/></svg> Imagem</button>
+      <button type="button" id="fa-ouvir"><svg class="i" aria-hidden="true"><use href="#i-som"/></svg> <span>Ouvir</span></button>
+      <button type="button" id="fa-fav"><svg class="i" aria-hidden="true"><use href="#i-estrela"/></svg> <span>Favoritar</span></button>
+      <button type="button" id="fa-nota" class="abre-painel"><svg class="i" aria-hidden="true"><use href="#i-nota"/></svg> <span>Nota</span></button>
+      <button type="button" id="fa-comparar" class="abre-painel"><svg class="i" aria-hidden="true"><use href="#i-comparar"/></svg> <span>Comparar</span></button>
+      <button type="button" id="fa-refs" class="abre-painel"><svg class="i" aria-hidden="true"><use href="#i-refs"/></svg> <span>Veja também</span></button>
+      <button type="button" id="fa-enviar" class="abre-painel"><svg class="i" aria-hidden="true"><use href="#i-compartilhar"/></svg> <span>Compartilhar</span></button>
+    </div>
+  </div>
+
+  <!-- Compartilhar e Imagem faziam a mesma coisa por dois caminhos: mandar
+       o versículo para fora. Viraram um botão só que pergunta em que
+       forma. Custa um toque a mais para enviar o texto, e é o que fechou
+       a grade em seis. -->
+  <div id="folha-enviar" class="oculto">
+    <div class="folha-escolha">
+      <button type="button" id="fa-enviar-texto">
+        <svg class="i" aria-hidden="true"><use href="#i-texto"/></svg>
+        <span><b>Enviar o texto</b><small>O versículo, a referência e o link do app</small></span>
+      </button>
+      <button type="button" id="fa-enviar-imagem">
+        <svg class="i" aria-hidden="true"><use href="#i-imagem"/></svg>
+        <span><b>Criar uma imagem</b><small>Um cartão para o story ou o feed</small></span>
+      </button>
+    </div>
+    <div class="linha-nota mt-14">
+      <button class="btn-ouvir claro botao-largo" id="btn-voltar-folha4" type="button">Voltar</button>
     </div>
   </div>
 
