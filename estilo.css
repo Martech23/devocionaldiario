@@ -2429,6 +2429,15 @@ html[data-ditado="0"] #btn-busca-voz { display: none; }
   color: var(--texto);
 }
 .comp-falhou { font-style: italic; color: var(--texto-3); font-size: 14px; }
+/* as versões que não trazem o livro: fora da lista, dentro da verdade */
+.comp-fora {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--texto-3);
+  margin: 14px 0 0;
+  padding-top: 12px;
+  border-top: 1px solid var(--linha);
+}
 
 /* ---------------- orações ---------------- */
 /* =========================================================

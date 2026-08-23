@@ -1913,6 +1913,13 @@ async function verReferencias(){
   }
 }
 
+/* "A", "A e B", "A, B e C" — lista em português, com o "e" antes do
+   último, em vez das vírgulas soltas que o join daria */
+function listarNomes(nomes){
+  if(nomes.length <= 1) return nomes[0] || '';
+  return nomes.slice(0, -1).join(', ') + ' e ' + nomes[nomes.length - 1];
+}
+
 async function compararVersoes(){
   if(!versoAberto) return;
   const { nr, cap, verso } = versoAberto;
@@ -1920,13 +1927,30 @@ async function compararVersoes(){
   mostrarPaineFolha('folha-comparar');
   alvo.innerHTML = '<div class="carregando"><span class="giro"></span> Buscando nas versões…</div>';
 
+  /* =========================================================
+     TRÊS MOTIVOS DIFERENTES, UMA FRASE SÓ
+
+     Todo fracasso virava "Esta versão não respondeu agora" — e para
+     as duas versões que só têm o Novo Testamento isso era falso e
+     não tinha conserto: convidava a tentar de novo o que nunca vai
+     dar certo. Agora cada motivo diz o que é.
+     ========================================================= */
   const resultados = await Promise.all(VERSOES.map(async v => {
     try { return { nome: v.nome, texto: await buscarVersoEm(v, nr, cap, verso) }; }
-    catch { return { nome: v.nome, texto: null }; }
+    catch(e){ return { nome: v.nome, texto: null,
+                       semLivro: !!e.semLivro, semVerso: !!e.semVerso }; }
   }));
 
+  const livro = livroPorNr(nr).nome;
+  /* Quem não traz o livro não tem o que comparar, e uma linha morta no
+     meio da lista atrapalha a leitura das que têm. Sai da lista e vira
+     uma nota no pé, que continua dizendo quais são — some da comparação,
+     não da verdade. */
+  const semLivro = resultados.filter(r => r.semLivro);
+  const naLista  = resultados.filter(r => !r.semLivro);
+
   alvo.innerHTML = '';
-  resultados.forEach(r => {
+  naLista.forEach(r => {
     const d = document.createElement('div');
     d.className = 'comp-item';
     const n = document.createElement('div');
@@ -1934,20 +1958,44 @@ async function compararVersoes(){
     n.textContent = r.nome;
     const t = document.createElement('div');
     t.className = r.texto ? 'comp-txt' : 'comp-falhou';
-    t.textContent = r.texto || 'Esta versão não respondeu agora.';
+    t.textContent = r.texto
+      || (r.semVerso ? 'Esta versão junta este versículo a outro.'
+                     : 'Esta versão não respondeu agora.');
     d.appendChild(n);
     d.appendChild(t);
     alvo.appendChild(d);
   });
 
+  if(semLivro.length){
+    const nota = document.createElement('p');
+    nota.className = 'comp-fora';
+    nota.textContent = (semLivro.length === 1
+      ? 'Uma versão não entra aqui porque não traz ' + livro + ': '
+      : semLivro.length + ' versões não entram aqui porque não trazem ' + livro + ': ')
+      + listarNomes(semLivro.map(r => r.nome)) + '.';
+    alvo.appendChild(nota);
+  }
+
   const ouvir = criarBotaoOuvir('Ouvir todas as versões', () =>
     resultados.filter(r => r.texto).map(r => ({ texto: r.nome + '. ' + r.texto, rotulo: r.nome })),
     { classe: 'claro', voz: { titulo: 'Comparando versões' } });
   const linha = document.createElement('div');
-  linha.className = 'linha-ouvir';
-  linha.style.marginTop = '14px';
+  linha.className = 'linha-ouvir mt-14';
   linha.appendChild(ouvir);
   alvo.appendChild(linha);
+
+  /* Falha de rede tem conserto: quem tentou e não conseguiu merece o
+     caminho de volta. As que não trazem o livro já saíram da lista, e as
+     que juntam o versículo não mudam por tentar — então o botão só
+     aparece quando repetir pode dar outro resultado. */
+  if(naLista.some(r => !r.texto && !r.semVerso)){
+    const outra = document.createElement('button');
+    outra.type = 'button';
+    outra.className = 'btn-ouvir claro botao-largo mt-8';
+    outra.textContent = 'Tentar de novo';
+    outra.onclick = compararVersoes;
+    alvo.appendChild(outra);
+  }
 }
 
 /* =========================================================
@@ -2553,7 +2601,24 @@ async function buscarCapituloEm(v, nr, cap){
     : `${BASE}/${v.id}/${nr}/${cap}.json`;
 
   const r = await fetch(url);
-  if(!r.ok) throw new Error('A fonte respondeu ' + r.status + ' para esse capítulo.');
+  if(!r.ok){
+    /* =========================================================
+       404 NÃO É "NÃO RESPONDEU"
+
+       Metade do catálogo em português é só Novo Testamento — a
+       Bíblia Livre para Todos e a Tradução para Tradutores entre
+       elas. Pedir Gênesis a essas duas devolve 404, e o app
+       tratava isso como falha de rede: dizia "não respondeu
+       agora", convidando a tentar de novo uma coisa que nunca vai
+       dar certo. O 404 é permanente e tem de ser dito como tal.
+       ========================================================= */
+    const e = new Error(r.status === 404
+      ? 'Esta versão não traz ' + livro.nome + '.'
+      : 'A fonte respondeu ' + r.status + ' para esse capítulo.');
+    e.status = r.status;
+    e.semLivro = r.status === 404;
+    throw e;
+  }
   const d = await r.json();
 
   let itens;
@@ -2568,7 +2633,10 @@ async function buscarCapituloEm(v, nr, cap){
     if(!d || !Array.isArray(d.verses)) throw new Error('Resposta em formato inesperado.');
     itens = d.verses.map(x => ({tipo:'verso', numero:x.verse, texto:(x.text||'').trim()}));
   }
-  const saida = {itens};
+  /* a versão viaja junto: sem isso, quem recebe o capítulo não sabe qual
+     das fontes respondeu de fato — e o cartão do versículo assinava com o
+     nome da versão escolhida mesmo quando quem serviu foi a reserva */
+  const saida = {itens, versao: v};
   cache.set(chave, saida);
   return saida;
 }
@@ -2632,7 +2700,15 @@ async function pedirLivroInteiro(v, nr){
 async function buscarVersoEm(v, nr, cap, verso){
   const d = await buscarCapituloEm(v, nr, cap);
   const x = d.itens.find(i => i.tipo === 'verso' && i.numero === verso);
-  if(!x) throw new Error('Versículo não existe nesta versão.');
+  /* O capítulo veio, o versículo não. Não é falha de rede: versões
+     diferentes dividem os versículos de maneira diferente, e há quem
+     junte dois num só. Dizer "não respondeu" aqui seria mentir duas
+     vezes — respondeu, e o texto existe, só não com este número. */
+  if(!x){
+    const e = new Error('Esta versão não numera este versículo separadamente.');
+    e.semVerso = true;
+    throw e;
+  }
   return x.texto;
 }
 
@@ -2665,7 +2741,10 @@ async function buscarVerso(nr, cap, verso){
   const d = await buscarCapitulo(nr, cap);
   const v = d.itens.find(x => x.tipo === 'verso' && x.numero === verso);
   if(!v) throw new Error('Versículo não existe nesta versão.');
-  return {texto:v.texto, versao:versaoAtual.nome};
+  /* assina com quem serviu, não com quem foi escolhido: quando a versão
+     do momento não traz o livro, quem responde é a reserva, e atribuir o
+     texto dela à outra tradução é dizer uma coisa que não é verdade */
+  return {texto:v.texto, versao:(d.versao || versaoAtual).nome};
 }
 
 function blocoErro(msg, aoTentar){
