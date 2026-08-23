@@ -1030,13 +1030,13 @@ button.copiar:hover img { opacity: 1; }
 .fundo-op.mais.fim:hover { border-color: var(--linha-forte); color: var(--texto-3); transform: none; }
 .fundo-op.mais[disabled] { cursor: default; }
 .fundo-op.mais .i { width: 18px; height: 18px; }
-/* separa as fotos dos fundos desenhados sem precisar de rótulo */
-.fita-corte {
+/* fita sem foto nenhuma: diz o que houve, em vez de parecer defeito */
+.fita-vazia {
   flex: none;
-  width: 1px;
-  align-self: stretch;
-  margin: 6px 2px;
-  background: var(--linha);
+  align-self: center;
+  margin: 0 4px 0 0;
+  font-size: 13px;
+  color: var(--texto-3);
 }
 
 /* a prévia avisa que está trabalhando: trocar de fundo pede uma foto
