@@ -4492,13 +4492,122 @@ function montarOpcoesImagem(){
       const b = document.createElement('button');
       b.type = 'button';
       b.className = 'chip-img';
+      b.setAttribute('role', 'radio');
       b.textContent = f.nome;
       b.dataset.formato = f.id;
       b.onclick = async () => { imgFormato = f.id; marcarOpcoes(); await redesenharImagem(); };
       fmt.appendChild(b);
     });
   }
+  montarFitaDeFundos();
   marcarOpcoes();
+}
+
+/* =========================================================
+   A FITA DE FUNDOS
+
+   Havia dez fundos desenhados e até quinze fotos, todos escondidos
+   atrás de um botão "Trocar fundo" que ia para o próximo às cegas.
+   Não dava para ver o que existia, escolher, nem voltar ao que se
+   gostou — e quando a lista de fotos tinha uma só, o botão ia buscar
+   outras no Pexels, então nem a volta trazia a mesma de novo.
+
+   Aqui cada opção se mostra numa miniatura. As fotos vêm primeiro,
+   porque é o modo de partida; os desenhados vêm depois de um traço,
+   e são eles que sobram quando não há rede — o que também explica,
+   sem precisar de aviso, por que só há desenho na tela.
+   ========================================================= */
+function miniaturaDesenhada(fundo){
+  const c = document.createElement('canvas');
+  /* pequeno de propósito: dez destes são desenhados a cada abertura */
+  c.width = 116; c.height = 148;
+  try { fundo.desenhar(c.getContext('2d'), c.width, c.height); } catch(_){}
+  return c;
+}
+
+function montarFitaDeFundos(){
+  const fita = $('img-fundos');
+  if(!fita) return;
+  fita.innerHTML = '';
+
+  const opcao = (rotulo) => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'fundo-op';
+    b.setAttribute('role', 'radio');
+    b.setAttribute('aria-label', rotulo);
+    return b;
+  };
+
+  imgFotoLista.forEach((foto, i) => {
+    const b = opcao('Foto de ' + (foto.photographer || 'autor desconhecido'));
+    b.dataset.foto = String(i);
+    const im = document.createElement('img');
+    im.loading = 'lazy';
+    im.alt = '';
+    im.src = '/api/proxy-image?url=' + encodeURIComponent(foto.thumb || foto.url);
+    b.appendChild(im);
+    b.onclick = () => escolherFundo({ modo: 'foto', indice: i });
+    fita.appendChild(b);
+  });
+
+  if(imgFotoLista.length){
+    const corte = document.createElement('span');
+    corte.className = 'fita-corte';
+    corte.setAttribute('aria-hidden', 'true');
+    fita.appendChild(corte);
+  }
+
+  FUNDOS.forEach(f => {
+    const b = opcao(f.nome + ' — fundo desenhado');
+    b.dataset.arte = f.id;
+    b.appendChild(miniaturaDesenhada(f));
+    b.onclick = () => escolherFundo({ modo: 'arte', id: f.id });
+    fita.appendChild(b);
+  });
+
+  /* o que o "Trocar fundo" fazia de útil — pedir outras fotos ao Pexels —
+     continua existindo, mas dito com todas as letras e sem apagar a
+     escolha de quem já achou a sua */
+  const mais = opcao('Buscar outras fotos');
+  mais.className = 'fundo-op mais';
+  mais.removeAttribute('role');
+  mais.innerHTML = '<svg class="i" aria-hidden="true"><use href="#i-imagem"/></svg><span>Outras fotos</span>';
+  mais.onclick = buscarOutrasFotos;
+  fita.appendChild(mais);
+}
+
+async function escolherFundo(escolha){
+  if(escolha.modo === 'arte'){
+    imgModo = 'arte';
+    imgFundo = escolha.id;
+  } else {
+    imgModo = 'foto';
+    imgFotoIdx = escolha.indice;
+    imgFotoObj = null;
+  }
+  marcarOpcoes();
+  await redesenharImagem();
+}
+
+async function buscarOutrasFotos(){
+  const q = consultaFotoPorTema(imgAtual.tema, imgAtual.texto);
+  delete imgFotoCache[q];
+  const palco = $('palco-img');
+  if(palco) palco.classList.add('carregando');
+  try {
+    imgFotoLista = await buscarFotosPexels(q);
+    imgFotoIdx = 0;
+    imgFotoObj = null;
+    imgModo = 'foto';
+    montarFitaDeFundos();
+    await redesenharImagem();
+  } catch(e){
+    console.info('Pexels:', e && e.message);
+    avisar('Não deu para buscar outras fotos agora.');
+  } finally {
+    if(palco) palco.classList.remove('carregando');
+  }
 }
 
 function marcarOpcoes(){
@@ -4516,41 +4625,37 @@ function marcarOpcoes(){
     if(nome) nome.textContent = fundoAtual().nome;
     if(cred) cred.textContent = 'Fundo artístico (desenhado no app)';
   }
-  document.querySelectorAll('#img-formatos .chip-img').forEach(b =>
-    b.classList.toggle('ativo', b.dataset.formato === imgFormato));
+  document.querySelectorAll('#img-formatos .chip-img').forEach(b => {
+    const ativo = b.dataset.formato === imgFormato;
+    b.classList.toggle('ativo', ativo);
+    b.setAttribute('aria-checked', ativo ? 'true' : 'false');
+  });
+  document.querySelectorAll('#img-fundos .fundo-op[role="radio"]').forEach(b => {
+    const ativo = b.dataset.arte
+      ? (imgModo === 'arte' && fundoAtual().id === b.dataset.arte)
+      : (imgModo === 'foto' && Number(b.dataset.foto) === imgFotoIdx);
+    b.classList.toggle('ativo', ativo);
+    b.setAttribute('aria-checked', ativo ? 'true' : 'false');
+  });
 }
 
-async function trocarFundo(){
-  // Se já tem várias fotos carregadas, só troca para a próxima
-  if(imgFotoLista.length > 1){
-    imgFotoIdx = (imgFotoIdx + 1) % imgFotoLista.length;
-    imgFotoObj = null;
-    await redesenharImagem();
-    return;
-  }
-
-  // Se só tem 1 foto (ou nenhuma), busca novas
-  avisar('Buscando novas fotos no Pexels…');
-  const q = consultaFotoPorTema(imgAtual.tema, imgAtual.texto);
-  delete imgFotoCache[q];
-  imgFotoLista = [];
-  imgFotoObj = null;
-  imgFotoIdx = 0;
-  imgModo = 'foto';
-
-  /* Gira também o fundo desenhado. Sem isto, quem está offline — ou com
-     o Pexels fora — aperta "Trocar fundo", cai no recuo, e vê a mesma
-     cena de novo: o botão promete uma mudança e não entrega nenhuma. */
-  const atual = fundoAtual().id;
-  const i = FUNDOS.findIndex(f => f.id === atual);
-  imgFundo = FUNDOS[(i + 1) % FUNDOS.length].id;
-
-  await redesenharImagem();
-}
+/* trocarFundo() saiu junto com o botão: sortear o próximo às cegas era
+   o problema, não a solução. O que ele tinha de útil — pedir outras fotos
+   ao Pexels — virou buscarOutrasFotos(), no fim da fita. */
 
 async function redesenharImagem(){
+  const palco = $('palco-img');
+  if(palco) palco.classList.add('carregando');
   try {
+    /* Escolheu um fundo desenhado: não se vai à rede. Antes a foto era
+       sempre tentada primeiro, então pedir um desenho ainda esperava o
+       Pexels responder para só depois cair no recuo. */
+    if(imgModo === 'arte'){ desenharImagemArte(); marcarOpcoes(); return; }
+    const tinhaFotos = imgFotoLista.length;
     await desenharImagemFoto();
+    /* a lista chega de dentro do desenho, na primeira vez: a fita só
+       pode ser montada depois que ela existe */
+    if(!tinhaFotos && imgFotoLista.length) montarFitaDeFundos();
   } catch(e){
     /* Sem este recuo o canvas ficava em branco: 1080x1350 com zero
        pixels opacos, e a pessoa recebia um aviso pedindo para tentar de
@@ -4561,7 +4666,12 @@ async function redesenharImagem(){
     console.info('Pexels:', e && e.message);
     imgModo = 'arte';
     desenharImagemArte();
+    /* a fita passa a mostrar só os desenhados, o que já diz por que não
+       há foto na tela — o aviso some sozinho, a explicação fica */
+    montarFitaDeFundos();
     avisar('Sem foto agora — usando fundo desenhado.');
+  } finally {
+    if(palco) palco.classList.remove('carregando');
   }
   marcarOpcoes();
 }
@@ -5590,8 +5700,6 @@ $('btn-tirar').onclick = tirarPromessa;
 /* Modal imagem */
 $('btn-fechar-modal').onclick = fecharModalImg;
 $('btn-baixar-img').onclick = baixarImagem;
-$('btn-trocar-fundo').onclick = trocarFundo;
-     
 $('btn-compartilhar-img').onclick = compartilharImagem;
 $('modal-img').onclick = e => { if(e.target === $('modal-img')) fecharModalImg(); };
 

@@ -504,24 +504,45 @@
 
 <!-- Modal gerador de imagem -->
 <div class="modal-fundo" id="modal-img" role="dialog" aria-modal="true" aria-label="Imagem para compartilhar" tabindex="-1">
-  <div class="modal-caixa">
-    <h3>Imagem para compartilhar</h3>
-    <div class="palco-img"><canvas id="canvas-verso" width="1080" height="1350"></canvas></div>
-       
-<button class="btn claro w-100-mb-12" id="btn-trocar-fundo">Trocar fundo</button>
+  <!-- Três partes que não se misturam: um cabeçalho com o fechar sempre no
+       alto, um miolo que rola, e as ações presas no pé. Antes era tudo uma
+       coluna só dentro de uma caixa rolável, e num celular de 640px de
+       altura o "Fechar" e o "Baixar" ficavam abaixo da dobra — sem nada
+       dizendo que dava para rolar até eles. -->
+  <div class="modal-caixa caixa-imagem">
+    <header class="cabeca-modal">
+      <h3>Imagem para compartilhar</h3>
+      <button type="button" class="fechar-modal" id="btn-fechar-modal" aria-label="Fechar">✕</button>
+    </header>
 
-<!-- Mantém o ID oculto caso algum script antigo procure por ele -->
-<span id="img-nome-fundo" class="oculto-css"></span>
+    <div class="modal-rolagem">
+      <div class="palco-img" id="palco-img"><canvas id="canvas-verso" width="1080" height="1350"></canvas></div>
+      <!-- legenda da prévia, e só dela: antes esta linha vinha depois do
+           botão de trocar fundo e lia como rótulo do "Formato" logo abaixo -->
+      <p id="img-credito-foto" class="credito-foto"></p>
 
-    <p id="img-credito-foto" class="nota-mini"></p>
+      <!-- Mantém o ID oculto caso algum script antigo procure por ele -->
+      <span id="img-nome-fundo" class="oculto-css"></span>
 
-    <p class="rotulo-img">Formato</p>
-    <div class="chips-img" id="img-formatos" role="group" aria-label="Escolher o formato"></div>
+      <p class="rotulo-img" id="rotulo-fundo">Fundo</p>
+      <!-- Era um botão "Trocar fundo" que sorteava às cegas: não dava para
+           ver o que existia nem voltar ao que se gostou. -->
+      <div class="fita-fundos" id="img-fundos" role="radiogroup" aria-labelledby="rotulo-fundo"></div>
 
-    <div class="modal-acoes">
-      <button class="btn claro" id="btn-fechar-modal">Fechar</button>
-      <button class="btn claro" id="btn-baixar-img">Baixar</button>
-      <button class="btn" id="btn-compartilhar-img">Compartilhar</button>
+    </div>
+
+    <!-- O formato desceu para o pé junto com as ações. Ele diz o que vai
+         SAIR daqui, como elas — e no miolo rolável ele ficava logo abaixo
+         da dobra: existia, e ninguém via. Aqui está sempre à vista. -->
+    <div class="pe-imagem">
+      <div class="linha-formato">
+        <span class="rotulo-img" id="rotulo-formato">Formato</span>
+        <div class="chips-img" id="img-formatos" role="radiogroup" aria-labelledby="rotulo-formato"></div>
+      </div>
+      <div class="modal-acoes">
+        <button class="btn" id="btn-compartilhar-img">Compartilhar</button>
+        <button class="btn claro" id="btn-baixar-img">Baixar</button>
+      </div>
     </div>
   </div>
 </div>

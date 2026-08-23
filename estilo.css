@@ -875,6 +875,191 @@ button.copiar:hover img { opacity: 1; }
 .modal-fundo.aberto .modal-caixa { transform: scale(1) translateY(0); }
 .modal-caixa h3 { font-family: var(--fonte-titulo); font-size: 19px; margin-bottom: 16px; font-weight: 600; letter-spacing: -.01em; }
 
+/* =========================================================
+   O FECHAR NÃO PODE FICAR ABAIXO DA DOBRA
+
+   A caixa era uma coluna só, rolável por inteiro. Num aparelho de
+   360×640 ela pedia 659px e tinha 589: "Fechar" e "Baixar" nasciam
+   fora da tela, e nada dizia que dava para rolar até eles. O botão
+   que fecha um modal é o último que pode sumir.
+
+   Agora são três partes: cabeçalho preso no alto, miolo que rola,
+   e as ações presas no pé. O que rola é só o meio.
+   ========================================================= */
+.caixa-imagem {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;      /* quem rola é o miolo, não a caixa */
+  padding: 0;
+}
+.caixa-imagem .cabeca-modal {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 18px 20px 12px;
+  border-bottom: 1px solid var(--linha);
+}
+.caixa-imagem .cabeca-modal h3 { margin: 0; }
+.fechar-modal {
+  width: 40px;
+  height: 40px;
+  flex: none;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  color: var(--texto-3);
+  font-size: 17px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background var(--trans), color var(--trans);
+}
+.fechar-modal:hover { background: var(--papel-alt); color: var(--texto); }
+.fechar-modal:focus-visible { outline: 2px solid var(--azul); outline-offset: 2px; }
+.caixa-imagem .modal-rolagem {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 16px 20px 4px;
+  flex: 1 1 auto;
+  min-height: 0;         /* sem isto o flex recusa encolher e volta a estourar */
+}
+/* o pé: formato e ações, os dois presos e sempre visíveis */
+.pe-imagem {
+  flex: none;
+  border-top: 1px solid var(--linha);
+  background: var(--papel);
+  padding: 10px 20px calc(14px + env(safe-area-inset-bottom, 0px));
+}
+.linha-formato {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.linha-formato .rotulo-img { margin: 0; flex: none; }
+.linha-formato .chips-img { margin: 0; flex-wrap: nowrap; overflow-x: auto; }
+.caixa-imagem .modal-acoes { padding: 0; border: 0; }
+
+/* legenda da prévia, colada nela: antes esta linha vinha solta depois do
+   botão de trocar fundo e lia como rótulo do "Formato" logo abaixo */
+.credito-foto {
+  font-size: 11.5px;
+  color: var(--texto-3);
+  text-align: center;
+  margin: -6px 0 16px;
+  min-height: 1em;       /* sem pulo quando o texto troca */
+}
+
+/* =========================================================
+   VER OS FUNDOS EM VEZ DE SORTEÁ-LOS
+
+   "Trocar fundo" era um botão que passava para o próximo às cegas:
+   não dava para ver o que existia, escolher, nem voltar ao que se
+   gostou — e quando a lista de fotos tinha uma só, ele ia buscar
+   outras no Pexels, então a volta nem trazia a mesma de novo.
+   ========================================================= */
+.fita-fundos {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scroll-snap-type: x proximity;
+  padding: 2px 0 10px;
+  margin-bottom: 6px;
+  scrollbar-width: thin;
+}
+.fundo-op {
+  flex: none;
+  width: 58px;
+  height: 74px;
+  padding: 0;
+  border: 2px solid transparent;
+  border-radius: 8px;
+  background: var(--papel-alt);
+  cursor: pointer;
+  overflow: hidden;
+  position: relative;
+  scroll-snap-align: start;
+  transition: border-color var(--trans), transform var(--trans);
+}
+.fundo-op img, .fundo-op canvas {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.fundo-op:hover { transform: translateY(-2px); }
+.fundo-op:focus-visible { outline: 2px solid var(--azul); outline-offset: 2px; }
+.fundo-op.ativo { border-color: var(--azul); }
+/* o estado não pode depender só da moldura colorida */
+.fundo-op.ativo::after {
+  content: '✓';
+  position: absolute;
+  right: 3px;
+  bottom: 2px;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--azul);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+}
+/* último da fita: buscar outras fotos no Pexels */
+.fundo-op.mais {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  border: 1px dashed var(--linha-forte);
+  color: var(--texto-3);
+  font-family: inherit;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1.2;
+  text-align: center;
+  padding: 4px;
+}
+.fundo-op.mais:hover { border-color: var(--azul); color: var(--azul); }
+.fundo-op.mais .i { width: 18px; height: 18px; }
+/* separa as fotos dos fundos desenhados sem precisar de rótulo */
+.fita-corte {
+  flex: none;
+  width: 1px;
+  align-self: stretch;
+  margin: 6px 2px;
+  background: var(--linha);
+}
+
+/* a prévia avisa que está trabalhando: trocar de fundo pede uma foto
+   nova pela rede, e sem sinal nenhum a tela parecia travada */
+.palco-img { position: relative; }
+.palco-img.carregando::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.28);
+  border-radius: 8px;
+}
+.palco-img.carregando::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 26px;
+  height: 26px;
+  margin: -13px 0 0 -13px;
+  border: 3px solid rgba(255, 255, 255, 0.35);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: rodar 0.8s linear infinite;   /* a mesma do resto do app */
+  z-index: 1;
+}
+
 /* o canvas muda de proporção conforme o formato: o palco mantém
    a altura sob controle e centraliza o que sobrar */
 .palco-img {
@@ -884,13 +1069,27 @@ button.copiar:hover img { opacity: 1; }
 }
 .modal-caixa canvas {
   max-width: 100%;
-  max-height: 46vh;
+  /* Era 46vh. Com a fita de fundos ocupando lugar, esse tamanho empurrava
+     os chips de formato para fora da parte visível do miolo — existiam,
+     mas ninguém os via. A prévia encolhe primeiro: é a única coisa ali
+     que continua fazendo o seu trabalho menor. */
+  max-height: 42vh;
   width: auto;
   height: auto;
   border-radius: 8px;
   display: block;
   box-shadow: var(--sombra);
 }
+/* Tela curta: a fita de fundos é o controle novo e não pode nascer
+   cortada pela borda do miolo. Quem cede altura é a prévia. */
+@media (max-height: 700px) {
+  .modal-caixa canvas { max-height: 25vh; }
+  .caixa-imagem .modal-rolagem { padding-top: 10px; }
+  .credito-foto { margin: -4px 0 8px; }
+  .caixa-imagem .cabeca-modal { padding: 12px 20px 8px; }
+  .rotulo-img { margin-bottom: 5px; }
+}
+
 .linha-fundo {
   display: flex;
   align-items: center;
@@ -946,6 +1145,9 @@ button.copiar:hover img { opacity: 1; }
   justify-content: center;
 }
 #btn-compartilhar-img { grid-column: 1 / -1; order: -1; }
+/* com o fechar no alto, sobram duas ações e elas cabem lado a lado —
+   mas a principal continua ocupando a linha inteira acima */
+.caixa-imagem .modal-acoes { grid-template-columns: 1fr; }
 
 /* Favoritos / diário */
 .item-fav {
@@ -3234,7 +3436,6 @@ html[data-tema="escuro"] .dica-verso { color: var(--texto); }
 
 .linha-8.linha-8         { display: flex; gap: 8px; }
 .botao-largo.botao-largo { flex: 1 1 auto; justify-content: center; }
-.w-100-mb-12.w-100-mb-12 { width: 100%; margin-bottom: 12px; }
 .mt-20-mb-22.mt-20-mb-22 { margin-top: 20px; margin-bottom: 22px; }
 .mt-16-mb-0.mt-16-mb-0   { margin-top: 16px; margin-bottom: 0; }
 .titulo-menor.titulo-menor { margin-bottom: 12px; font-size: 16px; }
@@ -3245,7 +3446,6 @@ html[data-tema="escuro"] .dica-verso { color: var(--texto); }
 .nota-pe.nota-pe       { margin-top: 16px; font-size: 13px;   color: var(--texto-3); line-height: 1.5; }
 .nota-media.nota-media { margin-top: 14px; font-size: 13.5px; color: var(--texto-2); line-height: 1.5; }
 .nota-curta.nota-curta { margin-top: 12px; font-size: 13px;   color: var(--texto-3); }
-.nota-mini.nota-mini   { font-size: 12px;  color: var(--texto-3); margin: 6px 0 0; line-height: 1.4; }
 
 /* =========================================================
    A LEITURA VIRA UMA FOLHA

@@ -1793,14 +1793,61 @@ raios de luz, ramo de oliveira, vereda e pergaminho — em três formatos: feed
 exigiria licença e chave de API, e mataria o funcionamento offline. Desenhado,
 o app segue estático, sem dependência externa e sem risco de direito autoral.
 
-O fundo é escolhido a partir da referência, então o mesmo versículo gera
-sempre a mesma imagem — e o botão **Trocar fundo** percorre os dez, com o
-nome da cena logo ao lado. O tamanho da fonte se ajusta sozinho ao
-comprimento do texto, e um véu suave atrás do bloco garante leitura em
-qualquer cena.
+O fundo de partida é escolhido a partir da referência, então o mesmo
+versículo abre sempre com a mesma imagem. O tamanho da fonte se ajusta
+sozinho ao comprimento do texto, e um véu suave atrás do bloco garante
+leitura em qualquer cena.
 
 Onde o aparelho permite, **Compartilhar** envia o PNG direto para o WhatsApp
 ou o Instagram; onde não, cai para o download.
+
+### O fechar nascia abaixo da dobra
+
+Medido antes de mexer, num aparelho de **360×640**: a caixa pedia 659px e
+tinha 589. **"Fechar" e "Baixar" nasciam fora da tela**, e nada dizia que
+dava para rolar até eles — o botão que fecha um modal é o último que pode
+sumir. Os chips de **Formato** também: cabiam na tela, mas escondidos atrás
+da barra de ações.
+
+A caixa deixou de ser uma coluna rolável e virou três partes: **cabeçalho
+preso no alto** (com o ✕, que voltou para onde a mão procura), **miolo que
+rola**, e **pé preso** com o formato e as ações. O formato desceu para o pé
+porque diz o que vai *sair* dali, como elas.
+
+| | Antes | Agora |
+|---|---|---|
+| Fechar | botão no pé, fora da tela em 360×640 | ✕ no cabeçalho, sempre visível |
+| Prévia | 46% da altura, sempre | 42%, e 25% em tela curta |
+| O que rola | a caixa inteira | só o miolo |
+| Fora do alcance em 360×640 | Fechar, Baixar, Formato | nada |
+
+### Sortear virou escolher
+
+**"Trocar fundo" passava para o próximo às cegas.** Não dava para ver o que
+existia, escolher, nem **voltar ao que se gostou** — e quando a lista de
+fotos tinha uma só, o botão ia buscar outras no Pexels, então nem a volta
+trazia a mesma de novo. Dez fundos desenhados e até quinze fotos, todos
+escondidos atrás de um botão que não mostrava nenhum.
+
+No lugar dele, uma **fita rolável de miniaturas**: as fotos primeiro, um
+traço, e os dez desenhados — cada um desenhado num canvas de 116×148 na
+hora. É um `radiogroup`, com `aria-checked` e rótulo próprio em cada opção;
+o escolhido leva moldura **e** um ✓, porque estado não pode depender só de
+cor. No fim da fita, **"Outras fotos"** faz o que o botão antigo tinha de
+útil — pedir outro lote ao Pexels — mas dito com todas as letras.
+
+Dois ganhos que vieram junto:
+
+- **Escolher um fundo desenhado não vai mais à rede.** Antes a foto era
+  sempre tentada primeiro, então pedir um desenho ainda esperava o Pexels
+  responder para só então cair no recuo.
+- **Sem Pexels, a fita fica só com os dez desenhados** — o que já explica a
+  ausência de foto sem precisar de aviso na tela.
+
+E o crédito da foto, que aparecia **duas vezes** (gravado na imagem e
+repetido solto abaixo do botão, onde lia como rótulo do "Formato"), virou
+uma legenda única logo abaixo da prévia. O gravado na imagem continua: é
+ele que viaja junto quando alguém compartilha.
 
 ## Versões da Bíblia
 
