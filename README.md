@@ -1282,6 +1282,44 @@ diário, os dias dos planos e a Bíblia inteira, capítulo por capítulo.
 Usa a Web Speech API do próprio aparelho — sem chave de API, sem custo e
 funciona offline depois que o app está instalado.
 
+### O reprodutor era desenhado pela fonte do celular
+
+Os quatro controles eram emoji: `⏮ U+23EE`, `⏸ U+23F8`, `⏭ U+23ED`,
+`⏹ U+23F9`. Três deles têm **apresentação emoji por padrão** no Unicode, o
+que significa que quem os desenha é a fonte do sistema — vêm com cor
+própria e **ignoram o `color` do CSS**. O mesmo código dava um pause
+laranja dentro do círculo azul num Android e um pause cinza no
+computador. É exatamente o motivo pelo qual o resto do app já tinha
+trocado emoji por SVG; a barra de áudio ficou para trás.
+
+| | Antes | Agora |
+|---|---|---|
+| Ícones | 4 emoji do sistema | 4 `<symbol>` do sprite, cheios |
+| Cor | a que a fonte quisesse | a do texto, nos dois temas |
+| Parar | `⏹` ao lado do `⏸` | `✕` de fechar, como em todo mini-player |
+| Velocidade | círculo do tamanho do play | texto discreto |
+| Progresso | linha de 4px que ninguém via | um traço por trecho |
+
+**Contraste que o emoji escondia.** No tema escuro o `--azul` é `#5B9BE8`,
+clareado para ler sobre fundo escuro; um ícone branco em cima dá
+**2,88:1**, abaixo do 3:1 da WCAG 1.4.11. O defeito estava lá antes e não
+aparecia porque o glifo ignorava a cor. Assim que o ícone passou a
+obedecer, ficou visível — no escuro o ícone do botão principal virou
+escuro sobre o azul claro, e sobe para **5,89:1**.
+
+### Progresso por trecho, não por tempo
+
+A fala do navegador **não permite buscar posição**: não existe "pular para
+1:30", só passar de um trecho para o outro. Uma linha arrastável
+prometeria o que não existe, e um relógio de tempo decorrido seria chute.
+
+Os traços dizem a verdade — cinco trechos, você está no segundo. O traço
+já lido fica cheio; o atual se tinge, porque `idx` conta pedaços
+concluídos e a maioria das partes tem um só: sem essa marca, o traço em
+leitura ficava indistinguível dos que nem começaram. Acima de **12
+partes** — um capítulo inteiro vira dezenas — os traços virariam slivers
+ilegíveis, e a barra volta a ser uma linha contínua.
+
 - Barra de reprodução fixa: pausar, avançar/voltar trecho, parar e velocidade
 - O trecho lido fica destacado e a tela acompanha sozinha
 - Referências ditas por extenso: "1 João 3:16" vira "Primeira de João, capítulo 3, versículo 16"
