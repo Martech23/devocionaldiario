@@ -913,6 +913,9 @@ const $ = id => document.getElementById(id);
 const norm = s => (s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
 let versaoAtual = VERSOES[0];
 const cache = new Map();
+/* quando a rede foi usada por último para buscar texto bíblico — é o que
+   permite ao aquecimento em segundo plano sair da frente de quem está lendo */
+let ultimoPedidoBiblico = 0;
 
 /* =========================================================
    AVISO, COM SAÍDA DE EMERGÊNCIA
@@ -2654,6 +2657,7 @@ async function buscarCapituloEm(v, nr, cap){
     ? `${HELLOAO}/${v.id}/${livro.sigla}/${cap}.json`
     : `${BASE}/${v.id}/${nr}/${cap}.json`;
 
+  ultimoPedidoBiblico = Date.now();
   const r = await fetch(url);
   if(!r.ok){
     /* =========================================================
@@ -2725,6 +2729,11 @@ async function buscarLivroInteiro(v, nr){
 }
 
 async function pedirLivroInteiro(v, nr){
+  /* O livro inteiro é o pedido mais pesado do app — um arquivo com 50
+     capítulos. O aquecimento em segundo plano precisa contar ESTE também
+     como "tem gente usando a rede": sem isto ele entrava no meio de uma
+     busca por palavra achando que a casa estava vazia. */
+  ultimoPedidoBiblico = Date.now();
   try{
     const r = await fetch(`${BASE}/${v.id}/${nr}.json`);
     if(!r.ok) throw new Error('status ' + r.status);
@@ -2801,19 +2810,52 @@ async function buscarVerso(nr, cap, verso){
   return {texto:v.texto, versao:(d.versao || versaoAtual).nome};
 }
 
+/* =========================================================
+   A MENSAGEM DE ERRO FALAVA COM O PROGRAMADOR
+
+   O que aparecia para QUALQUER pessoa sem sinal era: "Se você
+   está numa pré-visualização, o ambiente pode bloquear
+   requisições externas… Abra o console com F12 e veja se aparece
+   erro de CORS ou de rede."
+
+   Num app que se abre para ler o versículo do dia. Quem está no
+   ônibus não tem F12, não sabe o que é CORS, e não publicou nada
+   em servidor nenhum.
+
+   Agora são duas frases e um botão. O detalhe técnico vai para o
+   console, onde só chega quem foi procurar.
+   ========================================================= */
 function blocoErro(msg, aoTentar){
+  if(msg) console.info('Falha ao carregar:', msg);
+
+  const semRede = navigator.onLine === false;
   const d = document.createElement('div');
   d.className = 'erro';
-  d.innerHTML = '<b>Não deu para carregar</b>' + msg +
-    '<ul><li>Se você está numa pré-visualização, o ambiente pode bloquear requisições externas. Baixe o arquivo e abra direto no navegador, ou publique num servidor.</li>' +
-    '<li>Abra o console com F12 e veja se aparece erro de <code>CORS</code> ou de rede.</li></ul>';
+
+  const titulo = document.createElement('b');
+  titulo.textContent = semRede ? 'Sem internet agora' : 'O texto não chegou';
+  d.appendChild(titulo);
+
+  const p = document.createElement('p');
+  p.className = 'erro-corpo';
+  p.textContent = semRede
+    ? 'O que você já leu continua aqui, e o resto chega quando a conexão voltar.'
+    : 'A fonte do texto bíblico não respondeu. Costuma ser passageiro.';
+  d.appendChild(p);
+
   if(aoTentar){
     const b = document.createElement('button');
-    b.className = 'btn claro';
-    b.style.marginTop = '14px';
+    b.className = 'btn claro mt-14';
+    b.type = 'button';
     b.textContent = 'Tentar de novo';
     b.onclick = aoTentar;
     d.appendChild(b);
+  }
+  /* Voltar sozinho quando a rede voltar: sem isto a pessoa fica
+     olhando um erro que já não é verdade. */
+  if(semRede && aoTentar){
+    const voltou = () => { window.removeEventListener('online', voltou); aoTentar(); };
+    window.addEventListener('online', voltou);
   }
   return d;
 }
@@ -6877,6 +6919,69 @@ const Metricas = (() => {
 })();
 
 Metricas.anotar('abriu');
+
+/* =========================================================
+   GUARDAR O AMANHÃ ENQUANTO AINDA HÁ SINAL
+
+   Cachear o que já foi lido resolve metade do problema: quem
+   abriu João 3 ontem lê João 3 offline hoje. Mas o devocional de
+   AMANHÃ é um capítulo que ninguém abriu ainda — e é justamente
+   ele que a pessoa vai querer no ônibus, sem sinal.
+
+   Então, uma vez por dia, com a rede boa e a tela já pronta,
+   buscamos em silêncio os capítulos dos próximos sete dias. O
+   service worker guarda no caminho. São sete pedidos de ~4 KB,
+   espaçados, e nenhum deles bloqueia nada: se falhar, falhou —
+   amanhã tenta de novo.
+   ========================================================= */
+const CHAVE_AQUECIDO = 'lampada-aquecido-em';
+const DIAS_A_FRENTE = 7;
+const SILENCIO_MS = 3000;      /* tempo sem pedido bíblico para considerar parado */
+const ESPERA_MAX_MS = 120000;  /* depois disso desiste: amanhã tenta de novo */
+
+/* Espera a rede ficar livre de leitura. Devolve false se cansou de esperar. */
+async function esperarSilencio(){
+  const limite = Date.now() + ESPERA_MAX_MS;
+  while(Date.now() - ultimoPedidoBiblico < SILENCIO_MS){
+    if(Date.now() > limite) return false;
+    await new Promise(r => setTimeout(r, 500));
+  }
+  return true;
+}
+
+async function aquecerProximosDias(){
+  if(!navigator.onLine) return;
+  /* uma vez por dia basta: a lista de versículos é fixa */
+  const hoje = hojeISO();
+  if(localStorage.getItem(CHAVE_AQUECIDO) === hoje) return;
+
+  const base = diaDoAno(new Date());
+  let guardados = 0;
+  for(let i = 1; i <= DIAS_A_FRENTE; i++){
+    if(!navigator.onLine) break;
+    /* Cede a vez a quem está lendo. Sem isto o aquecimento entrava no meio
+       de uma busca por palavra e disputava a mesma fila de conexões — a
+       pessoa esperava mais para ver o resultado por causa de um capítulo
+       que ela só vai querer daqui a três dias. */
+    if(!(await esperarSilencio())) break;
+    const { nr, cap } = devocionalDoDia(base + i);
+    try {
+      await buscarCapitulo(nr, cap);
+      guardados++;
+    } catch(_){ /* sem rede ou fonte fora: não é problema nosso agora */ }
+    await new Promise(r => setTimeout(r, 1200));
+  }
+  if(guardados) localStorage.setItem(CHAVE_AQUECIDO, hoje);
+  console.info('Aquecimento offline:', guardados, 'de', DIAS_A_FRENTE, 'dias');
+}
+
+/* Depois que a tela do dia já apareceu — nunca competindo com ela. */
+function agendarAquecimento(){
+  const rodar = () => aquecerProximosDias().catch(() => {});
+  if(window.requestIdleCallback) requestIdleCallback(rodar, { timeout: 8000 });
+  else setTimeout(rodar, 4000);
+}
+window.addEventListener('load', () => setTimeout(agendarAquecimento, 2500));
 
 /* =========================================================
    O LEMBRETE NA HORA DE QUEM RECEBE
