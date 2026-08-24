@@ -1608,17 +1608,13 @@ html[data-tema="escuro"] .erro {
   font-size: 15px;
 }
 html[data-tema="escuro"] .erro b { color: #E88A7E; }
-.erro ul {
-  margin: 10px 0 0 18px;
-  font-size: 13.5px;
+/* A lista de dicas técnicas saiu daqui junto com o texto sobre CORS e
+   F12: o que resta é uma frase, e ela precisa ler como frase. */
+.erro-corpo {
+  margin: 0;
+  font-size: 14.5px;
   color: var(--texto-2);
-  line-height: 1.65;
-}
-.erro code {
-  background: var(--linha);
-  padding: 1px 5px;
-  border-radius: 3px;
-  font-size: 12.5px;
+  line-height: 1.55;
 }
 
 .rodape {

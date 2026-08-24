@@ -1943,6 +1943,88 @@ repetido solto abaixo do botão, onde lia como rótulo do "Formato"), virou
 uma legenda única logo abaixo da prévia. O gravado na imagem continua: é
 ele que viaja junto quando alguém compartilha.
 
+## Funcionar sem internet, de verdade
+
+A prévia que aparece no WhatsApp diz *"De graça, e funciona sem internet"*.
+Medido, antes de mexer: **não funcionava.**
+
+| Offline, antes | |
+|---|---|
+| a página abre | sim, com estilo |
+| o versículo do dia | **falha** |
+| abrir João 3 | **falha** |
+| a mensagem | *"Abra o console com F12 e veja se aparece erro de CORS"* |
+
+O `sw.js` guardava os 682 KB do app — HTML, CSS, JS, fontes, ícones — e
+**excluía de propósito** todo pedido a `getbible`, `helloao` e `bible-api`.
+Sobrava a casca do app e nenhuma palavra da Bíblia. Ônibus, metrô, culto no
+subsolo: é exatamente onde um app devocional precisa abrir.
+
+### O texto tem cache próprio, e ele sobrevive às publicações
+
+`CACHE_BIBLIA` mora fora do `CACHE` do app de propósito. Toda publicação
+troca a versão do `CACHE` e apaga a anterior — se o texto estivesse lá
+dentro, **cada correção de CSS jogaria fora tudo o que a pessoa já tinha
+lido**, e ela voltaria a ficar sem Bíblia offline sem ter feito nada.
+
+A estratégia é **cache-primeiro, sem revalidar**: não há o que revalidar,
+porque o texto de João 3 na Bíblia Livre é o mesmo hoje e daqui a um ano.
+Revalidar gastaria dados de quem está no 3G para confirmar o que já se sabe.
+Teto de 600 capítulos (~2,5 MB), podando os mais antigos.
+
+`/api/` continua fora do cache: conta e sincronização são estado que muda,
+e servir uma resposta velha de `/api/conta` seria mostrar a sessão de ontem
+como se fosse a de agora.
+
+### Guardar o amanhã enquanto ainda há sinal
+
+Cachear o que já foi lido resolve metade: quem abriu João 3 ontem lê João 3
+offline hoje. Mas **o devocional de amanhã é um capítulo que ninguém abriu
+ainda** — e é justamente ele que a pessoa vai querer no ônibus.
+
+Uma vez por dia, com a tela já pronta, o app busca em silêncio os capítulos
+dos próximos sete dias. E **cede a vez a quem está lendo**: antes de cada
+capítulo ele espera três segundos sem nenhum pedido bíblico na rede. Sem
+isso ele entrava no meio de uma busca por palavra e disputava a mesma fila
+de conexões — a pessoa esperava mais para ver o resultado por causa de um
+capítulo que ela só vai querer daqui a três dias.
+
+O pedido de **livro inteiro** conta como uso da rede para esse cálculo. É o
+mais pesado do app, e foi o que o teste pegou quando ele não contava.
+
+### A mensagem de erro falava com o programador
+
+O que aparecia para qualquer pessoa sem sinal:
+
+> *"Se você está numa pré-visualização, o ambiente pode bloquear requisições
+> externas. Baixe o arquivo e abra direto no navegador, ou publique num
+> servidor. Abra o console com F12 e veja se aparece erro de `CORS` ou de
+> rede."*
+
+Num app que se abre para ler o versículo do dia. Quem está no ônibus não tem
+F12, não sabe o que é CORS e não publicou nada em servidor nenhum.
+
+Agora são duas frases e um botão: **"Sem internet agora · O que você já leu
+continua aqui, e o resto chega quando a conexão voltar"**. O detalhe técnico
+vai para o `console.info`. E, quando a rede volta, **o erro sai sozinho** —
+sem isso a pessoa fica olhando um aviso que já não é verdade.
+
+### Onde a promessa ainda tem limite
+
+Um capítulo que **nunca foi aberto** não existe offline, e o app diz isso em
+vez de fingir. A promessa vale para o ciclo principal — abrir, ler o
+devocional do dia, reler o que já se leu, ouvir — que é o que se faz sem
+sinal.
+
+### Uma armadilha na medição
+
+A primeira versão do teste trocava `window.fetch` na página, como as outras
+suítes fazem. Com isso **o service worker nunca vê o pedido**: ele escuta a
+camada de rede do navegador, e uma função trocada dentro da página passa por
+baixo dele. A medição dizia que o cache não funcionava quando o problema era
+o teste. `teste46.js` intercepta em `context.route()`, que é onde o service
+worker enxerga.
+
 ## Versões da Bíblia
 
 Duas regras decidem o que aparece no seletor: **licença de uso livre** e
