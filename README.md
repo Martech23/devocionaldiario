@@ -2179,6 +2179,29 @@ Supabase são falados por HTTPS com credencial que vive só nas variáveis de
 ambiente. **A superfície de ataque são os endpoints**, e é por isso que a
 auditoria é sobre eles.
 
+## Testes
+
+```
+npm install
+npm test
+```
+
+46 suítes, ~1.720 asserções, uns 11 minutos. Não há framework: cada suíte
+é um script Node que abre um Chromium de verdade contra o app de verdade,
+servido de um servidor estático local que o próprio `npm test` levanta.
+O que ela carrega é o mesmo `index.html` que a Vercel publica.
+
+Isso é caro e é de propósito. Um teste de unidade do `app.js` diria que a
+função devolve o que deveria; estas suítes dizem que o contraste do botão
+de play no tema escuro é 5,89:1, que o service worker serve João 3 sem
+rede, e que nenhuma chave nova apareceu no `localStorage` sem aparecer na
+política de privacidade. Foi assim que se descobriu que o aquecimento
+offline ignorava `pedirLivroInteiro` e competia com a busca da pessoa.
+
+O `.github/workflows/testes.yml` roda tudo na `main` e em toda proposta de
+mudança. Detalhes, convenções e as armadilhas que já custaram caro estão em
+[`testes/LEIA-ME.md`](testes/LEIA-ME.md).
+
 ## APIs bíblicas
 
 - getBible — Bíblia Livre

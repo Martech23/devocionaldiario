@@ -1,0 +1,51 @@
+name: Testes
+
+# Roda na main e em toda proposta de mudança. Não roda em push de branch
+# solta: a suíte leva uns 15 minutos, e rodar a cada commit de rascunho
+# gastaria o tempo de execução sem dizer nada que a proposta não diga.
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+# Um push novo cancela a execução anterior da mesma referência: não
+# adianta terminar de testar um commit que já foi substituído.
+concurrency:
+  group: testes-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  suite:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - name: Instalar dependências
+        run: npm ci
+
+      # --with-deps traz as bibliotecas de sistema que o Chromium precisa
+      # no runner do Ubuntu. Sem isso ele instala e não abre.
+      - name: Instalar o Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Rodar a suíte
+        run: npm test
+
+      # Quando algo quebra, o log do passo acima mostra só as linhas de
+      # falha. Isto guarda as capturas que as suítes tiverem gerado.
+      - name: Guardar capturas de tela, se houver
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: capturas
+          path: testes/*.png
+          if-no-files-found: ignore
+          retention-days: 7

@@ -15,6 +15,9 @@ dist/
 # são 15 MB e o que importa versionar é a saída, não a entrada
 ferramentas/.cache-openbible/
 
+# capturas que as suítes salvam para inspeção; são saída, não fonte
+testes/*.png
+
 # lixo de sistema
 .DS_Store
 Thumbs.db
